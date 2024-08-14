@@ -7,6 +7,7 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGrey6, // 배경색을 회색으로 설정
       navigationBar: const CupertinoNavigationBar(
         middle: Text('채팅'),
       ),
@@ -15,43 +16,49 @@ class ChatScreen extends StatelessWidget {
           children: <Widget>[
             // 채팅 내용을 보여주는 큰 위젯
             Expanded(
-              flex: 4, // 비율: 4
+              flex: 8,
               child: Center(
                 child: Container(
-                  margin: const EdgeInsets.all(16.0), // 화면 가장자리와의 간격 설정
+                  margin: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: CupertinoColors.systemGrey.withOpacity(0.2),
+                    color: CupertinoColors.white, // 챗 박스의 배경색을 흰색으로 설정
                     borderRadius: BorderRadius.circular(12.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2), // 그림자 색상 및 투명도 설정
+                        spreadRadius: 2, // 그림자의 퍼짐 정도
+                        blurRadius: 6, // 그림자의 블러링 정도
+                        offset: Offset(2, 4), // 그림자의 위치 (x, y)
+                      ),
+                    ],
                   ),
-                  alignment: Alignment.center, // 내부 콘텐츠를 가운데 정렬
+                  alignment: Alignment.center,
                   child: const Text(
                     '여기에 채팅 내용이 표시됩니다.',
                     style: TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center, // 텍스트 가운데 정렬
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
             ),
-            // 빈 공간
-            Spacer(flex: 1), // 비율: 1
-            // 하단에 음성 입력 및 네비게이션 버튼 배치
+            Spacer(flex: 1),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 children: <Widget>[
                   Expanded(
-                    flex: 10, // 비율: 10
+                    flex: 10,
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 4.0), // 버튼 사이의 간격 조정
+                      padding: const EdgeInsets.only(right: 4.0),
                       child: GestureDetector(
                         onTap: () {
                           // 문자 네비게이션 버튼 클릭 시 실행할 코드
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 20.0),
                           decoration: BoxDecoration(
                             color: CupertinoColors.systemBlue,
-                            borderRadius: BorderRadius.circular(8.0), // 네모 모양
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: const Center(
                             child: Text(
@@ -64,7 +71,7 @@ class ChatScreen extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    flex: 12, // 비율: 13
+                    flex: 13,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: GestureDetector(
@@ -76,7 +83,7 @@ class ChatScreen extends StatelessWidget {
                           height: 68.0,
                           decoration: BoxDecoration(
                             color: CupertinoColors.systemGreen,
-                            shape: BoxShape.circle, // 동그라미 모양
+                            shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             CupertinoIcons.mic,
@@ -87,7 +94,7 @@ class ChatScreen extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    flex: 10, // 비율: 10
+                    flex: 10,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4.0),
                       child: GestureDetector(
@@ -95,10 +102,10 @@ class ChatScreen extends StatelessWidget {
                           // 일정 네비게이션 버튼 클릭 시 실행할 코드
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 20.0),
                           decoration: BoxDecoration(
                             color: CupertinoColors.systemBlue,
-                            borderRadius: BorderRadius.circular(8.0), // 네모 모양
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: const Center(
                             child: Text(
