@@ -1,8 +1,95 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
+
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _text = "여기에 채팅 내용이 표시됩니다.";
+  double _confidence = 1.0;
+  final FlutterTts _flutterTts = FlutterTts();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      await Permission.microphone.request();
+    }
+  }
+
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          if (val == 'done') {
+            _stopListening();
+          }
+        },
+        onError: (val) => print('onError: $val'),
+      );
+      if (available) {
+        setState(() {
+          _isListening = true;
+          _text = "";
+        });
+
+        _speech.listen(
+          onResult: (val) {
+            setState(() {
+              _text = val.recognizedWords;
+              if (val.hasConfidenceRating && val.confidence > 0) {
+                _confidence = val.confidence;
+              }
+            });
+          },
+        );
+
+        _timer = Timer.periodic(const Duration(seconds: 60), (timer) {
+          setState(() {});
+        });
+      }
+    } else {
+      _stopListening();
+    }
+  }
+
+  void _stopListening() {
+    _timer?.cancel();
+    _speech.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  Future<void> _speak(String text) async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.speak(text);
+    await _flutterTts.awaitSpeakCompletion(true);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +120,8 @@ class ChatScreen extends StatelessWidget {
                     ],
                   ),
                   alignment: Alignment.center,
-                  child: const Text(
-                    '여기에 채팅 내용이 표시됩니다.',
+                  child: Text(
+                    _text,
                     style: TextStyle(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
@@ -52,7 +139,7 @@ class ChatScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 4.0),
                       child: GestureDetector(
                         onTap: () {
-                          // 문자 네비게이션 버튼 클릭 시 실행할 코드
+                          _speak(_text); // 문자 네비게이션 버튼 클릭 시 TTS 사용
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -75,9 +162,7 @@ class ChatScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: GestureDetector(
-                        onTap: () {
-                          // 음성 입력 버튼 클릭 시 실행할 코드
-                        },
+                        onTap: _listen, // 음성 입력 버튼 클릭 시 STT 사용
                         child: Container(
                           width: 48.0,
                           height: 68.0,
@@ -85,8 +170,8 @@ class ChatScreen extends StatelessWidget {
                             color: CupertinoColors.systemGreen,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            CupertinoIcons.mic,
+                          child: Icon(
+                            _isListening ? CupertinoIcons.mic_fill : CupertinoIcons.mic,
                             color: Colors.white,
                           ),
                         ),
