@@ -103,27 +103,19 @@ class _ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             // 채팅 내용을 보여주는 큰 위젯
             Expanded(
-              flex: 8,
-              child: Center(
+              flex:8,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Container(
-                  margin: const EdgeInsets.all(16.0),
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
-                    color: CupertinoColors.white, // 챗 박스의 배경색을 흰색으로 설정
+                    color: CupertinoColors.systemGrey4,
                     borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2), // 그림자 색상 및 투명도 설정
-                        spreadRadius: 2, // 그림자의 퍼짐 정도
-                        blurRadius: 6, // 그림자의 블러링 정도
-                        offset: Offset(2, 4), // 그림자의 위치 (x, y)
-                      ),
-                    ],
                   ),
-                  alignment: Alignment.center,
                   child: Text(
-                    _text,
-                    style: TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
+                    _text.isEmpty ? 'Listening...' : _text,
+                    style: TextStyle(fontSize: 22.0, color: CupertinoColors.black),
                   ),
                 ),
               ),
@@ -161,8 +153,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     flex: 13,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: GestureDetector(
-                        onTap: _listen, // 음성 입력 버튼 클릭 시 STT 사용
+                      child: CupertinoButton(
+                        onPressed: _listen, // 음성 입력 버튼 클릭 시 STT 사용
                         child: Container(
                           width: 48.0,
                           height: 68.0,

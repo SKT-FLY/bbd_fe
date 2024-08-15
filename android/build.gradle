@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.7.0' // 또는 그 이상
+    ext.kotlin_version = '1.7.10' // 또는 그 이상
     repositories {
         google()
         mavenCentral()
