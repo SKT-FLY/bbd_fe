@@ -14,11 +14,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
-  bool _isListening = false;
+  bool _isListening = false; // 버튼 클릭 시 음성 입력 상태를 관리하는 변수
   String _text = "여기에 채팅 내용이 표시됩니다.";
-  double _confidence = 1.0;
+  //double _confidence = 1.0;
   final FlutterTts _flutterTts = FlutterTts();
-  Timer? _timer;
 
   @override
   void initState() {
@@ -34,49 +33,72 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _listen() async {
-    if (!_isListening) {
+  Future<void> _listen() async {
+    if (_isListening) {
+      _stopListening();
+    } else {
       bool available = await _speech.initialize(
         onStatus: (val) {
-          if (val == 'done') {
-            _stopListening();
+          if (_isListening && val == 'done') {
+            _restartListening();
           }
         },
-        onError: (val) => print('onError: $val'),
+        onError: (val) {
+          print('onError: $val');
+          if (val.errorMsg == "error_busy" || val.errorMsg == "error_client") {
+            Future.delayed(const Duration(seconds: 2), () {
+              _restartListening();
+            });
+          }
+        },
       );
+
       if (available) {
         setState(() {
           _isListening = true;
-          _text = "";
+          _text = " ";
         });
 
+        await Future.delayed(const Duration(milliseconds: 500));
         _speech.listen(
           onResult: (val) {
             setState(() {
-              _text = val.recognizedWords;
-              if (val.hasConfidenceRating && val.confidence > 0) {
+              _text = val.recognizedWords; // 실시간으로 텍스트를 갱신
+              """""if (val.hasConfidenceRating && val.confidence > 0) {
                 _confidence = val.confidence;
-              }
+              }""";
             });
           },
         );
-
-        _timer = Timer.periodic(const Duration(seconds: 60), (timer) {
-          setState(() {});
-        });
       }
-    } else {
-      _stopListening();
     }
   }
 
+  void _restartListening() async {
+    if (_isListening) {
+      _speech.stop();
+      await Future.delayed(const Duration(milliseconds: 200)); // 짧은 대기 시간 추가
+      _speech.listen(
+        onResult: (val) {
+          setState(() {
+            _text = val.recognizedWords; // 실시간으로 텍스트를 갱신
+            //if (val.hasConfidenceRating && val.confidence > 0) {
+              //_confidence = val.confidence;
+            //}
+          });
+        },
+      );
+    }
+  }
+
+
   void _stopListening() {
-    _timer?.cancel();
     _speech.stop();
     setState(() {
       _isListening = false;
     });
   }
+
 
   Future<void> _speak(String text) async {
     await _flutterTts.setLanguage("en-US");
@@ -86,15 +108,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemGrey6, // 배경색을 회색으로 설정
+      backgroundColor: CupertinoColors.systemGrey6,
       navigationBar: const CupertinoNavigationBar(
         middle: Text('채팅'),
       ),
@@ -103,7 +119,7 @@ class _ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             // 채팅 내용을 보여주는 큰 위젯
             Expanded(
-              flex:8,
+              flex: 8,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
@@ -115,12 +131,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   child: Text(
                     _text.isEmpty ? 'Listening...' : _text,
-                    style: TextStyle(fontSize: 22.0, color: CupertinoColors.black),
+                    style: const TextStyle(fontSize: 22.0, color: CupertinoColors.black),
                   ),
                 ),
               ),
             ),
-            Spacer(flex: 1),
+            const Spacer(flex: 1),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
@@ -154,7 +170,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: CupertinoButton(
-                        onPressed: _listen, // 음성 입력 버튼 클릭 시 STT 사용
+                        onPressed: _listen, // 음성 입력 버튼 클릭 시 상태를 토글하고 listen 실행
                         child: Container(
                           width: 48.0,
                           height: 68.0,
