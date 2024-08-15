@@ -172,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: CupertinoButton(
                         onPressed: _listen, // 음성 입력 버튼 클릭 시 상태를 토글하고 listen 실행
                         child: Container(
-                          width: 48.0,
+                          width: 70.0,
                           height: 68.0,
                           decoration: BoxDecoration(
                             color: CupertinoColors.systemGreen,
