@@ -35,6 +35,9 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  speech_to_text: ^6.6.2
+  flutter_tts: ^3.5.1
+  permission_handler: ^11.1.0+1
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +65,7 @@ flutter:
   assets:
   #   - images/a_dot_burr.jpeg
      - assets/images/silverdot.png
+     - assets/images/yellow_character.png
      - assets/images/message.png
      - assets/images/summary.png
 
