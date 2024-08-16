@@ -1,13 +1,14 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'tmap.dart';
-import 'Screen/chat_screen.dart';
+import 'screen/tmap.dart';
+import 'screen/chat_screen.dart';
 import 'screen/message_summary.dart';
 import 'screen/summary_screen1.dart';
 import 'screen/summary_screen2.dart';
 import 'screen/warning_screen.dart';
 import 'screen/loading_screen.dart';
+import 'screen/adot_call.dart';
 
 
 void main() {
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
-      home: const LoadingScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
+      home: const ChatScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
     );
   }
 }
