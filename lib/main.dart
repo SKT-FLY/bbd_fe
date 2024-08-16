@@ -1,7 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'tmap.dart';
+import 'screen/tmap.dart';
 import 'screen/chat_screen.dart';
 import 'screen/message_summary.dart';
 import 'screen/summary_screen1.dart';
