@@ -18,6 +18,10 @@ final GoRouter router = GoRouter(
         path: '/',
         builder: (context, state) => ChatScreen()),
     GoRoute(
+        path: '/message_summary1',
+        builder: (context, state) => CustomScreen()),
+
+    GoRoute(
         path: '/tmap',
         builder: (context, state) => PhoneConnectionScreen()),
   ],
