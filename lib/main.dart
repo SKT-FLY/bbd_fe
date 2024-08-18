@@ -9,7 +9,7 @@ import 'screen/summary_screen2.dart';
 import 'screen/warning_screen.dart';
 import 'screen/loading_screen.dart';
 import 'screen/adot_call.dart';
-
+import 'router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,13 +20,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
+    return CupertinoApp.router(
       debugShowCheckedModeBanner:false,
       title: 'Flutter Cupertino Demo',
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
-      home: const ChatScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
+      routerDelegate: router.routerDelegate,
+      routeInformationParser: router.routeInformationParser,
+      routeInformationProvider: router.routeInformationProvider,
     );
   }
 }
