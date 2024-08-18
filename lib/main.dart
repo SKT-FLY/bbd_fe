@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
-      home: const ScheduleMonthlyScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
+      home: const ChatScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
     );
   }
 }
