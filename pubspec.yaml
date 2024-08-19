@@ -40,6 +40,7 @@ dependencies:
   permission_handler: ^11.1.0+1
   table_calendar: ^3.0.6
   intl: ^0.18.0
+  sms_advanced: ^0.0.3
 
 dev_dependencies:
   flutter_test:
