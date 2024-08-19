@@ -5,10 +5,10 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Telephony
-import android.util.Log  // Log 클래스를 import
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import android.util.Log
 
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "sms_retriever"
@@ -18,7 +18,6 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getAllSms" -> {
-                    Log.d("MainActivity", "getAllSms method called")
                     val smsList = getAllSms()
                     result.success(smsList)
                 }
@@ -41,7 +40,6 @@ class MainActivity: FlutterActivity() {
             while (it.moveToNext()) {
                 val address = it.getString(addressIndex)
                 val body = it.getString(bodyIndex)
-                Log.d("MainActivity", "SMS from $address: $body")
                 smsList.add("From: $address\nMessage: $body")
             }
         }

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SmsListScreen extends StatefulWidget {
   @override
@@ -14,7 +15,22 @@ class _SmsListScreenState extends State<SmsListScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchSms();
+    _requestSmsPermission();
+  }
+
+  Future<void> _requestSmsPermission() async {
+    var status = await Permission.sms.status;
+    if (!status.isGranted) {
+      status = await Permission.sms.request();
+    }
+
+    if (status.isGranted) {
+      _fetchSms();
+    } else {
+      setState(() {
+        _smsList = ['SMS permission denied'];
+      });
+    }
   }
 
   Future<void> _fetchSms() async {
