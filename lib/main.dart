@@ -13,6 +13,7 @@ import 'screen/loading_screen.dart';
 import 'screen/adot_call.dart';
 import 'screen/monthly_calendar.dart';
 import 'screen/today_calendar.dart';
+import 'screen/sms_received_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
-      home: const ChatScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
+      home: SmsListScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
     );
   }
 }
