@@ -11,6 +11,7 @@ class SmsListScreen extends StatefulWidget {
 class _SmsListScreenState extends State<SmsListScreen> {
   static const platform = MethodChannel('sms_retriever');
   List<String> _smsList = [];
+  String selectedMessage = '';
 
   @override
   void initState() {
@@ -46,11 +47,18 @@ class _SmsListScreenState extends State<SmsListScreen> {
     }
   }
 
+  void _handleSmsTap(String message) {
+    setState(() {
+      selectedMessage = message;
+    });
+    print('Selected Message: $selectedMessage');
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('All SMS Messages'),
+        middle: Text('All SMS Message'),
       ),
       child: SafeArea(
         child: ListView.builder(
@@ -58,7 +66,7 @@ class _SmsListScreenState extends State<SmsListScreen> {
           itemBuilder: (context, index) {
             return CupertinoButton(
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-              onPressed: () {},
+              onPressed: () => _handleSmsTap(_smsList[index]),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
