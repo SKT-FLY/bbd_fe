@@ -1,83 +1,74 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MessageSummary());
-}
-
-class MessageSummary extends StatelessWidget {
+class MessageSummary extends StatefulWidget {
   const MessageSummary({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const CupertinoApp(
-      theme: CupertinoThemeData(
-        primaryColor: CupertinoColors.activeOrange,
-      ),
-      home: CustomScreen(),
-    );
-  }
+  _MessageSummaryState createState() => _MessageSummaryState();
 }
 
-class CustomScreen extends StatelessWidget {
-  const CustomScreen({Key? key}) : super(key: key);
-
+class _MessageSummaryState extends State<MessageSummary> {
   @override
   Widget build(BuildContext context) {
-    // 화면 크기 가져오기
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text(
-          '문자분석',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {},
-          child: const Icon(CupertinoIcons.person_crop_circle, color: CupertinoColors.black),
-        ),
-        backgroundColor: const Color(0xFFFFC436),
-        border: null,
+    return CupertinoApp(
+      theme: const CupertinoThemeData(
+        primaryColor: CupertinoColors.activeOrange,
       ),
-      child: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: const Text(
-                          '문자',
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: CupertinoColors.black,
-                            shadows: [
-                              Shadow(
-                                color: CupertinoColors.systemGrey,
-                                blurRadius: 4,
-                                offset: Offset(1, 1),
-                              ),
-                            ],
-                          ),
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: const Text(
+            '문자분석',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          trailing: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () {},
+            child: const Icon(
+              CupertinoIcons.person_crop_circle,
+              color: CupertinoColors.black,
+            ),
+          ),
+          backgroundColor: const Color(0xFFFFC436),
+          border: null,
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Spacer(),
+                    const Padding(
+                      padding: EdgeInsets.only(right: 16.0),
+                      child: Text(
+                        '문자',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: CupertinoColors.black,
+                          shadows: [
+                            Shadow(
+                              color: CupertinoColors.systemGrey,
+                              blurRadius: 4,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 0),
-                  Stack(
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10), // 문자 박스를 더 위로 올리기 위해 간격 조정
+                Expanded(
+                  child: Stack(
                     children: [
                       Positioned(
                         top: 0,
@@ -89,9 +80,8 @@ class CustomScreen extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        margin: const EdgeInsets.only(top: 70, left: 0),
+                        margin: const EdgeInsets.only(top: 55), // 문자 박스 더 위로 올림
                         width: screenWidth * 0.9,
-                        height: screenHeight * 0.45,
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
                           color: CupertinoColors.white,
@@ -135,48 +125,66 @@ class CustomScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: screenWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB9B0B0),
-                      borderRadius: BorderRadius.circular(8),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: screenWidth,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB9B0B0),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: CupertinoColors.black.withOpacity(0.25),
+                        spreadRadius: 1,
+                        blurRadius: 6,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    '요약하기',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: const Text(
-                      '요약하기',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {},
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.activeOrange,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withOpacity(0.25),
+                            spreadRadius: 1,
+                            blurRadius: 6,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.home,
+                        color: CupertinoColors.white,
+                        size: 40,
                       ),
                     ),
                   ),
-                  const Spacer(),
-                  Center(
-                    child: CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () {},
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: const BoxDecoration(
-                          color: CupertinoColors.activeOrange,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(CupertinoIcons.home, color: CupertinoColors.white, size: 40),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-
-

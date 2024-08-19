@@ -40,6 +40,8 @@ dependencies:
   permission_handler: ^11.1.0+1
   table_calendar: ^3.0.6
   intl: ^0.18.0
+  http: ^0.13.3
+  lunar: ^1.0.5
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +72,7 @@ flutter:
      - assets/images/yellow_character.png
      - assets/images/message.png
      - assets/images/summary.png
+     - assets/images/schedule.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:lunar/lunar.dart'; // lunar 패키지 가져오기
 
 class ScheduleMonthlyScreen extends StatefulWidget {
   const ScheduleMonthlyScreen({Key? key}) : super(key: key);
@@ -13,6 +14,59 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   Map<DateTime, List<String>> _events = {};
+
+  final Set<DateTime> _holidays = {
+    // 2023년 공휴일
+    DateTime.utc(2023, 1, 1),  // New Year's Day
+    DateTime.utc(2023, 1, 21), // Seollal Holiday
+    DateTime.utc(2023, 1, 22), // Seollal (Lunar New Year's Day)
+    DateTime.utc(2023, 1, 23), // Seollal Holiday
+    DateTime.utc(2023, 3, 1),  // Independence Movement Day
+    DateTime.utc(2023, 5, 5),  // Children's Day
+    DateTime.utc(2023, 5, 27), // Buddha's Birthday
+    DateTime.utc(2023, 6, 6),  // Memorial Day
+    DateTime.utc(2023, 8, 15), // Liberation Day
+    DateTime.utc(2023, 9, 28), // Chuseok Holiday
+    DateTime.utc(2023, 9, 29), // Chuseok
+    DateTime.utc(2023, 9, 30), // Chuseok Holiday
+    DateTime.utc(2023, 10, 3), // National Foundation Day
+    DateTime.utc(2023, 10, 9), // Hangul Day
+    DateTime.utc(2023, 12, 25), // Christmas Day
+
+    // 2024년 공휴일
+    DateTime.utc(2024, 1, 1),  // New Year's Day
+    DateTime.utc(2024, 2, 9),  // Seollal (Lunar New Year's Day)
+    DateTime.utc(2024, 2, 10), // Seollal Holiday
+    DateTime.utc(2024, 2, 11), // Seollal Holiday
+    DateTime.utc(2024, 3, 1),  // Independence Movement Day
+    DateTime.utc(2024, 5, 5),  // Children's Day
+    DateTime.utc(2024, 5, 15), // Buddha's Birthday
+    DateTime.utc(2024, 6, 6),  // Memorial Day
+    DateTime.utc(2024, 8, 15), // Liberation Day
+    DateTime.utc(2024, 9, 16), // Chuseok
+    DateTime.utc(2024, 9, 17), // Chuseok Holiday
+    DateTime.utc(2024, 9, 18), // Chuseok Holiday
+    DateTime.utc(2024, 10, 3), // National Foundation Day
+    DateTime.utc(2024, 10, 9), // Hangul Day
+    DateTime.utc(2024, 12, 25), // Christmas Day
+
+    // 2025년 공휴일
+    DateTime.utc(2025, 1, 1),  // New Year's Day
+    DateTime.utc(2025, 1, 28), // Seollal Holiday
+    DateTime.utc(2025, 1, 29), // Seollal (Lunar New Year's Day)
+    DateTime.utc(2025, 1, 30), // Seollal Holiday
+    DateTime.utc(2025, 3, 1),  // Independence Movement Day
+    DateTime.utc(2025, 5, 5),  // Children's Day
+    DateTime.utc(2025, 5, 15), // Buddha's Birthday
+    DateTime.utc(2025, 6, 6),  // Memorial Day
+    DateTime.utc(2025, 8, 15), // Liberation Day
+    DateTime.utc(2025, 10, 3), // National Foundation Day
+    DateTime.utc(2025, 10, 6), // Chuseok Holiday
+    DateTime.utc(2025, 10, 7), // Chuseok
+    DateTime.utc(2025, 10, 8), // Chuseok Holiday
+    DateTime.utc(2025, 10, 9), // Hangul Day
+    DateTime.utc(2025, 12, 25), // Christmas Day
+  };
 
   @override
   void initState() {
@@ -53,6 +107,13 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
     });
   }
 
+  String _getLunarDate(DateTime date) {
+    // 양력 날짜를 음력 날짜로 변환
+    final solar = Solar.fromYmd(date.year, date.month, date.day);
+    final lunar = solar.getLunar();
+    return '${lunar.getMonth()}.${lunar.getDay()}.';
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -68,12 +129,42 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
         border: null,
       ),
       child: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildMonthSelector(),
-            const SizedBox(height: 10),
-            Expanded(
-              child: _buildCalendar(), // 스크롤 제거하고 확장된 화면에 달력 표시
+            Column(
+              children: [
+                _buildMonthSelector(),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: _buildCalendar(),
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.pop(context); // 홈 화면으로 돌아가기
+                  },
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.home,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -153,22 +244,11 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
         outsideDaysVisible: false,
         cellMargin: const EdgeInsets.all(6.0),
         defaultTextStyle: const TextStyle(fontSize: 24),
+        markersAlignment: Alignment.bottomCenter, // Remove markers by setting alignment to a position that won't display
+        markerSizeScale: 0, // Set marker size to zero
       ),
-      rowHeight: 90.0, // 각 날짜 셀의 높이를 줄임
+      rowHeight: 90.0,
       calendarBuilders: CalendarBuilders<String>(
-        markerBuilder: (context, day, events) {
-          if (events.isNotEmpty) {
-            return Positioned(
-              bottom: 4,
-              child: Column(
-                children: [
-                  ..._buildEventMarkers(events),
-                ],
-              ),
-            );
-          }
-          return null;
-        },
         dowBuilder: (context, day) {
           if (day.weekday == DateTime.saturday) {
             return Center(
@@ -188,28 +268,85 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
           return null;
         },
         defaultBuilder: (context, day, focusedDay) {
-          if (day.weekday == DateTime.saturday) {
-            return Center(
-              child: Text(
-                '${day.day}',
-                style: const TextStyle(
-                  fontSize: 24,
-                  color: Colors.blue,
+          final isHoliday = _holidays.contains(day);
+          final hasEvents = _getEventsForDay(day).isNotEmpty;
+
+          return Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              if (isHoliday) ...[
+                Center(
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ] else if (hasEvents) ...[
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.lightGreenAccent.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${day.day}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else if (day.weekday == DateTime.saturday) ...[
+                Center(
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ] else if (day.weekday == DateTime.sunday) ...[
+                Center(
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                        fontSize: 24,
+                        color: Colors.red),
+                  ),
+                ),
+              ] else ...[
+                Center(
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+              // Lunar date positioned at the bottom
+              Positioned(
+                bottom: 4,
+                child: Text(
+                  _getLunarDate(day),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-            );
-          } else if (day.weekday == DateTime.sunday) {
-            return Center(
-              child: Text(
-                '${day.day}',
-                style: const TextStyle(
-                  fontSize: 24,
-                  color: Colors.red,
-                ),
-              ),
-            );
-          }
-          return null;
+            ],
+          );
+        },
+        markerBuilder: (context, day, events) {
+          // Explicitly return an empty container to prevent the markers from being rendered
+          return Container();
         },
       ),
       locale: 'ko_KR',
@@ -221,34 +358,6 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
         });
       },
     );
-  }
-
-  List<Widget> _buildEventMarkers(List<String> events) {
-    const maxMarkersPerRow = 3;
-    List<Widget> rows = [];
-
-    for (int i = 0; i < events.length; i += maxMarkersPerRow) {
-      rows.add(
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 2.0,
-          children: events
-              .skip(i)
-              .take(maxMarkersPerRow)
-              .map((event) => Container(
-            width: 6.0,
-            height: 6.0,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.red,
-            ),
-          ))
-              .toList(),
-        ),
-      );
-    }
-
-    return rows;
   }
 }
 
