@@ -77,128 +77,152 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
       child: Stack(
         children: [
           SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 월 선택 영역
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CupertinoButton(
-                        child: const Icon(CupertinoIcons.left_chevron),
-                        onPressed: () {
-                          setState(() {
-                            if (_selectedMonth > 1) {
-                              _selectedMonth--;
-                            } else {
-                              _selectedMonth = 12;
-                              _selectedYear--;
-                            }
-                            _selectedDay = 1;
-                          });
-                          _scrollToSelectedDay();
-                        },
-                      ),
-                      Text(
-                        '$_selectedYear년 $_selectedMonth월',
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                      ),
-                      CupertinoButton(
-                        child: const Icon(CupertinoIcons.right_chevron),
-                        onPressed: () {
-                          setState(() {
-                            if (_selectedMonth < 12) {
-                              _selectedMonth++;
-                            } else {
-                              _selectedMonth = 1;
-                              _selectedYear++;
-                            }
-                            _selectedDay = 1;
-                          });
-                          _scrollToSelectedDay();
-                        },
-                      ),
-                    ],
+            child: Column(
+              children: [
+                _buildMonthSelector(),
+                const SizedBox(height: 16),
+                _buildDaySelector(daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4.0),
+                  child: Divider(
+                    thickness: 1,
+                    color: CupertinoColors.systemGrey,
                   ),
-                  const SizedBox(height: 0),
-                  // 날짜 선택 영역 - 선택된 월의 일수만큼 생성
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    controller: _scrollController,
-                    child: Row(
-                      children: List.generate(daysInMonth, (index) {
-                        int day = index + 1;
-                        String weekDay = _getWeekDay(_selectedYear, _selectedMonth, day);
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedDay = day;
-                            });
-                            _scrollToSelectedDay();
-                          },
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth: boxWidth,
-                              maxWidth: boxWidth + 8, // overflow 문제 해결을 위해 여유 공간 추가
-                            ),
-                            child: _buildCalendarDate(
-                              day.toString(),
-                              weekDay,
-                              day == _selectedDay,
-                              boxWidth,
-                              day == _selectedDay ? selectedBoxHeight : boxHeight,
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4.0),
-                    child: Divider(
-                      thickness: 1,
-                      color: CupertinoColors.systemGrey,
-                    ),
-                  ),
-                  // 시간 및 일정 표시 영역
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0), // 일정 카드와 화면 끝의 패딩 설정
-                    child: ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: _schedules[_getScheduleKey()]?.map((schedule) {
-                        return _buildScheduleCard(
-                          time: schedule['time']!,
-                          title: schedule['title']!,
-                          description: schedule['description']!,
-                        );
-                      }).toList() ??
-                          [const Center(child: Text('일정이 없습니다.', style: TextStyle(fontSize: 20)))],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: _buildScheduleList(),
+                ),
+              ],
             ),
           ),
+          // 우측 하단에 고정된 캘린더 버튼 (크기 증가)
           Positioned(
-            bottom: 24, // 버튼 위치를 약간 더 위로 조정
-            right: 24, // 버튼 위치를 약간 더 안쪽으로 조정
-            child: SizedBox(
-              width: 70, // 버튼 크기를 키움
-              height: 70,
+            bottom: 16,
+            right: 16,
+            child: Container(
+              width: 100, // 버튼 크기 증가
+              height: 100,
               child: FloatingActionButton(
                 onPressed: () {
-                  // 월력으로 돌아가는 로직을 여기에 추가
+                  // 캘린더 버튼의 동작 추가
                 },
                 backgroundColor: CupertinoColors.activeOrange,
                 child: const Icon(
                   CupertinoIcons.calendar,
-                  size: 36, // 아이콘 크기도 키움
+                  size: 70, // 아이콘 크기 증가
+                  color: CupertinoColors.white,
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMonthSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CupertinoButton(
+          child: const Icon(CupertinoIcons.left_chevron),
+          onPressed: () {
+            setState(() {
+              if (_selectedMonth > 1) {
+                _selectedMonth--;
+              } else {
+                _selectedMonth = 12;
+                _selectedYear--;
+              }
+              _selectedDay = 1;
+            });
+            _scrollToSelectedDay();
+          },
+        ),
+        Text(
+          '$_selectedYear년 $_selectedMonth월',
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
+        CupertinoButton(
+          child: const Icon(CupertinoIcons.right_chevron),
+          onPressed: () {
+            setState(() {
+              if (_selectedMonth < 12) {
+                _selectedMonth++;
+              } else {
+                _selectedMonth = 1;
+                _selectedYear++;
+              }
+              _selectedDay = 1;
+            });
+            _scrollToSelectedDay();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDaySelector(int daysInMonth, double boxWidth, double boxHeight, double selectedBoxHeight) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      controller: _scrollController,
+      child: Row(
+        children: List.generate(daysInMonth, (index) {
+          int day = index + 1;
+          String weekDay = _getWeekDay(_selectedYear, _selectedMonth, day);
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedDay = day;
+              });
+              _scrollToSelectedDay();
+            },
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: boxWidth,
+                maxWidth: boxWidth + 8,
+              ),
+              child: _buildCalendarDate(
+                day.toString(),
+                weekDay,
+                day == _selectedDay,
+                boxWidth,
+                day == _selectedDay ? selectedBoxHeight : boxHeight,
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildScheduleList() {
+    final scheduleList = _schedules[_getScheduleKey()];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: scheduleList != null && scheduleList.isNotEmpty
+          ? ListView.builder(
+        itemCount: scheduleList.length,
+        itemBuilder: (context, index) {
+          final schedule = scheduleList[index];
+          return _buildScheduleCard(
+            time: schedule['time']!,
+            title: schedule['title']!,
+            description: schedule['description']!,
+          );
+        },
+      )
+          : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Text(
+              '일정이 없습니다.',
+              style: TextStyle(fontSize: 20, color: CupertinoColors.systemGrey),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -282,7 +306,7 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
     required String description,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16.0),  // 일정 카드 자체의 패딩
+      padding: const EdgeInsets.all(16.0),
       margin: const EdgeInsets.only(top: 10.0),
       decoration: BoxDecoration(
         color: CupertinoColors.white,
