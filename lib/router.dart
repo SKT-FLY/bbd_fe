@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'screen/chat_screen.dart';
 import 'screen/adot_call.dart';
 import 'screen/loading_screen.dart';
+
 import 'screen/message_summary.dart';
 import 'screen/message_summary_screen.dart';
 import 'screen/schedule_register_screen.dart';
@@ -18,8 +19,8 @@ final GoRouter router = GoRouter(
         path: '/',
         builder: (context, state) => ChatScreen()),
     GoRoute(
-        path: '/message_summary1',
-        builder: (context, state) => CustomScreen()),
+        path: '/loading',
+        builder: (context, state) => LoadingScreen()),
 
     GoRoute(
         path: '/tmap',
