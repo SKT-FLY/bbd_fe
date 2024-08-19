@@ -129,12 +129,42 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
         border: null,
       ),
       child: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildMonthSelector(),
-            const SizedBox(height: 10),
-            Expanded(
-              child: _buildCalendar(),
+            Column(
+              children: [
+                _buildMonthSelector(),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: _buildCalendar(),
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.pop(context); // 홈 화면으로 돌아가기
+                  },
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.home,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
