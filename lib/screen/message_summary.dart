@@ -1,14 +1,16 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
+import 'chat_screen.dart';  // ChatScreen을 import 합니다.
+import 'loading_screen.dart'; // LoadingScreen을 import 합니다.
 
-class MessageSummary extends StatefulWidget {
-  const MessageSummary({super.key});
+class MessageSummaryScreen extends StatefulWidget {
+  const MessageSummaryScreen({super.key});
 
   @override
   _MessageSummaryState createState() => _MessageSummaryState();
 }
 
-class _MessageSummaryState extends State<MessageSummary> {
+class _MessageSummaryState extends State<MessageSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -127,27 +129,38 @@ class _MessageSummaryState extends State<MessageSummary> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  width: screenWidth,
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFB9B0B0),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: CupertinoColors.black.withOpacity(0.25),
-                        spreadRadius: 1,
-                        blurRadius: 6,
-                        offset: const Offset(0, 4),
+                GestureDetector(
+                  onTap: () {
+                    // 요약하기 버튼을 누르면 LoadingScreen으로 이동
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const LoadingScreen(goToSummaryPage1: true),
                       ),
-                    ],
-                  ),
-                  child: const Text(
-                    '요약하기',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    );
+                  },
+                  child: Container(
+                    width: screenWidth,
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFB9B0B0),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CupertinoColors.black.withOpacity(0.25),
+                          spreadRadius: 1,
+                          blurRadius: 6,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      '요약하기',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -155,7 +168,10 @@ class _MessageSummaryState extends State<MessageSummary> {
                 Center(
                   child: CupertinoButton(
                     padding: EdgeInsets.zero,
-                    onPressed: () {},
+                    onPressed: () {
+                      // 홈 버튼을 누르면 ChatScreen으로 이동
+                      context.go('/chat');
+                    },
                     child: Container(
                       width: 100,
                       height: 100,

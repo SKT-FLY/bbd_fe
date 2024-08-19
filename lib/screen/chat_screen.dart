@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,7 +15,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
-  bool _isListening = false; // 버튼 클릭 시 음성 입력 상태를 관리하는 변수
+  bool _isListening = false;
   String _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요.";
   final FlutterTts _flutterTts = FlutterTts();
 
@@ -43,7 +44,6 @@ class _ChatScreenState extends State<ChatScreen> {
           }
         },
         onError: (val) {
-          print('onError: $val');
           if (val.errorMsg == "error_busy" || val.errorMsg == "error_client") {
             Future.delayed(const Duration(seconds: 2), () {
               _restartListening();
@@ -62,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _speech.listen(
           onResult: (val) {
             setState(() {
-              _text = val.recognizedWords; // 실시간으로 텍스트를 갱신
+              _text = val.recognizedWords;
             });
           },
         );
@@ -73,11 +73,11 @@ class _ChatScreenState extends State<ChatScreen> {
   void _restartListening() async {
     if (_isListening) {
       _speech.stop();
-      await Future.delayed(const Duration(milliseconds: 200)); // 짧은 대기 시간 추가
+      await Future.delayed(const Duration(milliseconds: 200));
       _speech.listen(
         onResult: (val) {
           setState(() {
-            _text = val.recognizedWords; // 실시간으로 텍스트를 갱신
+            _text = val.recognizedWords;
           });
         },
       );
@@ -100,28 +100,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    var screenHeight = MediaQuery
-        .of(context)
-        .size
-        .height;
+    var screenWidth = MediaQuery.of(context).size.width;
+    var screenHeight = MediaQuery.of(context).size.height;
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGrey6,
       child: SafeArea(
         child: Column(
           children: <Widget>[
-            Spacer(flex: 2),
+            const Spacer(flex: 2),
             Expanded(
               flex: 30,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
                 child: Container(
                   alignment: Alignment.center,
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: CupertinoColors.white,
                     borderRadius: BorderRadius.circular(12.0),
@@ -143,7 +137,6 @@ class _ChatScreenState extends State<ChatScreen> {
               flex: 10,
               child: Stack(
                 children: [
-                  // 캐릭터 이미지
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -156,14 +149,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   ),
-                  // 네비게이션 바
                   Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
                     child: Container(
                       height: screenHeight * 0.1,
-                      color: CupertinoColors.transparent, // 배경을 투명하게 설정
+                      color: CupertinoColors.transparent,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Row(
@@ -174,10 +166,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                 padding: const EdgeInsets.only(right: 4.0),
                                 child: GestureDetector(
                                   onTap: () {
-                                    _speak(_text); // 문자 네비게이션 버튼 클릭 시 TTS 사용
+                                    context.go('/loading'); // 문자 네비게이션 버튼 클릭 시 이동
                                   },
                                   child: Container(
-                                    height: screenHeight * 0.1, // 버튼 높이 조정
+                                    height: screenHeight * 0.1,
                                     decoration: BoxDecoration(
                                       color: CupertinoColors.systemYellow,
                                       borderRadius: BorderRadius.circular(8.0),
@@ -189,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 20,
-                                        ), // 텍스트 색상 및 스타일 변경
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -203,20 +195,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                 child: GestureDetector(
                                   onTap: _listen,
                                   child: Container(
-                                    height: screenHeight * 0.1, // 버튼 높이 동일하게 조정
+                                    height: screenHeight * 0.1,
                                     decoration: BoxDecoration(
                                       color: CupertinoColors.white,
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: CupertinoColors.systemOrange,
-                                        width: 4.0, // 테두리 두께 조정
+                                        width: 4.0,
                                       ),
                                     ),
                                     child: Center(
                                       child: Icon(
                                         _isListening ? CupertinoIcons.mic_fill : CupertinoIcons.mic,
                                         color: CupertinoColors.systemOrange,
-                                        size: screenWidth * 0.1, // 아이콘 크기를 상대적으로 설정
+                                        size: screenWidth * 0.1,
                                       ),
                                     ),
                                   ),
@@ -229,10 +221,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: GestureDetector(
                                   onTap: () {
-                                    // 일정 네비게이션 버튼 클릭 시 실행할 코드
+                                    // 일정 버튼 클릭 시 이동할 페이지로의 네비게이션 설정
                                   },
                                   child: Container(
-                                    height: screenHeight * 0.1, // 버튼 높이 동일하게 조정
+                                    height: screenHeight * 0.1,
                                     decoration: BoxDecoration(
                                       color: CupertinoColors.systemYellow,
                                       borderRadius: BorderRadius.circular(8.0),
@@ -244,7 +236,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
-                                        ), // 텍스트 색상 및 스타일 변경
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -259,11 +251,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 ],
               ),
             ),
-            Spacer(flex: 1),
+            const Spacer(flex: 1),
           ],
         ),
       ),
     );
   }
-
 }
+
