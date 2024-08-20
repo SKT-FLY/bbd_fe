@@ -7,7 +7,7 @@ class SmsListScreen extends StatefulWidget {
   _SmsListScreenState createState() => _SmsListScreenState();
 }
 
-class _SmsListScreenState extends State<SmsListScreen> {
+class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserver {
   static const platform = MethodChannel('sms_retriever');
   List<String> _smsList = [];
   bool _newSmsReceived = false;
@@ -15,8 +15,23 @@ class _SmsListScreenState extends State<SmsListScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchSms();  // 초기 SMS 로드
     _listenForNewSms();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 앱이 포그라운드로 돌아올 때 새로운 SMS 수신 여부를 확인
+      _listenForNewSms();
+    }
   }
 
   Future<void> _fetchSms() async {
@@ -44,7 +59,7 @@ class _SmsListScreenState extends State<SmsListScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Recent SMS Message'),
+        middle: Text('Recent SMS Messages'),
       ),
       child: SafeArea(
         child: ListView.builder(

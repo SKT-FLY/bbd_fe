@@ -1,45 +1,68 @@
 package com.example.bbd_project_fe
 
-import android.content.Intent
-import android.os.Bundle
-import android.provider.Telephony
-import androidx.core.content.ContextCompat
-import androidx.core.app.ActivityCompat
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.util.Log
+import android.net.Uri
+import android.os.Bundle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import android.widget.Toast
 
 class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "sms_retriever"
     private val smsList = mutableListOf<String>()  // 최신 10개의 메세지를 저장할 리스트
-    private val SMS_PERMISSION_CODE = 101  // SMS 권한 요청 코드
+    private val SMS_PERMISSION_CODE = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
-            != PackageManager.PERMISSION_GRANTED) {
+        // SMS 읽기 권한 요청
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_SMS), SMS_PERMISSION_CODE)
         } else {
-            loadInitialSms()  // 권한이 이미 부여된 경우 SMS 로드
+            loadSmsFromInbox()  // 권한이 이미 허용된 경우 SMS 로드
         }
 
+        // 액티비티가 처음 생성되었을 때 인텐트 처리
         intent?.let { handleSmsIntent(it) }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == SMS_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadInitialSms()  // 권한이 부여되면 SMS 로드
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                loadSmsFromInbox()  // 권한이 허용되면 SMS 로드
             } else {
-                Toast.makeText(this, "SMS 권한이 필요합니다.", Toast.LENGTH_LONG).show()
+                // 권한이 거부된 경우 처리
             }
+        }
+    }
+
+    private fun loadSmsFromInbox() {
+        // SMS 인박스에서 메시지를 읽어와 smsList에 최신 10개 메시지를 추가하는 로직
+        val cursor = contentResolver.query(
+            Uri.parse("content://sms/inbox"),
+            arrayOf("address", "body"),  // 읽어올 열 지정
+            null,
+            null,
+            "date DESC"  // 날짜 순서로 내림차순 정렬
+        )
+
+        cursor?.let {
+            val bodyIndex = cursor.getColumnIndex("body")
+            val addressIndex = cursor.getColumnIndex("address")
+
+            while (cursor.moveToNext() && smsList.size < 10) {
+                val body = cursor.getString(bodyIndex)
+                val address = cursor.getString(addressIndex)
+                val smsMessage = "From: $address\nMessage: $body"
+                smsList.add(smsMessage)
+            }
+            cursor.close()
         }
     }
 
@@ -49,7 +72,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getLatestSms" -> {
-                    result.success(smsList)
+                    result.success(smsList)  // 현재 저장된 최신 10개의 메세지 반환
                 }
                 else -> result.notImplemented()
             }
@@ -58,7 +81,6 @@ class MainActivity : FlutterActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        Log.d("MainActivity", "onNewIntent called with intent: $intent")
         handleSmsIntent(intent)
     }
 
@@ -69,44 +91,18 @@ class MainActivity : FlutterActivity() {
         if (sender != null && body != null) {
             val smsMessage = "From: $sender\nMessage: $body"
             updateSmsList(smsMessage)
-            Log.d("MainActivity", "SMS received and added to list: $smsMessage")
 
+            // 새로운 SMS 수신 시 Dart 측에 신호를 보냄
             flutterEngine?.let {
                 MethodChannel(it.dartExecutor.binaryMessenger, CHANNEL).invokeMethod("newSmsReceived", null)
-                Log.d("MainActivity", "Dart side notified about new SMS")
             }
-        } else {
-            Log.e("MainActivity", "SMS data is missing in the intent")
         }
     }
 
     private fun updateSmsList(newMessage: String) {
         if (smsList.size >= 10) {
-            smsList.removeAt(0)
+            smsList.removeAt(0)  // 가장 오래된 메세지 제거
         }
-        smsList.add(newMessage)
-    }
-
-    private fun loadInitialSms() {
-        try {
-            val uri = Telephony.Sms.Inbox.CONTENT_URI
-            val projection = arrayOf(Telephony.Sms.ADDRESS, Telephony.Sms.BODY, Telephony.Sms.DATE)
-            val sortOrder = "${Telephony.Sms.DATE} DESC LIMIT 10"
-            val cursor = contentResolver.query(uri, projection, null, null, sortOrder)
-
-            cursor?.use {
-                val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-                val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-
-                while (it.moveToNext()) {
-                    val address = it.getString(addressIndex)
-                    val body = it.getString(bodyIndex)
-                    val smsMessage = "From: $address\nMessage: $body"
-                    smsList.add(0, smsMessage)  // 역순으로 추가하여 최신 메시지가 리스트의 앞에 위치
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Failed to load initial SMS: ${e.message}")
-        }
+        smsList.add(newMessage)  // 새 메세지 추가
     }
 }
