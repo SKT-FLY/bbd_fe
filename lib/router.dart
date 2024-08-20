@@ -10,15 +10,18 @@ import 'screen/summary_screen1.dart';
 import 'screen/summary_screen2.dart';
 import 'screen/tmap.dart';
 import 'screen/warning_screen.dart';
+
 import 'screen/monthly_calendar.dart';
 import 'screen/today_calendar.dart';
+import 'package:bbd_project_fe/screen/sms_received_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const ChatScreen(),
+      //builder: (context, state) => const ChatScreen(),
+      builder: (context, state) => SmsListScreen(),
     ),
     GoRoute(
       path: '/chat',
