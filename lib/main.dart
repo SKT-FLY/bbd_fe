@@ -11,7 +11,12 @@ import 'screen/loading_screen.dart';
 import 'screen/adot_call.dart';
 import 'router.dart';
 
-void main() {
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('ko_KR', null); // 로케일 데이터 초기화
   runApp(const MyApp());
 }
 

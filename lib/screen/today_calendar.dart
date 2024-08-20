@@ -1,37 +1,30 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:bbd_project_fe/db/schedules.dart'; // 공통 일정 데이터 import
 
 class ScheduleDailyScreen extends StatefulWidget {
-  const ScheduleDailyScreen({Key? key}) : super(key: key);
+  final DateTime selectedDate;
+
+  const ScheduleDailyScreen({Key? key, required this.selectedDate}) : super(key: key);
 
   @override
   _ScheduleScreenState createState() => _ScheduleScreenState();
 }
 
 class _ScheduleScreenState extends State<ScheduleDailyScreen> {
-  int _selectedYear = 2024;
-  int _selectedMonth = 8;
-  int _selectedDay = 13;
+  late int _selectedYear;
+  late int _selectedMonth;
+  late int _selectedDay;
   final ScrollController _scrollController = ScrollController();
-
-  final Map<String, List<Map<String, String>>> _schedules = {
-    '2024-08-13': [
-      {'time': '07:00', 'title': '아침 산책', 'description': '공원에서 산책'},
-      {'time': '10:00', 'title': '병원 진료', 'description': '근처 병원에서 진료'},
-      {'time': '12:00', 'title': '점심 식사', 'description': '가족과 함께 점심'},
-      {'time': '19:00', 'title': '저녁 드라마 시청', 'description': 'TV에서 드라마 보기'},
-    ],
-    '2024-08-14': [
-      {'time': '08:00', 'title': '아침 요가', 'description': '집에서 가벼운 요가'},
-      {'time': '09:00', 'title': '병원 방문', 'description': '정기 검진'},
-      {'time': '11:00', 'title': '마트 방문', 'description': '마트에서 장보기'},
-      {'time': '14:00', 'title': '친구와 차 마시기', 'description': '근처 카페에서 친구와 대화'},
-    ],
-  };
 
   @override
   void initState() {
     super.initState();
+    _selectedYear = widget.selectedDate.year;
+    _selectedMonth = widget.selectedDate.month;
+    _selectedDay = widget.selectedDate.day;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToSelectedDay();
     });
@@ -51,8 +44,8 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
   Widget build(BuildContext context) {
     int daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
     double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
-    double boxHeight = 90;
-    double selectedBoxHeight = 110;
+    double boxHeight = 100; // 기존보다 높이를 조금 높임
+    double selectedBoxHeight = 120; // 선택된 상자의 높이도 조정
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -95,21 +88,21 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
               ],
             ),
           ),
-          // 우측 하단에 고정된 캘린더 버튼 (크기 증가)
+          // 우측 하단에 고정된 캘린더 버튼
           Positioned(
             bottom: 16,
             right: 16,
             child: Container(
-              width: 100, // 버튼 크기 증가
+              width: 100,
               height: 100,
               child: FloatingActionButton(
                 onPressed: () {
-                  // 캘린더 버튼의 동작 추가
+                  context.go('/monthly-calendar'); // 다시 monthly_calendar로 이동
                 },
                 backgroundColor: CupertinoColors.activeOrange,
                 child: const Icon(
                   CupertinoIcons.calendar,
-                  size: 70, // 아이콘 크기 증가
+                  size: 70,
                   color: CupertinoColors.white,
                 ),
               ),
@@ -197,7 +190,7 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
   }
 
   Widget _buildScheduleList() {
-    final scheduleList = _schedules[_getScheduleKey()];
+    final scheduleList = schedules[_getScheduleKey()];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -250,7 +243,7 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
         children: [
           Container(
             width: width,
-            height: 12,
+            height: 16, // 높이를 조금 높여서 overflow 해결
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFF8B4513) : CupertinoColors.systemGrey,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
