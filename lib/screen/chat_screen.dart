@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -174,7 +175,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 padding: const EdgeInsets.only(right: 4.0),
                                 child: GestureDetector(
                                   onTap: () {
-                                    _speak(_text); // 문자 네비게이션 버튼 클릭 시 TTS 사용
+                                    context.go('/loading');  // 문자 네비게이션 버튼 클릭 시 스크린 이동
                                   },
                                   child: Container(
                                     height: screenHeight * 0.1, // 버튼 높이 조정
