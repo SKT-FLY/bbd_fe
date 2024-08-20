@@ -1,49 +1,60 @@
 package com.example.bbd_project_fe
 
-import android.content.ContentResolver
-import android.database.Cursor
-import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
-import android.provider.Telephony
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import android.util.Log
 
-class MainActivity: FlutterActivity() {
+class MainActivity : FlutterActivity() {
+
     private val CHANNEL = "sms_retriever"
+    private val smsList = mutableListOf<String>()  // 최신 10개의 메세지를 저장할 리스트
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 액티비티가 처음 생성되었을 때 인텐트 처리
+        intent?.let { handleSmsIntent(it) }
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getAllSms" -> {
-                    val smsList = getAllSms()
-                    result.success(smsList)
+                "getLatestSms" -> {
+                    result.success(smsList)  // 현재 저장된 최신 10개의 메세지 반환
                 }
                 else -> result.notImplemented()
             }
         }
     }
 
-    private fun getAllSms(): List<String> {
-        val smsList = mutableListOf<String>()
-        val uri: Uri = Telephony.Sms.Inbox.CONTENT_URI
-        val projection = arrayOf(Telephony.Sms.ADDRESS, Telephony.Sms.BODY, Telephony.Sms.DATE)
-        val sortOrder = "${Telephony.Sms.DATE} DESC"
-        val cursor: Cursor? = contentResolver.query(uri, projection, null, null, sortOrder)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleSmsIntent(intent)
+    }
 
-        cursor?.use {
-            val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-            val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+    private fun handleSmsIntent(intent: Intent) {
+        val sender = intent.getStringExtra("sms_sender")
+        val body = intent.getStringExtra("sms_body")
 
-            while (it.moveToNext()) {
-                val address = it.getString(addressIndex)
-                val body = it.getString(bodyIndex)
-                smsList.add("From: $address\nMessage: $body")
+        if (sender != null && body != null) {
+            val smsMessage = "From: $sender\nMessage: $body"
+            updateSmsList(smsMessage)
+
+            // 새로운 SMS 수신 시 Dart 측에 신호를 보냄
+            flutterEngine?.let {
+                MethodChannel(it.dartExecutor.binaryMessenger, CHANNEL).invokeMethod("newSmsReceived", null)
             }
         }
+    }
 
-        return smsList
+    private fun updateSmsList(newMessage: String) {
+        if (smsList.size >= 10) {
+            smsList.removeAt(0)  // 가장 오래된 메세지 제거
+        }
+        smsList.add(newMessage)  // 새 메세지 추가
     }
 }

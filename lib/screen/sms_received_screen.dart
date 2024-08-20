@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class SmsListScreen extends StatefulWidget {
   @override
@@ -11,32 +10,18 @@ class SmsListScreen extends StatefulWidget {
 class _SmsListScreenState extends State<SmsListScreen> {
   static const platform = MethodChannel('sms_retriever');
   List<String> _smsList = [];
-  String selectedMessage = '';
+  bool _newSmsReceived = false;
 
   @override
   void initState() {
     super.initState();
-    _requestSmsPermission();
-  }
-
-  Future<void> _requestSmsPermission() async {
-    var status = await Permission.sms.status;
-    if (!status.isGranted) {
-      status = await Permission.sms.request();
-    }
-
-    if (status.isGranted) {
-      _fetchSms();
-    } else {
-      setState(() {
-        _smsList = ['SMS permission denied'];
-      });
-    }
+    _fetchSms();  // 초기 SMS 로드
+    _listenForNewSms();
   }
 
   Future<void> _fetchSms() async {
     try {
-      final List<dynamic> smsList = await platform.invokeMethod('getAllSms');
+      final List<dynamic> smsList = await platform.invokeMethod('getLatestSms');
       setState(() {
         _smsList = smsList.cast<String>();
       });
@@ -47,18 +32,19 @@ class _SmsListScreenState extends State<SmsListScreen> {
     }
   }
 
-  void _handleSmsTap(String message) {
-    setState(() {
-      selectedMessage = message;
+  void _listenForNewSms() {
+    platform.setMethodCallHandler((call) async {
+      if (call.method == "newSmsReceived") {
+        _fetchSms();  // 새로운 메시지를 가져와 갱신
+      }
     });
-    print('Selected Message: $selectedMessage');
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('All SMS Message'),
+        middle: Text('Recent SMS Messages'),
       ),
       child: SafeArea(
         child: ListView.builder(
@@ -85,5 +71,9 @@ class _SmsListScreenState extends State<SmsListScreen> {
         ),
       ),
     );
+  }
+
+  void _handleSmsTap(String message) {
+    print('Selected Message: $message');
   }
 }
