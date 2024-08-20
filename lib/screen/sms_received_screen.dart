@@ -44,7 +44,7 @@ class _SmsListScreenState extends State<SmsListScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Recent SMS Messages'),
+        middle: Text('Recent SMS Message'),
       ),
       child: SafeArea(
         child: ListView.builder(
