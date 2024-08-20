@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:go_router/go_router.dart';
 
 class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({super.key});
+  final bool goToSummaryPage1;
+
+  const LoadingScreen({super.key, this.goToSummaryPage1 = false});
 
   @override
   _LoadingScreenState createState() => _LoadingScreenState();
@@ -31,9 +33,16 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
 
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
 
-    // 주기적으로 메시지를 변경합니다.
     Timer.periodic(const Duration(seconds: 2), (timer) {
       setState(() {});
+    });
+
+    Future.delayed(const Duration(seconds: 6), () {
+      if (widget.goToSummaryPage1) {
+        context.go('/summary-screen1');
+      } else {
+        context.go('/message-summary');
+      }
     });
   }
 
@@ -50,9 +59,9 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
     return CupertinoPageScaffold(
       child: Column(
         children: <Widget>[
-          Spacer(flex:2),
+          const Spacer(flex: 2),
           Expanded(
-            flex: 18, // 스피너가 들어갈 부분
+            flex: 18,
             child: Center(
               child: FadeTransition(
                 opacity: _animation,
@@ -64,10 +73,10 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
                       height: 150,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.blueAccent.withOpacity(0.3),
+                        color: CupertinoColors.activeBlue.withOpacity(0.3),
                       ),
                     ),
-                    CupertinoActivityIndicator(
+                    const CupertinoActivityIndicator(
                       radius: 30,
                     ),
                   ],
@@ -76,19 +85,20 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
             ),
           ),
           Expanded(
-            flex: 8, // 처리 중인 작업 텍스트가 들어갈 부분
+            flex: 8,
             child: Center(
               child: Text(
                 randomMessage,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: CupertinoColors.black,
                 ),
               ),
             ),
           ),
           Expanded(
-            flex: 8, // 이미지가 들어갈 부분
+            flex: 8,
             child: Center(
               child: Image.asset(
                 'assets/images/yellow_character.png',

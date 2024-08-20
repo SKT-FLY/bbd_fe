@@ -11,6 +11,7 @@ import 'screen/summary_screen2.dart';
 import 'screen/warning_screen.dart';
 import 'screen/loading_screen.dart';
 import 'screen/adot_call.dart';
+import 'router.dart';
 import 'screen/monthly_calendar.dart';
 import 'screen/today_calendar.dart';
 import 'screen/sms_received_screen.dart';
@@ -20,19 +21,20 @@ void main() async {
   await initializeDateFormatting('ko_KR', null); // 로케일 데이터 초기화
   runApp(MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
+    return CupertinoApp.router(
       debugShowCheckedModeBanner:false,
       title: 'Flutter Cupertino Demo',
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
-      home: SmsListScreen(), // 앱 실행 시 처음 보여지는 화면을 ChatScreen으로 설정
+      routerDelegate: router.routerDelegate,
+      routeInformationParser: router.routeInformationParser,
+      routeInformationProvider: router.routeInformationProvider,
     );
   }
 }

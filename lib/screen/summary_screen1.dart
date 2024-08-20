@@ -1,16 +1,18 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-class SummaryPage1 extends StatefulWidget {
-  const SummaryPage1({super.key});
+class SummaryPageScreen1 extends StatefulWidget {
+  const SummaryPageScreen1({super.key});
 
   @override
   _SummaryPage1State createState() => _SummaryPage1State();
 }
 
-class _SummaryPage1State extends State<SummaryPage1> {
+class _SummaryPage1State extends State<SummaryPageScreen1> {
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return CupertinoApp(
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
@@ -18,7 +20,7 @@ class _SummaryPage1State extends State<SummaryPage1> {
       home: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
           middle: const Text(
-            '문자분석', // 서비스에 따라 상단 네비게이션바의 이름이 달라져야함!
+            '문자분석',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -44,9 +46,9 @@ class _SummaryPage1State extends State<SummaryPage1> {
                 Row(
                   children: [
                     const Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: const Text(
+                    const Padding(
+                      padding: EdgeInsets.only(right: 16.0),
+                      child: Text(
                         '요약',
                         style: TextStyle(
                           fontSize: 40,
@@ -66,7 +68,7 @@ class _SummaryPage1State extends State<SummaryPage1> {
                 ),
                 const SizedBox(height: 16),
                 Expanded(
-                  flex: 8, // 전체 레이아웃의 8/10을 차지
+                  flex: 8,
                   child: Stack(
                     children: [
                       Positioned(
@@ -80,6 +82,7 @@ class _SummaryPage1State extends State<SummaryPage1> {
                       ),
                       Container(
                         margin: const EdgeInsets.only(top: 60, left: 0),
+                        width: screenWidth * 0.9,
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5EDED), // 연한 배경색
@@ -109,11 +112,13 @@ class _SummaryPage1State extends State<SummaryPage1> {
                 ),
                 const Spacer(),
                 Expanded(
-                  flex: 2, // 전체 레이아웃의 2/10을 차지
+                  flex: 2,
                   child: Center(
                     child: CupertinoButton(
                       padding: EdgeInsets.zero,
-                      onPressed: () {},
+                      onPressed: () {
+                        context.go('/chat'); // 체크 버튼 클릭 시 ChatScreen으로 이동
+                      },
                       child: Container(
                         width: 100,
                         height: 100,
