@@ -20,8 +20,8 @@ final GoRouter router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      //builder: (context, state) => const ChatScreen(),
-      builder: (context, state) => SmsListScreen(),
+      builder: (context, state) => const ChatScreen(),
+      //builder: (context, state) => SmsListScreen(),
     ),
     GoRoute(
       path: '/chat',
