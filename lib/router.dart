@@ -3,13 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'screen/chat_screen.dart';
 import 'screen/calling_screen.dart';
 import 'screen/loading_screen.dart';
+
 import 'screen/message_summary_normal.dart';
 import 'screen/summary_result_normal.dart';
 import 'screen/summary_result_to_calendar.dart';
 import 'screen/tmap.dart';
+
 import 'screen/monthly_calendar.dart';
 import 'screen/today_calendar.dart';
-import 'package:bbd_project_fe/screen/sms_received_screen.dart';
+import 'screen/sms_received_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -36,7 +38,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/start-message-summary',
-      builder: (context, state) => const StartMessageSummary(),
+      builder: (context, state) => const MessageSummaryScreen(),
     ),
     GoRoute(
       path: '/summary-result-normal',
@@ -62,21 +64,21 @@ final GoRouter router = GoRouter(
       builder: (context, state) => SmsListScreen(),
     ),
     //GoRoute(
-      //path: '/tmap',
-      //builder: (context, state) {
-        // 병원 데이터를 전달받아 사용
-        //final hospitalData = state.extra as List<Map<String, String>>;
-        //return TmapScreen(hospitalData: hospitalData);
-      //},
+    //path: '/tmap',
+    //builder: (context, state) {
+    // 병원 데이터를 전달받아 사용
+    //final hospitalData = state.extra as List<Map<String, String>>;
+    //return TmapScreen(hospitalData: hospitalData);
+    //},
     //),
     GoRoute(
       path: '/tmap',
       builder: (context, state) => const TmapScreen(),
     ),
+    // Route for SMS Received Screen
     GoRoute(
       path: '/calling-screen',
       builder: (context, state) => const Calling_Screen(),
     ),
   ],
 );
-

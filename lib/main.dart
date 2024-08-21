@@ -50,7 +50,7 @@ Widget build(BuildContext context) {
     theme: const CupertinoThemeData(
       primaryColor: CupertinoColors.activeOrange,
     ),
-    home: StartMessageSummary(), // Screen()을 호출하여 홈 화면으로 설정
+    home: ChatScreen(), // Screen()을 호출하여 홈 화면으로 설정
   );
 }
 }

@@ -51,6 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
       await Permission.storage.request();
     }
   }
+
   Future<void> _listen() async {
     HapticFeedback.heavyImpact();
 
@@ -133,7 +134,7 @@ class _ChatScreenState extends State<ChatScreen> {
           print('Error occurred: $e');
         }
       }
-      if (response['result'] != null) {
+      if (_resultCode != null) {
         print("page routing");
         //routeBasedOnResult(context, _resultCode!);
       }
@@ -402,7 +403,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _text, // 더미 데이터로 LLM 응답만 표시
+                          _text,
                           style: TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -444,7 +445,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  _text = "무엇을 도와드릴까요"; // 아니오 선택시 초기 메시지로 돌아감
+                                  _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요."; // 아니오 선택시 초기 메시지로 돌아감
                                   _showOptions = false;
                                 });
                               },
