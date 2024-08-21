@@ -13,7 +13,7 @@ import 'screen/warning_screen.dart';
 
 import 'screen/monthly_calendar.dart';
 import 'screen/today_calendar.dart';
-import 'package:bbd_project_fe/screen/sms_received_screen.dart';
+import 'screen/sms_received_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -37,7 +37,10 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/message-summary',
-      builder: (context, state) => const MessageSummaryScreen(),
+      builder: (context, state) {
+        final message = state.extra as String?; // 전달된 메시지를 가져옴
+        return MessageSummaryScreen(message: message); // 메시지를 전달하여 화면에 표시
+      },
     ),
     GoRoute(
       path: '/summary-screen1',
@@ -57,6 +60,11 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/tmap',
       builder: (context, state) => const TmapScreen(),
+    ),
+    // Route for SMS Received Screen
+    GoRoute(
+      path: '/sms-received',
+      builder: (context, state) => const SmsListScreen(),
     ),
   ],
 );
