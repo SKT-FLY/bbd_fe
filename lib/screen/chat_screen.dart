@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -9,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:bbd_project_fe/widgets/cloud_spinner.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:bbd_project_fe/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -26,6 +29,9 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showCloudSpinner = false;
   String _responseText = ''; // LLM 모델의 응답을 저장할 변수
   bool _showOptions = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final ApiService _apiService = ApiService();
+  int? _resultCode; // 서버에서 받은 result 값을 저장할 변수
 
   @override
   void initState() {
@@ -35,31 +41,39 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
+    var microphoneStatus = await Permission.microphone.status;
+    if (!microphoneStatus.isGranted) {
       await Permission.microphone.request();
     }
-  }
 
+    var storageStatus = await Permission.storage.status;
+    if (!storageStatus.isGranted) {
+      await Permission.storage.request();
+    }
+  }
   Future<void> _listen() async {
     HapticFeedback.heavyImpact();
 
     if (_isListening) {
-      _stopListening();
+      _speech.stop();
+      setState(() {
+        _isListening = false; // 음성 인식이 중지될 때 _isListening을 false로 설정
+      });
     } else {
       bool available = await _speech.initialize(
         onStatus: (val) {
           if (val == 'done') {
-            _stopListening();
+            _speech.stop(); // 음성 인식이 종료될 때 stopListening을 호출
+            setState(() {
+              _isListening = false; // 음성 인식이 완료되면 _isListening을 false로 설정
+            });
           }
         },
         onError: (val) {
           print('onError: $val');
-          if (val.errorMsg == "error_busy" || val.errorMsg == "error_client") {
-            Future.delayed(const Duration(seconds: 2), () {
-              _listen();
-            });
-          }
+          setState(() {
+            _isListening = false; // 오류가 발생해도 _isListening을 false로 설정
+          });
         },
       );
 
@@ -75,6 +89,12 @@ class _ChatScreenState extends State<ChatScreen> {
           onResult: (val) {
             setState(() {
               _text = val.recognizedWords;
+              if (val.finalResult) {
+                _isListening = false; // 음성 인식이 완료되면 _isListening을 false로 설정
+                if (_text.isNotEmpty) {
+                  _sendToServer(_text); // 음성 인식이 종료될 때 서버에 전송
+                }
+              }
             });
           },
           listenMode: stt.ListenMode.dictation,
@@ -85,35 +105,62 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _stopListening() {
-    _speech.stop();
-    setState(() {
-      _isListening = false;
-      _showSpinner = false;
-      if (_text.isNotEmpty) {
-        _showCloudSpinner = true;
-        _getLLMResponse();
+  Future<void> _sendToServer(String userText) async {
+    final response = await _apiService.processCommandApi(userText);
+
+    if (response.containsKey('error')) {
+      setState(() {
+        _text = response['error'];
+      });
+      print('Error: ${response['exception']}');
+    } else {
+      print("서버 통신");
+      // 서버에서 받은 메시지를 화면에 표시
+      setState(() {
+        _text = response['message'];
+        _resultCode = int.tryParse(response['result'] ?? '');
+      });
+
+      // 서버에서 받은 오디오 URL 재생
+      if (response['url'] != null) {
+        var url = "http://172.23.241.36:8000/" + response['url'];
+        try {
+          print("Button clicked, attempting to play audio...");
+          await _audioPlayer.play(UrlSource(url));
+          print("오디오 재생 시도가 완료되었습니다.");
+        } catch (e) {
+          print('Error occurred: $e');
+        }
       }
-    });
+      if (_resultCode != null) {
+        print("page routing");
+        //routeBasedOnResult(context, _resultCode!);
+      }
+    }
   }
 
-  void _getLLMResponse() async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _responseText = "더미 데이터: 이 문장은 LLM 모델의 응답입니다.\n예 아니오 중 하나를 선택하세요.";
-      _showCloudSpinner = false;
-      _showOptions = true;
-    });
-
-    _speak(_responseText);
-  }
-
-  Future<void> _speak(String text) async {
-    await _flutterTts.setLanguage("ko-KR");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak(text);
-    await _flutterTts.awaitSpeakCompletion(true);
+  void routeBasedOnResult(BuildContext context, int result) {
+    if (result >= 1 && result <= 9) {
+      context.go('/tmap');
+    } else {
+      switch (result) {
+        case 10:
+          context.go('/smsAnalysis');
+          break;
+        case 11:
+          context.go('/futureSchedule');
+          break;
+        case 12:
+          context.go('/todaySchedule');
+          break;
+        case 13:
+          context.go('/noAnswer');
+          break;
+        default:
+          print('Unknown result: $result');
+          break;
+      }
+    }
   }
 
   @override
