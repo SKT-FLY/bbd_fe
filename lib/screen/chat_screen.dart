@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // HapticFeedback를 위한 import
+import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:bbd_project_fe/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -19,6 +25,8 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isListening = false;
   String _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요.";
   final FlutterTts _flutterTts = FlutterTts();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -28,14 +36,18 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
+    var microphoneStatus = await Permission.microphone.status;
+    if (!microphoneStatus.isGranted) {
       await Permission.microphone.request();
+    }
+
+    var storageStatus = await Permission.storage.status;
+    if (!storageStatus.isGranted) {
+      await Permission.storage.request();
     }
   }
 
   Future<void> _listen() async {
-    // 햅틱 피드백 추가
     HapticFeedback.heavyImpact();
 
     if (_isListening) {
@@ -65,11 +77,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
         await Future.delayed(const Duration(milliseconds: 500));
         _speech.listen(
-          onResult: (val) {
-            setState(() {
-              _text = val.recognizedWords;
-            });
-          },
+            onResult: (val) async {
+              setState(() {
+                _text = val.recognizedWords;
+              });
+
+              // 음성 인식된 텍스트를 서버로 전송
+              if (_text.isNotEmpty) {
+                await _sendToServer(_text);
+              };
+            }
         );
       }
     }
@@ -96,11 +113,34 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future<void> _speak(String text) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak(text);
-    await _flutterTts.awaitSpeakCompletion(true);
+  Future<void> _sendToServer(String userText) async {
+    final response = await _apiService.processCommandApi(userText);
+
+    if (response.containsKey('error')) {
+      setState(() {
+        _text = response['error'];
+      });
+      print('Error: ${response['exception']}');
+    } else {
+      // 서버에서 받은 메시지를 화면에 표시
+      setState(() {
+        _text = response['standarized_command'];
+      });
+
+      // 서버에서 받은 오디오 URL 재생
+      if (response['url'] != null) {
+        await _playAudio(response['url']);
+      }
+    }
+  }
+  Future<void> _playAudio(String url) async {
+    try {
+      print("Button clicked, attempting to play audio...");
+      await _audioPlayer.play(UrlSource(url));
+      print("오디오 재생 시도가 완료되었습니다.");
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   @override
@@ -116,7 +156,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Spacer(flex: 1),
             GestureDetector(
               onTap: () {
-                context.go('/guardian-calendar'); // 보호자 일정 박스를 누르면 이동
+                context.go('/guardian-calendar');
               },
               child: Container(
                 alignment: Alignment.center,

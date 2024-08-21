@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // API 호출
-  // 의도 추출 API POST
+  // @POST intend/process-command
   Future<Map<String, dynamic>> processCommandApi(String message) async {
     final String url = 'http://72.23.241.36:8000/api/v1/process-command';
     try {
@@ -16,15 +15,10 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-
-        // 필요한 네 가지 변수만 반환
-        return { //data로만 받기 data['standardized_command']
-          'standardized_command': data['standardized_command'],
-          'result': data['result'],
-          'message': data['message'],
-          'url': data['url'],
-        };
+        // 데이터를 그대로 반환
+        final Map<String, dynamic> data = jsonDecode(
+            utf8.decode(response.bodyBytes));
+        return data;
       } else {
         return {'error': '서버와의 통신 오류가 있습니다.'};
       }
@@ -35,5 +29,25 @@ class ApiService {
       };
     }
   }
+  // @default/update-audio/{id}
+
+  // @POST TTS/process-command
+  // @POST TTS/process-command
+
+  // @POST schedules/schedule
+  // @GET schedules/schedule
+  // @GET schedules/schedules/{schedule_id}
+  // @PUT schedules/schedules/{schedule_id}
+  // @DELETE schedules/schedules/{schedule_id}
+  // @GET schedules/guardian/{guardian_id}/schedules
+  // @GET schedules/schedules/data/{date}
+
+  //@GET tmap/pois
+  //@POST tmap/taxi-search
+
+  //@GET hospitals/hospitals
+  //@POST hospitals/update_visits_count
 
 }
+
+
