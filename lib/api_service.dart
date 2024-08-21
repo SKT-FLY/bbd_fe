@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   // @POST intend/process-command
   Future<Map<String, dynamic>> processCommandApi(String message) async {
-    final String url = 'http://72.23.241.36:8000/api/v1/process-command';
+    final String url = 'http://172.23.241.36:8000/api/v1/process-command';
     try {
       final response = await http.post(
         Uri.parse(url),
