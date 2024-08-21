@@ -50,7 +50,7 @@ dependencies:
   telephony: ^0.2.0
   audioplayers: ^2.0.0
   path_provider: ^2.0.9
-
+  geolocator: ^8.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
