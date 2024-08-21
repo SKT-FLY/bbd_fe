@@ -20,8 +20,8 @@ final GoRouter router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      //builder: (context, state) => const ChatScreen(),
-      builder: (context, state) => SmsListScreen(),
+      builder: (context, state) => const ChatScreen(),
+      //builder: (context, state) => SmsListScreen(),
     ),
     GoRoute(
       path: '/chat',
@@ -53,6 +53,10 @@ final GoRouter router = GoRouter(
         final selectedDate = state.extra as DateTime;
         return ScheduleDailyScreen(selectedDate: selectedDate);
       },
+    ),
+    GoRoute(
+      path: '/tmap',
+      builder: (context, state) => const TmapScreen(),
     ),
   ],
 );
