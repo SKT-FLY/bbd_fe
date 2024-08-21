@@ -51,6 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
       await Permission.storage.request();
     }
   }
+
   Future<void> _listen() async {
     HapticFeedback.heavyImpact();
 
@@ -176,7 +177,7 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Column(
               children: <Widget>[
-                Spacer(flex: 4),
+                const Spacer(flex: 4),
                 Expanded(
                   flex: 50,
                   child: Padding(
@@ -197,7 +198,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       child: Text(
                         _text.isEmpty ? 'Listening...' : _text, // 음성 데이터만 표시
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 26.0,
                           color: CupertinoColors.black,
                           fontWeight: FontWeight.w600,
@@ -220,7 +221,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: AnimatedOpacity(
                           opacity: _showSpinner || _showCloudSpinner ? 0.3 : 1.0,
                           duration: const Duration(milliseconds: 500),
-                          child: Container(
+                          child: SizedBox(
                             height: screenHeight * 0.3,
                             child: Image.asset(
                               'assets/images/yellow_character_full.png',
@@ -232,7 +233,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       if (_showSpinner)
                         Positioned(
                           bottom: screenHeight * 0.23,
-                          child: SizedBox(
+                          child: const SizedBox(
                             width: 80,
                             height: 80,
                             child: SpinKitWave(
@@ -262,13 +263,13 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: <Widget>[
                               GestureDetector(
                                 onTap: () {
-                                  context.go('/loading');
+                                  context.go('/sms-received'); // Navigate to SmsReceivedScreen
                                 },
                                 child: Container(
                                   width: screenWidth * 0.22,
                                   height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
+                                    gradient: const LinearGradient(
                                       colors: [
                                         CupertinoColors.systemYellow,
                                         activeOrange,
@@ -342,7 +343,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   width: screenWidth * 0.22,
                                   height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
+                                    gradient: const LinearGradient(
                                       colors: [
                                         CupertinoColors.systemYellow,
                                         activeOrange,
@@ -380,10 +381,10 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             if (_showOptions)
               Container(
-                color: Colors.black.withOpacity(0.8), // 화면 전체를 어둡게 (투명도를 더 높임)
+                color: Colors.black.withOpacity(0.8),
                 child: Center(
                   child: Container(
-                    width: screenWidth * 0.85, // 메시지 박스 크기를 크게 조정
+                    width: screenWidth * 0.85,
                     padding: const EdgeInsets.all(24.0),
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
@@ -401,8 +402,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _responseText, // 더미 데이터로 LLM 응답만 표시
-                          style: TextStyle(
+                          _responseText,
+                          style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: CupertinoColors.black,
@@ -416,7 +417,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  _text = "예를 선택하셨습니다."; // 예를 선택하면 예 텍스트 유지
+                                  _text = "예를 선택하셨습니다.";
                                   _showOptions = false;
                                 });
                               },
@@ -425,11 +426,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 40,
                                   vertical: 20,
                                 ),
-                                textStyle: TextStyle(
+                                textStyle: const TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -442,7 +443,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요."; // 아니오 선택시 초기 메시지로 돌아감
+                                  _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요.";
                                   _showOptions = false;
                                 });
                               },
@@ -451,11 +452,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 40,
                                   vertical: 20,
                                 ),
-                                textStyle: TextStyle(
+                                textStyle: const TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                 ),

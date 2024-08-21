@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
-import 'chat_screen.dart';  // ChatScreen을 import 합니다.
-import 'loading_screen.dart'; // LoadingScreen을 import 합니다.
+import 'package:go_router/go_router.dart';
+import 'loading_screen.dart';
 
 class MessageSummaryScreen extends StatefulWidget {
-  const MessageSummaryScreen({super.key});
+  final String? message; // message 파라미터를 추가
+
+  const MessageSummaryScreen({super.key, this.message}); // 생성자에 message 추가
 
   @override
   _MessageSummaryState createState() => _MessageSummaryState();
@@ -14,6 +15,7 @@ class _MessageSummaryState extends State<MessageSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final message = widget.message; // 전달받은 메시지 사용
 
     return CupertinoApp(
       theme: const CupertinoThemeData(
@@ -68,7 +70,7 @@ class _MessageSummaryState extends State<MessageSummaryScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10), // 문자 박스를 더 위로 올리기 위해 간격 조정
+                const SizedBox(height: 10),
                 Expanded(
                   child: Stack(
                     children: [
@@ -82,7 +84,7 @@ class _MessageSummaryState extends State<MessageSummaryScreen> {
                         ),
                       ),
                       Container(
-                        margin: const EdgeInsets.only(top: 55), // 문자 박스 더 위로 올림
+                        margin: const EdgeInsets.only(top: 55),
                         width: screenWidth * 0.9,
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
@@ -100,23 +102,10 @@ class _MessageSummaryState extends State<MessageSummaryScreen> {
                         child: SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                '[서울성모병원 진료예약 확인 알림]',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                '- 문*숙 님 / 등록번호: 30756112\n'
-                                    '- 일자: 2024년09월19일(목요일)\n'
-                                    '- 시간: 10시44분\n'
-                                    '- 본관 2층 척추센터 정형외과  김영훈  선생님\n'
-                                    '문의 및 예약변경 시 1588-1511로 연락주세요.\n\n'
-                                    '카카오톡이 아닌 기존처럼 문자로 받길 원하실 경우에는 우측상단의 "알림톡 받지 않기"를 눌러주시기 바랍니다.',
-                                style: TextStyle(
+                                message ?? '메시지가 없습니다.',
+                                style: const TextStyle(
                                   fontSize: 20,
                                   height: 1.5,
                                 ),
@@ -131,7 +120,6 @@ class _MessageSummaryState extends State<MessageSummaryScreen> {
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () {
-                    // 요약하기 버튼을 누르면 LoadingScreen으로 이동
                     Navigator.push(
                       context,
                       CupertinoPageRoute(
@@ -169,7 +157,6 @@ class _MessageSummaryState extends State<MessageSummaryScreen> {
                   child: CupertinoButton(
                     padding: EdgeInsets.zero,
                     onPressed: () {
-                      // 홈 버튼을 누르면 ChatScreen으로 이동
                       context.go('/chat');
                     },
                     child: Container(
