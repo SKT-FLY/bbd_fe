@@ -5,12 +5,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'screen/tmap.dart';
 import 'screen/chat_screen.dart';
-import 'screen/message_summary.dart';
-import 'screen/summary_screen1.dart';
-import 'screen/summary_screen2.dart';
-import 'screen/warning_screen.dart';
+import 'screen/message_summary_normal.dart';
+import 'screen/summary_result_normal.dart';
+import 'screen/summary_result_to_calendar.dart';
 import 'screen/loading_screen.dart';
-import 'screen/adot_call.dart';
+import 'screen/calling_screen.dart';
 import 'router.dart';
 import 'screen/monthly_calendar.dart';
 import 'screen/today_calendar.dart';
@@ -29,17 +28,29 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoApp.router(
-      debugShowCheckedModeBanner:false,
-      title: 'Flutter Cupertino Demo',
-      theme: const CupertinoThemeData(
-        primaryColor: CupertinoColors.activeOrange,
-      ),
-      routerDelegate: router.routerDelegate,
-      routeInformationParser: router.routeInformationParser,
-      routeInformationProvider: router.routeInformationProvider,
-    );
-  }
+  ///@override
+  //Widget build(BuildContext context) {
+    //return CupertinoApp.router(
+      //debugShowCheckedModeBanner:false,
+      //title: 'Flutter Cupertino Demo',
+      //theme: const CupertinoThemeData(
+        //primaryColor: CupertinoColors.activeOrange,
+      //),
+      //routerDelegate: router.routerDelegate,
+      //routeInformationParser: router.routeInformationParser,
+      //routeInformationProvider: router.routeInformationProvider,
+    //);
+  //}
+//}
+@override
+Widget build(BuildContext context) {
+  return CupertinoApp(
+    debugShowCheckedModeBanner: false,
+    title: 'Flutter Cupertino Demo',
+    theme: const CupertinoThemeData(
+      primaryColor: CupertinoColors.activeOrange,
+    ),
+    home: StartMessageSummary(), // Screen()을 호출하여 홈 화면으로 설정
+  );
+}
 }

@@ -2,14 +2,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class SummaryPage2 extends StatefulWidget {
-  const SummaryPage2({super.key});
+class SummaryResultToCalendar extends StatefulWidget {
+  const SummaryResultToCalendar({super.key});
 
   @override
   _SummaryPage2State createState() => _SummaryPage2State();
 }
 
-class _SummaryPage2State extends State<SummaryPage2> {
+class _SummaryPage2State extends State<SummaryResultToCalendar> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;

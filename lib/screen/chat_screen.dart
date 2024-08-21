@@ -119,6 +119,7 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _text = response['message'];
         _resultCode = int.tryParse(response['result'] ?? '');
+        _showOptions = true;
       });
 
       // 서버에서 받은 오디오 URL 재생
@@ -132,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
           print('Error occurred: $e');
         }
       }
-      if (_resultCode != null) {
+      if (response['result'] != null) {
         print("page routing");
         //routeBasedOnResult(context, _resultCode!);
       }
@@ -401,7 +402,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _responseText, // 더미 데이터로 LLM 응답만 표시
+                          _text, // 더미 데이터로 LLM 응답만 표시
                           style: TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -418,6 +419,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 setState(() {
                                   _text = "예를 선택하셨습니다."; // 예를 선택하면 예 텍스트 유지
                                   _showOptions = false;
+                                  routeBasedOnResult(context, _resultCode!);
                                 });
                               },
                               style: ElevatedButton.styleFrom(
@@ -442,7 +444,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요."; // 아니오 선택시 초기 메시지로 돌아감
+                                  _text = "무엇을 도와드릴까요"; // 아니오 선택시 초기 메시지로 돌아감
                                   _showOptions = false;
                                 });
                               },

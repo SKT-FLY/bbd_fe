@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
-class SummaryPageScreen1 extends StatefulWidget {
-  const SummaryPageScreen1({super.key});
+class SummaryResultScreen_normal extends StatefulWidget {
+  const SummaryResultScreen_normal({super.key});
 
   @override
   _SummaryPage1State createState() => _SummaryPage1State();
 }
 
-class _SummaryPage1State extends State<SummaryPageScreen1> {
+class _SummaryPage1State extends State<SummaryResultScreen_normal> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;

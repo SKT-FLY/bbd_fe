@@ -3,14 +3,14 @@ import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
 import 'chat_screen.dart';  // ChatScreen을 import 합니다.
 import 'loading_screen.dart'; // LoadingScreen을 import 합니다.
 
-class MessageSummaryScreen extends StatefulWidget {
-  const MessageSummaryScreen({super.key});
+class StartMessageSummary extends StatefulWidget {
+  const StartMessageSummary({super.key});
 
   @override
   _MessageSummaryState createState() => _MessageSummaryState();
 }
 
-class _MessageSummaryState extends State<MessageSummaryScreen> {
+class _MessageSummaryState extends State<StartMessageSummary> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
