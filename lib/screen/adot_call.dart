@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class DialerApp extends StatefulWidget {
-  const DialerApp({super.key});
+class MapScreen extends StatefulWidget {
+  const MapScreen({super.key});
 
   @override
-  _DialerAppState createState() => _DialerAppState();
+  _MapScreenState createState() => _MapScreenState();
 }
 
-class _DialerAppState extends State<DialerApp> {
+class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
