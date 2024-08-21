@@ -7,6 +7,9 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:bbd_project_fe/widgets/cloud_spinner.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bbd_project_fe/api_service.dart';
 
@@ -20,8 +23,12 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  String _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요.";
+  String _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요."; // 사용자가 말한 음성 데이터
   final FlutterTts _flutterTts = FlutterTts();
+  bool _showSpinner = false;
+  bool _showCloudSpinner = false;
+  String _responseText = ''; // LLM 모델의 응답을 저장할 변수
+  bool _showOptions = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   final ApiService _apiService = ApiService();
   int? _resultCode; // 서버에서 받은 result 값을 저장할 변수
@@ -73,10 +80,11 @@ class _ChatScreenState extends State<ChatScreen> {
       if (available) {
         setState(() {
           _isListening = true;
-          _text = " ";
+          _text = "";
+          _showSpinner = true;
+          _showCloudSpinner = false;
         });
 
-        await Future.delayed(const Duration(milliseconds: 500));
         _speech.listen(
           onResult: (val) {
             setState(() {
@@ -89,6 +97,9 @@ class _ChatScreenState extends State<ChatScreen> {
               }
             });
           },
+          listenMode: stt.ListenMode.dictation,
+          cancelOnError: true,
+          partialResults: true,
         );
       }
     }
@@ -156,6 +167,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
+    const Color activeOrange = Color(0xFFFFA500);
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGrey6,
@@ -164,48 +176,32 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Column(
               children: <Widget>[
-                Spacer(flex: 1),
-                GestureDetector(
-                  onTap: () {
-                    context.go('/guardian-calendar');
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: screenWidth * 0.8,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: CupertinoColors.activeBlue,
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: const Text(
-                      '보호자 일정 확인',
-                      style: TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                Spacer(flex: 1),
+                Spacer(flex: 4),
                 Expanded(
-                  flex: 30,
+                  flex: 50,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
                     child: Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                       decoration: BoxDecoration(
                         color: CupertinoColors.white,
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius: BorderRadius.circular(16.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Text(
-                        _text.isEmpty ? 'Listening...' : _text,
-                        style: const TextStyle(
-                          fontSize: 24.0,
+                        _text.isEmpty ? 'Listening...' : _text, // 음성 데이터만 표시
+                        style: TextStyle(
+                          fontSize: 26.0,
                           color: CupertinoColors.black,
-                          fontWeight: FontWeight.bold,
-                          height: 1.5,
+                          fontWeight: FontWeight.w600,
+                          height: 1.4,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -213,128 +209,269 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Expanded(
-                  flex: 10,
+                  flex: 45,
                   child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      // 캐릭터 이미지
                       Positioned(
-                        bottom: 0,
+                        top: -15,
                         left: 0,
                         right: 0,
-                        child: Container(
-                          height: screenHeight * 0.22,
-                          child: Image.asset(
-                            'assets/images/yellow_character.png',
-                            fit: BoxFit.contain,
+                        child: AnimatedOpacity(
+                          opacity: _showSpinner || _showCloudSpinner ? 0.3 : 1.0,
+                          duration: const Duration(milliseconds: 500),
+                          child: Container(
+                            height: screenHeight * 0.3,
+                            child: Image.asset(
+                              'assets/images/yellow_character_full.png',
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
-                      // 네비게이션 바
+                      if (_showSpinner)
+                        Positioned(
+                          bottom: screenHeight * 0.23,
+                          child: SizedBox(
+                            width: 80,
+                            height: 80,
+                            child: SpinKitWave(
+                              color: activeOrange,
+                              size: 70.0,
+                              itemCount: 4,
+                            ),
+                          ),
+                        ),
+                      if (_showCloudSpinner)
+                        Positioned(
+                          bottom: screenHeight * 0.23,
+                          child: SizedBox(
+                            width: 140,
+                            height: 140,
+                            child: CupertinoCloudSpinner(),
+                          ),
+                        ),
                       Positioned(
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        child: Container(
-                          height: screenHeight * 0.1,
-                          color: CupertinoColors.transparent,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              children: <Widget>[
-                                Expanded(
-                                  flex: 10,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(right: 4.0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        context.go('/loading');
-                                      },
-                                      child: Container(
-                                        height: screenHeight * 0.1,
-                                        decoration: BoxDecoration(
-                                          color: CupertinoColors.systemYellow,
-                                          borderRadius: BorderRadius.circular(8.0),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            '문자',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 30,
-                                            ),
-                                          ),
-                                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              GestureDetector(
+                                onTap: () {
+                                  context.go('/loading');
+                                },
+                                child: Container(
+                                  width: screenWidth * 0.22,
+                                  height: screenWidth * 0.22,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CupertinoColors.systemYellow,
+                                        activeOrange,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
                                       ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.solidEnvelope,
+                                      color: Colors.black,
+                                      size: 48,
                                     ),
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 13,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                    child: GestureDetector(
-                                      onTap: _listen,
-                                      child: Container(
-                                        height: screenHeight * 0.1,
-                                        decoration: BoxDecoration(
-                                          color: CupertinoColors.white,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: CupertinoColors.systemOrange,
-                                            width: 4.0,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Icon(
-                                            _isListening ? CupertinoIcons.mic_fill : CupertinoIcons.mic,
-                                            color: CupertinoColors.systemOrange,
-                                            size: screenWidth * 0.1,
-                                          ),
-                                        ),
+                              ),
+                              GestureDetector(
+                                onTap: _listen,
+                                child: Container(
+                                  width: screenWidth * 0.32,
+                                  height: screenWidth * 0.32,
+                                  decoration: BoxDecoration(
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        CupertinoColors.white,
+                                        activeOrange.withOpacity(0.5),
+                                      ],
+                                      radius: 0.85,
+                                      center: Alignment.center,
+                                    ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 5),
                                       ),
+                                    ],
+                                    border: Border.all(
+                                      color: activeOrange,
+                                      width: 6.0,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: FaIcon(
+                                      _isListening
+                                          ? FontAwesomeIcons.microphoneAlt
+                                          : FontAwesomeIcons.microphone,
+                                      color: _isListening
+                                          ? activeOrange
+                                          : CupertinoColors.black,
+                                      size: screenWidth * 0.18,
                                     ),
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 10,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        context.go('/monthly-calendar');
-                                      },
-                                      child: Container(
-                                        height: screenHeight * 0.1,
-                                        decoration: BoxDecoration(
-                                          color: CupertinoColors.systemYellow,
-                                          borderRadius: BorderRadius.circular(8.0),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            '일정',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 30,
-                                            ),
-                                          ),
-                                        ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  context.go('/monthly-calendar');
+                                },
+                                child: Container(
+                                  width: screenWidth * 0.22,
+                                  height: screenWidth * 0.22,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CupertinoColors.systemYellow,
+                                        activeOrange,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
                                       ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.solidCalendarAlt,
+                                      color: Colors.black,
+                                      size: 48,
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Spacer(flex: 1),
+                const Spacer(flex: 1),
               ],
             ),
+            if (_showOptions)
+              Container(
+                color: Colors.black.withOpacity(0.8), // 화면 전체를 어둡게 (투명도를 더 높임)
+                child: Center(
+                  child: Container(
+                    width: screenWidth * 0.85, // 메시지 박스 크기를 크게 조정
+                    padding: const EdgeInsets.all(24.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.white,
+                      borderRadius: BorderRadius.circular(16.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CupertinoColors.black.withOpacity(0.5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _responseText, // 더미 데이터로 LLM 응답만 표시
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: CupertinoColors.black,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _text = "예를 선택하셨습니다."; // 예를 선택하면 예 텍스트 유지
+                                  _showOptions = false;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: CupertinoColors.activeGreen,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                  vertical: 20,
+                                ),
+                                textStyle: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              child: const Text(
+                                '예',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요."; // 아니오 선택시 초기 메시지로 돌아감
+                                  _showOptions = false;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: CupertinoColors.destructiveRed,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                  vertical: 20,
+                                ),
+                                textStyle: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              child: const Text(
+                                '아니오',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
