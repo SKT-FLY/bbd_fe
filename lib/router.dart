@@ -54,6 +54,10 @@ final GoRouter router = GoRouter(
         return ScheduleDailyScreen(selectedDate: selectedDate);
       },
     ),
+    GoRoute(
+      path: '/tmap',
+      builder: (context, state) => const TmapScreen(),
+    ),
   ],
 );
 

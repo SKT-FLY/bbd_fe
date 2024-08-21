@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'dart:convert';
 import 'package:bbd_project_fe/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -45,26 +44,29 @@ class _ChatScreenState extends State<ChatScreen> {
       await Permission.storage.request();
     }
   }
-
   Future<void> _listen() async {
     HapticFeedback.heavyImpact();
 
     if (_isListening) {
-      _stopListening();
+      _speech.stop();
+      setState(() {
+        _isListening = false; // 음성 인식이 중지될 때 _isListening을 false로 설정
+      });
     } else {
       bool available = await _speech.initialize(
         onStatus: (val) {
-          if (_isListening && val == 'done') {
-            _restartListening();
+          if (val == 'done') {
+            _speech.stop(); // 음성 인식이 종료될 때 stopListening을 호출
+            setState(() {
+              _isListening = false; // 음성 인식이 완료되면 _isListening을 false로 설정
+            });
           }
         },
         onError: (val) {
           print('onError: $val');
-          if (val.errorMsg == "error_busy" || val.errorMsg == "error_client") {
-            Future.delayed(const Duration(seconds: 2), () {
-              _restartListening();
-            });
-          }
+          setState(() {
+            _isListening = false; // 오류가 발생해도 _isListening을 false로 설정
+          });
         },
       );
 
@@ -76,41 +78,20 @@ class _ChatScreenState extends State<ChatScreen> {
 
         await Future.delayed(const Duration(milliseconds: 500));
         _speech.listen(
-            onResult: (val) async {
-              setState(() {
-                _text = val.recognizedWords;
-              });
-
-              // 음성 인식된 텍스트를 서버로 전송
-              if (_text.isNotEmpty) {
-                print("서버에게 텍스트 전송");
-                await _sendToServer(_text);
-              };
-            }
+          onResult: (val) {
+            setState(() {
+              _text = val.recognizedWords;
+              if (val.finalResult) {
+                _isListening = false; // 음성 인식이 완료되면 _isListening을 false로 설정
+                if (_text.isNotEmpty) {
+                  _sendToServer(_text); // 음성 인식이 종료될 때 서버에 전송
+                }
+              }
+            });
+          },
         );
       }
     }
-  }
-
-  void _restartListening() async {
-    if (_isListening) {
-      _speech.stop();
-      await Future.delayed(const Duration(milliseconds: 200));
-      _speech.listen(
-        onResult: (val) {
-          setState(() {
-            _text = val.recognizedWords;
-          });
-        },
-      );
-    }
-  }
-
-  void _stopListening() {
-    _speech.stop();
-    setState(() {
-      _isListening = false;
-    });
   }
 
   Future<void> _sendToServer(String userText) async {
@@ -131,34 +112,44 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // 서버에서 받은 오디오 URL 재생
       if (response['url'] != null) {
-        await _playAudio(response['url']);
+        var url = "http://172.23.241.36:8000/" + response['url'];
+        try {
+          print("Button clicked, attempting to play audio...");
+          await _audioPlayer.play(UrlSource(url));
+          print("오디오 재생 시도가 완료되었습니다.");
+        } catch (e) {
+          print('Error occurred: $e');
+        }
+      }
+      if (_resultCode != null) {
+        print("page routing");
+        //routeBasedOnResult(context, _resultCode!);
       }
     }
   }
 
-  Future<void> _playAudio(String url) async {
-    try {
-      print("Button clicked, attempting to play audio...");
-      await _audioPlayer.play(UrlSource(url));
-      print("오디오 재생 시도가 완료되었습니다.");
-    } catch (e) {
-      print('Error occurred: $e');
+  void routeBasedOnResult(BuildContext context, int result) {
+    if (result >= 1 && result <= 9) {
+      context.go('/tmap');
+    } else {
+      switch (result) {
+        case 10:
+          context.go('/smsAnalysis');
+          break;
+        case 11:
+          context.go('/futureSchedule');
+          break;
+        case 12:
+          context.go('/todaySchedule');
+          break;
+        case 13:
+          context.go('/noAnswer');
+          break;
+        default:
+          print('Unknown result: $result');
+          break;
+      }
     }
-  }
-
-  // 예 버튼 클릭 시 처리
-  void _onYesPressed() {
-    // 예를 선택했을 때의 동작 처리
-    print("예 선택됨");
-    // 예를 선택하면 예약을 처리하는 로직 추가
-  }
-
-  // 아니오 버튼 클릭 시 처리
-  void _onNoPressed() {
-    setState(() {
-      _text = "무엇을 도와드릴까요?";
-      _resultCode = null; // result를 초기화
-    });
   }
 
   @override
@@ -344,36 +335,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 Spacer(flex: 1),
               ],
             ),
-            if (_resultCode != null && _resultCode! >= 1 && _resultCode! <= 12)
-              Positioned(
-                bottom: 20,
-                left: 20,
-                right: 20,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _onYesPressed,
-                      child: Text('예'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CupertinoColors.activeGreen,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        textStyle: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: _onNoPressed,
-                      child: Text('아니오'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CupertinoColors.systemRed,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        textStyle: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
           ],
         ),
       ),
