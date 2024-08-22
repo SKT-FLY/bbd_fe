@@ -47,7 +47,10 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/summary-result-normal',
-      builder: (context, state) => const SummaryResultScreen_normal(),
+      builder: (context, state){
+        final messageText = state.extra as String;
+        return SummaryResultScreen_normal(text:messageText);
+      }
     ),
     GoRoute(
       path: '/summary-result-calendar',
