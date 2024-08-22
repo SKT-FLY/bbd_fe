@@ -1,14 +1,41 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:bbd_project_fe/api_service.dart';
+import 'package:go_router/go_router.dart'; // 서비스 임포트
 
 class TmapScreen extends StatefulWidget {
-  const TmapScreen({super.key});
+  final int userId;
+  final double centerLat;
+  final double centerLon;
+  final String hospitalType;
+
+  const TmapScreen({
+    super.key,
+    required this.userId,
+    required this.centerLat,
+    required this.centerLon,
+    required this.hospitalType,
+  });
 
   @override
-  _PhoneConnectionAppState createState() => _PhoneConnectionAppState();
+  _TmapScreenState createState() => _TmapScreenState();
 }
 
-class _PhoneConnectionAppState extends State<TmapScreen> {
+class _TmapScreenState extends State<TmapScreen> {
+  late Future<List<NearbyHospital>> nearbyHospitalsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final apiService = ApiService();
+    nearbyHospitalsFuture = _fetchAndProcessHospitals(apiService);
+  }
+
+  Future<List<NearbyHospital>> _fetchAndProcessHospitals(ApiService apiService) async {
+    final data = await apiService.fetchPois(widget.hospitalType, widget.centerLat, widget.centerLon);
+    //final List<dynamic> pois = data['pois'] as List<dynamic>;
+    return data.map((json) => NearbyHospital.fromJson(json as Map<String, dynamic>)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
@@ -36,103 +63,41 @@ class _PhoneConnectionAppState extends State<TmapScreen> {
           border: null,
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              // 첫 번째 그룹: 병원 카드 목록
-              Expanded(
-                flex: 5, // 전체 Flex 중 5 할당
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ListView(
-                    children: [
-                      _buildHospitalCard(
-                        title: '튼튼 정형외과',
-                        department: '정형외과',
-                        address: '경기도 과천시 별양동',
-                        distance: '2.6km',
+          child: FutureBuilder<List<NearbyHospital>>(
+            future: nearbyHospitalsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CupertinoActivityIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                final List<NearbyHospital> nearbyHospitals = snapshot.data ?? [];
+
+                // 병원이 없으면 문구 출력
+                if (nearbyHospitals.isEmpty) {
+                  return const Center(child: Text('근처 병원이 없습니다.'));
+                }
+
+                return ListView.builder(
+                  itemCount: nearbyHospitals.length,
+                  itemBuilder: (context, index) {
+                    final hospital = nearbyHospitals[index];
+                    return GestureDetector(
+                      onTap: () {
+                        context.go('/calling-screen', extra: hospital.telNo.toString());
+                        print('병원 전화번호: ${hospital.telNo}');
+                      },
+                      child: _buildHospitalCard(
+                        title: hospital.name,
+                        department: hospital.detailBizName,
+                        address: hospital.fullAddressRoad,
+                        distance: '${hospital.radius} km',
                       ),
-                      const SizedBox(height: 16),
-                      _buildHospitalCard(
-                        title: '이내과의원',
-                        department: '내과',
-                        address: '경기도 과천시 부림동',
-                        distance: '2.3km',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // 구분선
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  height: 2.0,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemGrey,
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                ),
-              ),
-              // 두 번째 그룹: 병원 카드 목록
-              Expanded(
-                flex: 5, // 전체 Flex 중 5 할당
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ListView(
-                    children: [
-                      _buildHospitalCard(
-                        title: '보라매 정형외과',
-                        department: '정형외과',
-                        address: '서울 관악구 봉천동',
-                        distance: '147m',
-                      ),
-                      const SizedBox(height: 16),
-                      _buildHospitalCard(
-                        title: '이정형외과의원',
-                        department: '정형외과',
-                        address: '서울 동작구 보라매동',
-                        distance: '211m',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // 하단 홈 버튼
-              Expanded(
-                flex: 2, // 전체 Flex 중 2 할당
-                child: Center(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {},
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: CupertinoColors.activeOrange,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: CupertinoColors.black.withOpacity(0.25),
-                            spreadRadius: 1,
-                            blurRadius: 6,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        CupertinoIcons.home,
-                        color: CupertinoColors.white,
-                        size: 60,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                    );
+                  },
+                );
+              }
+            },
           ),
         ),
       ),
@@ -203,6 +168,39 @@ class _PhoneConnectionAppState extends State<TmapScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// 병원 모델 클래스
+class NearbyHospital {
+  final String name;
+  final String telNo;
+  final String fullAddressRoad;
+  final String detailBizName;
+  final String frontLat;
+  final String frontLon;
+  final String radius;
+
+  NearbyHospital({
+    required this.name,
+    required this.telNo,
+    required this.fullAddressRoad,
+    required this.detailBizName,
+    required this.frontLat,
+    required this.frontLon,
+    required this.radius,
+  });
+
+  factory NearbyHospital.fromJson(Map<String, dynamic> json) {
+    return NearbyHospital(
+      name: json['name'],
+      telNo: json['telNo'],
+      fullAddressRoad: json['fullAddressRoad'],
+      detailBizName: json['detailBizName'],
+      frontLat: json['frontLat'],
+      frontLon: json['frontLon'],
+      radius: json['radius'],
     );
   }
 }

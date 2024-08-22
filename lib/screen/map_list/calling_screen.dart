@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Calling_Screen extends StatefulWidget {
-  const Calling_Screen({super.key});
+  final String phoneNumber;  // 전화번호 파라미터 추가
+
+  const Calling_Screen({super.key, required this.phoneNumber});
 
   @override
   _MapScreenState createState() => _MapScreenState();
@@ -26,16 +28,24 @@ class _MapScreenState extends State<Calling_Screen> {
                   padding: const EdgeInsets.only(top: 40.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text(
+                    children: [
+                      const Text(
                         '보라매 정형외과',
                         style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
+                        '전화번호: ${widget.phoneNumber}',  // 전화번호 표시
+                        style: const TextStyle(
+                          fontSize: 22,
+                          color: CupertinoColors.inactiveGray,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
                         '에이닷 전화 거는중 ...',
                         style: TextStyle(
                           fontSize: 22,
