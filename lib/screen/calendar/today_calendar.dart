@@ -75,25 +75,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     double selectedBoxHeight = 120;
 
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text(
-          '일정',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {},
-          child: const Icon(
-            CupertinoIcons.person_crop_circle,
-            color: CupertinoColors.black,
-          ),
-        ),
-        backgroundColor: const Color(0xFFFFC436),
-        border: null,
-      ),
       child: Stack(
         children: [
           SafeArea(
@@ -249,7 +230,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   }
 
   Widget _buildScheduleList(List<dynamic> scheduleList) {
-    // 선택된 날짜에 해당하는 일정만 필터링
     final filteredSchedules = scheduleList.where((schedule) {
       final scheduleDate = DateTime.parse(schedule['schedule_start_time']).toLocal();
       return scheduleDate.year == _selectedYear &&
@@ -257,7 +237,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           scheduleDate.day == _selectedDay;
     }).toList();
 
-    // 필터링된 일정 목록을 화면에 표시
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: ListView.builder(
@@ -295,7 +274,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF8B4513) : (hasEvent ? Colors.lightGreenAccent.withOpacity(0.9) : CupertinoColors.systemGrey),
+              color: isSelected ? const Color(0xFF8B4513) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),
@@ -313,6 +292,10 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                     offset: const Offset(0, 2),
                   ),
                 ],
+                border: Border.all(
+                  color: hasEvent ? Colors.lightGreenAccent : Colors.transparent,
+                  width: 2.0,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
