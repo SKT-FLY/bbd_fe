@@ -264,7 +264,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: <Widget>[
                               GestureDetector(
                                 onTap: () {
-                                  context.go('/loading');
+                                  context.go('/smsListScreen');
                                 },
                                 child: Container(
                                   width: screenWidth * 0.22,
