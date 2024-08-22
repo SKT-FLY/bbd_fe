@@ -12,6 +12,7 @@ import 'screen/map_list/tmap.dart';
 import 'screen/calendar/monthly_calendar.dart';
 import 'screen/calendar/today_calendar.dart';
 import 'screen/summary/sms_received_screen.dart';
+import 'screen/yes_no.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -79,6 +80,20 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/calling-screen',
       builder: (context, state) => const Calling_Screen(),
+    ),
+    GoRoute(
+      path: '/yesno',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final message = extra?['message'] as String?;
+        final resultCode = extra?['resultCode'] as int?;
+
+        if (message == null || resultCode == null) {
+          return const ChatScreen(); // 예외 처리: 잘못된 경우 ChatScreen으로 돌아감
+        }
+
+        return YesNoScreen(message: message, resultCode: resultCode);
+      },
     ),
   ],
 );
