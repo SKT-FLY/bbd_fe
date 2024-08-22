@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // @POST intend/process-command
+  // 의도 추출
   Future<Map<String, dynamic>> processCommandApi(String message) async {
     final String url = 'http://172.23.241.36:8000/api/v1/process-command';
     try {
@@ -31,10 +32,11 @@ class ApiService {
   }
   // @default/update-audio/{id}
 
-  // @POST TTS/process-command
-  // @POST TTS/process-command
+  // @POST TTS/ 일반 목소리
+  // @POST TTS/{data} 일정 설명 목소리
 
   // @POST schedules/schedule
+  // 일정 등록
   Future<Map<String, dynamic>> postSchedule(int userId, String scheduleName, DateTime scheduleStartTime, String scheduleDescription) async {
     final String url = 'http://172.23.241.36:8000/api/v1/schedule?user_id=$userId';
     try {
@@ -67,21 +69,234 @@ class ApiService {
     }
   }
 
-  // @GET schedules/schedule
+  // @GET schedules/schedule 전체 일정 조회
+  // 유저의 전체 일정 조회
+  Future<Map<String, dynamic>> fetchScheduleData(int userId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/schedule?user_id=$userId&skip=0&limit=10';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
 
   // @GET schedules/schedules/{schedule_id}
+  // 일정 아이디로 특정 일정 조회
+  Future<Map<String, dynamic>> fetchScheduleDetails(int scheduleId, int userId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/schedule/$scheduleId?user_id=$userId';
 
-  // @PUT schedules/schedules/{schedule_id}
-  // @DELETE schedules/schedules/{schedule_id}
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+  // @PUT schedules/schedules/{schedule_id} 일정 수정
+  // @DELETE schedules/schedules/{schedule_id} 일정 삭제
+
   // @GET schedules/guardian/{guardian_id}/schedules
+  // 보호자 일정 확인
+  Future<Map<String, dynamic>> fetchGuardianSchedules(int guardianId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/guardian/$guardianId/schedules';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
 
   // @GET schedules/schedules/data/{date}
+  // 날짜 별 일정 검색
+  Future<Map<String, dynamic>> fetchSchedulesByDate(String date, int userId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/schedules/date/$date?user_id=$userId';
 
-  //@GET tmap/pois
-  //@POST tmap/taxi-search
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
 
-  //@GET hospitals/hospitals
-  //@POST hospitals/update_visits_count
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+  // @GET tmap/pois
+  // 티맵 장소 검색 (병원 케이스)
+  Future<Map<String, dynamic>> fetchPois(String searchKeyword, double centerLat, double centerLon) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/pois?version=1&searchKeyword=$searchKeyword&centerLat=$centerLat&centerLon=$centerLon&reqCoordType=WGS84GEO&resCoordType=WGS84GEO&radius=0&searchType=all&searchtypCd=R&page=1&count=20&multiPoint=N&poiGroupYn=N';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
+  // @POST tmap/taxi-search
+  // 티맵 택시 검색
+  Future<Map<String, dynamic>> fetchTaxiSearch(int userId, double lat, double lon) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/taxi-search/?user_id=$userId&lat=$lat&lon=$lon&coordType=WGS84GEO&addressType=A03&coordYn=N&keyInfo=N&newAddressExtend=Y';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
+  // @GET hospitals/hospitals
+  // 유저별 즐겨찾기 병원 검색
+  Future<Map<String, dynamic>> fetchHospitals(int userId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/hospitals?user_id=$userId';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
+  // @POST hospitals/update_visits_count
+  // 유저 장소 방문 횟수 증가
+  Future<Map<String, dynamic>> updateVisitsCount(int userId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/hospitals/update_visits_count?user_id=$userId';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, int>{'user_id': userId}),
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터를 디코딩하여 반환
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
+
 
 }
 
