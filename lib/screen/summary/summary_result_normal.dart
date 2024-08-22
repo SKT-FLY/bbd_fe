@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 class SummaryResultScreen_normal extends StatefulWidget {
-  const SummaryResultScreen_normal({super.key});
+  final String text;
+  const SummaryResultScreen_normal({super.key, required this.text});
 
   @override
   _SummaryPage1State createState() => _SummaryPage1State();
@@ -42,77 +43,60 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const Spacer(),
-                    const Padding(
-                      padding: EdgeInsets.only(right: 16.0),
-                      child: Text(
-                        '요약',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: CupertinoColors.black,
-                          shadows: [
-                            Shadow(
-                              color: CupertinoColors.systemGrey,
-                              blurRadius: 4,
-                              offset: Offset(1, 1),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  flex: 8,
-                  child: Stack(
+                Spacer(flex: 1),
+
+                Expanded( // 이미지 공간
+                  flex: 4,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
                     children: [
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        child: Image.asset(
-                          'assets/images/summary.png', // 이미지 경로 설정
-                          width: 100,
-                          height: 100,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 60, left: 0),
-                        width: screenWidth * 0.9,
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF5EDED), // 연한 배경색
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: CupertinoColors.black.withOpacity(0.25),
-                              spreadRadius: 1,
-                              blurRadius: 6,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '요약 내용',
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: CupertinoColors.black,
-                            ),
-                          ),
-                        ),
+                      Image.asset(
+                        'assets/images/summary.png', // 이미지 경로 설정
+                        width: 100,
+                        height: 100,
                       ),
                     ],
                   ),
                 ),
-                const Spacer(),
-                Expanded(
-                  flex: 2,
+
+                Expanded( // 텍스트 박스 공간
+                  flex: 24,
+                  child: Center(
+                    child: Container(
+                      width: screenWidth * 0.9,
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5EDED), // 연한 배경색
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withOpacity(0.25),
+                            spreadRadius: 1,
+                            blurRadius: 6,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: SingleChildScrollView( // 긴 텍스트를 위한 스크롤 추가
+                          child: Text(
+                            widget.text,
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: CupertinoColors.black,
+                            ),
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Spacer(flex: 1),
+                Expanded( // 체크 버튼 (홈으로 이동)
+                  flex: 6,
                   child: Center(
                     child: CupertinoButton(
                       padding: EdgeInsets.zero,
@@ -142,7 +126,8 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                Spacer(flex: 1),
               ],
             ),
           ),
