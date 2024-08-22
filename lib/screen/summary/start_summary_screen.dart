@@ -46,10 +46,9 @@ class _MessageSummaryState extends State<SummaryScreen> {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               children: [
-                // 상단 이미지와의 간격을 주기 위해 Spacer 사용
                 Spacer(flex: 1),
 
-                Expanded(
+                Expanded( // 메세지 그림 에셋 공간
                   flex: 4,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
@@ -62,7 +61,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                     ],
                   ),
                 ),
-                Expanded(
+                Expanded( // 메세지 텍스트 공간
                   flex: 20,
                   child: Center(
                     child: Container(
@@ -84,11 +83,11 @@ class _MessageSummaryState extends State<SummaryScreen> {
                         child: SingleChildScrollView(
                           child: Text(
                             widget.text,
-                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 25,
                               height: 1.5,
                             ),
+                            textAlign: TextAlign.start, // 텍스트가 시작 위치에 정렬되도록 설정
                           ),
                         ),
                       ),
@@ -99,11 +98,12 @@ class _MessageSummaryState extends State<SummaryScreen> {
                 // 텍스트 박스와 요약하기 버튼 사이에 간격을 주기 위해 Spacer 사용
                 Spacer(flex: 1),
 
-                Expanded(
+                Expanded( // 요약 시작 버튼 공간
                   flex: 4,
                   child: GestureDetector(
                     onTap: () {
                       context.go('/loading');
+                      // 요약 POST API 호출
                     },
                     child: Container(
                       width: screenWidth,
@@ -135,7 +135,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                 // 요약하기 버튼과 홈 아이콘 버튼 사이에 간격을 주기 위해 Spacer 사용
                 Spacer(flex: 1),
 
-                Expanded(
+                Expanded( //홈화면 버튼
                   flex: 6,
                   child: Center(
                     child: CupertinoButton(
