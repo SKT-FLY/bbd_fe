@@ -4,7 +4,7 @@ import 'screen/chat_screen.dart';
 import 'screen/map_list/calling_screen.dart';
 import 'screen/loading_screen.dart';
 
-import 'screen/summary/message_summary_normal.dart';
+import 'screen/summary/start_summary_screen.dart';
 import 'screen/summary/summary_result_normal.dart';
 import 'screen/summary/summary_result_to_calendar.dart';
 import 'screen/map_list/tmap.dart';
@@ -38,7 +38,12 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/start-message-summary',
-      builder: (context, state) => const MessageSummaryScreen(),
+      builder: (context, state) {
+        // state.extra에서 메시지 내용을 가져옵니다.
+        final messageText = state.extra as String;
+        // messageText를 SummaryScreen에 전달합니다.
+        return SummaryScreen(text: messageText);
+      },
     ),
     GoRoute(
       path: '/summary-result-normal',
