@@ -54,8 +54,24 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/summary-result-calendar',
-      builder: (context, state) => const SummaryResultToCalendar(),
+      builder: (context, state) {
+        // state.extra가 null일 경우를 대비해 기본 Map을 제공
+        final data = state.extra as Map<String,String>? ?? {};
+
+        // 각 필드가 null일 경우 빈 문자열을 기본값으로 사용
+        final String date = data['date'] ?? '날짜 정보 없음';
+        final String time = data['time'] ?? '시간 정보 없음';
+        final String content = data['content'] ?? '내용 정보 없음';
+
+        return SummaryResultToCalendar(
+          date: date,
+          time: time,
+          content: content,
+        );
+      },
     ),
+
+
     GoRoute(
       path: '/monthly-calendar',
       builder: (context, state) => const ScheduleMonthlyScreen(),
