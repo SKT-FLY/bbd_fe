@@ -28,29 +28,29 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  ///@override
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp.router(
+      debugShowCheckedModeBanner:false,
+      title: 'Flutter Cupertino Demo',
+      theme: const CupertinoThemeData(
+        primaryColor: CupertinoColors.activeOrange,
+      ),
+      routerDelegate: router.routerDelegate,
+      routeInformationParser: router.routeInformationParser,
+      routeInformationProvider: router.routeInformationProvider,
+    );
+  }
+}
+  //@override
   //Widget build(BuildContext context) {
-    //return CupertinoApp.router(
-      //debugShowCheckedModeBanner:false,
-      //title: 'Flutter Cupertino Demo',
-      //theme: const CupertinoThemeData(
-        //primaryColor: CupertinoColors.activeOrange,
-      //),
-      //routerDelegate: router.routerDelegate,
-      //routeInformationParser: router.routeInformationParser,
-      //routeInformationProvider: router.routeInformationProvider,
-    //);
-  //}
+    //return CupertinoApp(
+      //debugShowCheckedModeBanner: false,
+      ///title: 'Flutter Cupertino Demo',
+     // theme: const CupertinoThemeData(
+       // primaryColor: CupertinoColors.activeOrange,
+     // ),
+     // home: ChatScreen(), // Screen()을 호출하여 홈 화면으로 설정
+   // );
+ // }
 //}
-@override
-Widget build(BuildContext context) {
-  return CupertinoApp(
-    debugShowCheckedModeBanner: false,
-    title: 'Flutter Cupertino Demo',
-    theme: const CupertinoThemeData(
-      primaryColor: CupertinoColors.activeOrange,
-    ),
-    home: ChatScreen(), // Screen()을 호출하여 홈 화면으로 설정
-  );
-}
-}
