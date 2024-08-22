@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
-import 'chat_screen.dart';  // ChatScreen을 import 합니다.
-import 'loading_screen.dart'; // LoadingScreen을 import 합니다.
+import '../chat_screen.dart';  // ChatScreen을 import 합니다.
+import '../loading_screen.dart'; // LoadingScreen을 import 합니다.
 
 class MessageSummaryScreen extends StatefulWidget {
   const MessageSummaryScreen({super.key});
