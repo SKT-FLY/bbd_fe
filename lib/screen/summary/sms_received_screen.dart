@@ -131,6 +131,6 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   void _handleSmsTap(String message) {
     // MessageSummaryScreen으로 이동하면서 message 전달
-    context.go('/message-summary', extra: message);
+    context.go('/start-message-summary', extra: message);
   }
 }

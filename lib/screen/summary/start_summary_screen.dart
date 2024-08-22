@@ -1,27 +1,21 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
+import '../chat_screen.dart';  // ChatScreen을 import 합니다.
+import '../loading_screen.dart'; // LoadingScreen을 import 합니다.
 
-class SummaryResultToCalendar extends StatefulWidget {
-  final String date;
-  final String time;
-  final String content;
-
-  const SummaryResultToCalendar({
-    Key? key,
-    required this.date,
-    required this.time,
-    required this.content,
-  }) : super(key: key);
+class SummaryScreen extends StatefulWidget {
+  final String text;
+  const SummaryScreen({Key? key, required this.text}) : super(key: key);
 
   @override
-  _SummaryPage2State createState() => _SummaryPage2State();
+  _MessageSummaryState createState() => _MessageSummaryState();
 }
 
-class _SummaryPage2State extends State<SummaryResultToCalendar> {
+class _MessageSummaryState extends State<SummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return CupertinoApp(
       theme: const CupertinoThemeData(
@@ -30,7 +24,7 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
       home: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
           middle: const Text(
-            '문자분석',
+            '요약',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -49,27 +43,26 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               children: [
                 Spacer(flex: 1),
 
-                Expanded( // 이미지 공간
+                Expanded( // 메세지 그림 에셋 공간
                   flex: 4,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
                     children: [
                       Image.asset(
-                        'assets/images/schedule.png', // 이미지 경로 설정
+                        'assets/images/message.png',
                         width: 100,
                         height: 100,
                       ),
                     ],
                   ),
                 ),
-
-                Expanded( // 텍스트 박스 공간
-                  flex: 24,
+                Expanded( // 메세지 텍스트 공간
+                  flex: 20,
                   child: Center(
                     child: Container(
                       width: screenWidth * 0.9,
@@ -86,72 +79,31 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                           ),
                         ],
                       ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '날짜',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Center( // 텍스트를 가운데 정렬
+                        child: SingleChildScrollView(
+                          child: Text(
+                            widget.text,
+                            style: const TextStyle(
+                              fontSize: 25,
+                              height: 1.5,
                             ),
-                            Text(
-                              widget.date,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: CupertinoColors.activeOrange,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              '시간',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              widget.time,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: CupertinoColors.activeOrange,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              '내용',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              widget.content,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: CupertinoColors.activeOrange,
-                              ),
-                            ),
-                          ],
+                            textAlign: TextAlign.start, // 텍스트가 시작 위치에 정렬되도록 설정
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
 
+                // 텍스트 박스와 요약하기 버튼 사이에 간격을 주기 위해 Spacer 사용
                 Spacer(flex: 1),
 
-                Expanded( // 일정 등록 버튼 공간
+                Expanded( // 요약 시작 버튼 공간
                   flex: 4,
                   child: GestureDetector(
                     onTap: () {
-                      // 일정 Canlendar api
-                      print('일정등록 버튼 클릭됨');
+                      context.go('/loading');
+                      // 요약 POST API 호출
                     },
                     child: Container(
                       width: screenWidth,
@@ -169,10 +121,10 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                         ],
                       ),
                       child: const Text(
-                        '일정등록',
+                        '요약하기',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 25,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -180,16 +132,15 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                   ),
                 ),
 
+                // 요약하기 버튼과 홈 아이콘 버튼 사이에 간격을 주기 위해 Spacer 사용
                 Spacer(flex: 1),
 
-                Expanded( // 홈 버튼 공간
+                Expanded( //홈화면 버튼
                   flex: 6,
                   child: Center(
                     child: CupertinoButton(
                       padding: EdgeInsets.zero,
                       onPressed: () {
-                        // 홈 버튼 클릭 시의 동작
-                        print('홈 버튼 클릭됨');
                         context.go('/chat');
                       },
                       child: Container(
@@ -200,22 +151,24 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: CupertinoColors.black.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
+                              color: CupertinoColors.black.withOpacity(0.25),
+                              spreadRadius: 1,
+                              blurRadius: 6,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: const Icon(
                           CupertinoIcons.home,
                           color: CupertinoColors.white,
-                          size: 70,
+                          size: 40,
                         ),
                       ),
                     ),
                   ),
                 ),
 
+                // 하단 여백을 위한 Spacer
                 Spacer(flex: 1),
               ],
             ),
