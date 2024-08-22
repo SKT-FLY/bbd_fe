@@ -19,6 +19,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   final ScrollController _scrollController = ScrollController();
   late Future<List<dynamic>> _scheduleDataFuture;
   final ApiService _apiService = ApiService();
+  List<dynamic> _schedules = [];
 
   @override
   void initState() {
@@ -37,15 +38,15 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
       final List<dynamic> schedules = await _apiService.fetchScheduleData(1); // user_id만 사용
+      setState(() {
+        _schedules = schedules; // 로드된 데이터를 저장
+      });
       return schedules;
     } catch (e) {
       print('Error fetching schedules: $e');
       return [];
     }
   }
-
-
-
 
   void _scrollToSelectedDay() {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -57,12 +58,21 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     );
   }
 
+  bool _hasEventForDay(DateTime day) {
+    return _schedules.any((schedule) {
+      final scheduleDate = DateTime.parse(schedule['schedule_start_time']).toLocal();
+      return scheduleDate.year == day.year &&
+          scheduleDate.month == day.month &&
+          scheduleDate.day == day.day;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     int daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
     double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
-    double boxHeight = 100; // 기존보다 높이를 조금 높임
-    double selectedBoxHeight = 120; // 선택된 상자의 높이도 조정
+    double boxHeight = 100;
+    double selectedBoxHeight = 120;
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -208,6 +218,9 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
         children: List.generate(daysInMonth, (index) {
           int day = index + 1;
           String weekDay = _getWeekDay(_selectedYear, _selectedMonth, day);
+          DateTime currentDay = DateTime(_selectedYear, _selectedMonth, day);
+          bool hasEvent = _hasEventForDay(currentDay);
+
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -223,6 +236,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               child: _buildCalendarDate(
                 day.toString(),
                 weekDay,
+                hasEvent,
                 day == _selectedDay,
                 boxWidth,
                 day == _selectedDay ? selectedBoxHeight : boxHeight,
@@ -260,7 +274,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     );
   }
 
-
   int _daysInMonth(int year, int month) {
     return DateTime(year, month + 1, 0).day;
   }
@@ -271,7 +284,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     return weekDays[date.weekday % 7];
   }
 
-  Widget _buildCalendarDate(String day, String weekDay, bool isSelected, double width, double height) {
+  Widget _buildCalendarDate(String day, String weekDay, bool hasEvent, bool isSelected, double width, double height) {
     return Container(
       width: width,
       height: height,
@@ -282,7 +295,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF8B4513) : CupertinoColors.systemGrey,
+              color: isSelected ? const Color(0xFF8B4513) : (hasEvent ? Colors.lightGreenAccent.withOpacity(0.9) : CupertinoColors.systemGrey),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),
