@@ -35,11 +35,46 @@ class ApiService {
   // @POST TTS/process-command
 
   // @POST schedules/schedule
+  Future<Map<String, dynamic>> postSchedule(int userId, String scheduleName, DateTime scheduleStartTime, String scheduleDescription) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/schedule?user_id=$userId';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'schedule_name': scheduleName,
+          'schedule_start_time': scheduleStartTime.toIso8601String(),
+          'schedule_description': scheduleDescription,
+          'user_id': userId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 데이터를 그대로 반환
+        final Map<String, dynamic> data = jsonDecode(
+            utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다.'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
   // @GET schedules/schedule
+
   // @GET schedules/schedules/{schedule_id}
+
   // @PUT schedules/schedules/{schedule_id}
   // @DELETE schedules/schedules/{schedule_id}
   // @GET schedules/guardian/{guardian_id}/schedules
+
   // @GET schedules/schedules/data/{date}
 
   //@GET tmap/pois
