@@ -2,43 +2,25 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // @POST intend/process-command
-  // 의도 추출
-  Future<Map<String, dynamic>> processCommandApi(String message) async {
-    final String url = 'http://172.23.241.36:8000/api/v1/process-command';
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{'command': message}),
-      );
 
-      if (response.statusCode == 200) {
-        // 데이터를 그대로 반환
-        final Map<String, dynamic> data = jsonDecode(
-            utf8.decode(response.bodyBytes));
-        return data;
-      } else {
-        return {'error': '서버와의 통신 오류가 있습니다.'};
-      }
-    } catch (e) {
-      return {
-        'error': '서버와의 통신 오류가 있습니다.',
-        'exception': e.toString(),
-      };
-    }
-  }
-  // @default/update-audio/{id}
+  /* 1 TTS API*/
 
   // @POST TTS/ 일반 목소리
   // @POST TTS/{data} 일정 설명 목소리
 
+  /* 2 schedules API*/
+
   // @POST schedules/schedule
   // 일정 등록
-  Future<Map<String, dynamic>> postSchedule(int userId, String scheduleName, DateTime scheduleStartTime, String scheduleDescription) async {
+  Future<Map<String, dynamic>> postSchedule(
+      int userId,
+      String scheduleName,
+      DateTime scheduleStartTime,
+      String scheduleDescription,
+      int hospitalId
+      ) async {
     final String url = 'http://172.23.241.36:8000/api/v1/schedule?user_id=$userId';
+
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -50,6 +32,7 @@ class ApiService {
           'schedule_start_time': scheduleStartTime.toIso8601String(),
           'schedule_description': scheduleDescription,
           'user_id': userId,
+          'hospital_id': hospitalId,
         }),
       );
 
@@ -68,6 +51,7 @@ class ApiService {
       };
     }
   }
+
 
   // @GET schedules/schedule 전체 일정 조회
   // 유저의 전체 일정 조회
@@ -183,6 +167,9 @@ class ApiService {
       };
     }
   }
+
+  /* 3 TMAP API */
+
   // @GET tmap/pois
   // 티맵 장소 검색 (병원 케이스)
   Future<Map<String, dynamic>> fetchPois(String searchKeyword, double centerLat, double centerLon) async {
@@ -239,6 +226,8 @@ class ApiService {
     }
   }
 
+  /* 4 hospitals API */
+
   // @GET hospitals/hospitals
   // 유저별 즐겨찾기 병원 검색
   Future<Map<String, dynamic>> fetchHospitals(int userId) async {
@@ -269,7 +258,15 @@ class ApiService {
 
   // @POST hospitals/update_visits_count
   // 유저 장소 방문 횟수 증가
-  Future<Map<String, dynamic>> updateVisitsCount(int userId) async {
+  Future<Map<String, dynamic>> updateVisitsCount(
+      int userId,
+      int hospitalId,
+      String hospitalName,
+      String hospitalPhone,
+      String hospitalType,
+      String hospitalAddress,
+      int hospitalRadius,
+      ) async {
     final String url = 'http://172.23.241.36:8000/api/v1/hospitals/update_visits_count?user_id=$userId';
 
     try {
@@ -278,7 +275,15 @@ class ApiService {
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, int>{'user_id': userId}),
+        body: jsonEncode(<String, dynamic>{
+          'user_id': userId,
+          'hospital_id': hospitalId,
+          'hospital_name': hospitalName,
+          'hospital_phone': hospitalPhone,
+          'hospital_type': hospitalType,
+          'hospital_address': hospitalAddress,
+          'hospital_radius': hospitalRadius,
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -286,7 +291,9 @@ class ApiService {
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         return data;
       } else {
-        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+        return {
+          'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'
+        };
       }
     } catch (e) {
       return {
@@ -296,8 +303,39 @@ class ApiService {
     }
   }
 
+  /* 5 intend API */
 
+  // @POST intend/process-command
+  // 의도 추출
+  Future<Map<String, dynamic>> processCommandApi(String message) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/process-command';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{'command': message}),
+      );
 
+      if (response.statusCode == 200) {
+        // 데이터를 그대로 반환
+        final Map<String, dynamic> data = jsonDecode(
+            utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다.'};
+      }
+    } catch (e) {
+      return {
+        'error': '서버와의 통신 오류가 있습니다.',
+        'exception': e.toString(),
+      };
+    }
+  }
+
+  /* default */
+  //@PUT api/vi/update-audio/{id}
 }
 
 
