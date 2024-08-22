@@ -80,10 +80,15 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/daily-schedule',
       builder: (context, state) {
-        final selectedDate = state.extra as DateTime;
-        return ScheduleDailyScreen(selectedDate: selectedDate);
+        final Map<String, Object> data = state.extra as Map<String, Object>;
+        final DateTime selectedDate = data['selectedDate'] as DateTime;
+
+        return ScheduleDailyScreen(
+          selectedDate: selectedDate,
+        );
       },
     ),
+
     GoRoute(
       path: '/smsListScreen',
       builder: (context, state) => SmsListScreen(),

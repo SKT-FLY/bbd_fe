@@ -55,8 +55,8 @@ class ApiService {
 
   // @GET schedules/schedule 전체 일정 조회
   // 유저의 전체 일정 조회
-  Future<Map<String, dynamic>> fetchScheduleData(int userId) async {
-    final String url = 'http://172.23.241.36:8000/api/v1/schedule?user_id=$userId&skip=0&limit=10';
+  Future<List<dynamic>> fetchScheduleData(int userId) async {
+    final String url = 'http://172.23.241.36:8000/api/v1/schedule?user_id=$userId';
 
     try {
       final response = await http.get(
@@ -67,19 +67,17 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        // 응답 데이터를 디코딩하여 반환
-        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
         return data;
       } else {
-        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+        return []; // 서버 오류 시 빈 리스트 반환
       }
     } catch (e) {
-      return {
-        'error': '서버와의 통신 오류가 있습니다.',
-        'exception': e.toString(),
-      };
+      print('Error fetching schedules: $e');
+      return [];
     }
   }
+
 
 
   // @GET schedules/schedules/{schedule_id}

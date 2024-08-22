@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:lunar/lunar.dart';
-import 'package:go_router/go_router.dart'; // GoRouter 사용을 위한 import
-import 'package:bbd_project_fe/db/schedules.dart'; // 공통 일정 및 공휴일 데이터 import
+import 'package:go_router/go_router.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:bbd_project_fe/api_service.dart'; // ApiService 임포트
 
 class ScheduleMonthlyScreen extends StatefulWidget {
   const ScheduleMonthlyScreen({Key? key}) : super(key: key);
@@ -15,15 +16,53 @@ class ScheduleMonthlyScreen extends StatefulWidget {
 class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+  late Future<List<dynamic>> _scheduleDataFuture;
+  final ApiService _apiService = ApiService();
+  Map<DateTime, List<dynamic>> _events = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchScheduleData();
+  }
+
+  void _fetchScheduleData() {
+    setState(() {
+      _scheduleDataFuture = _apiService.fetchScheduleData(1); // 유저 ID 사용
+      _scheduleDataFuture.then((schedules) {
+        setState(() {
+          _events = _groupEventsByDate(schedules);
+        });
+      }).catchError((error) {
+        print('Error fetching schedules: $error');
+      });
+    });
+  }
+
+  Map<DateTime, List<dynamic>> _groupEventsByDate(List<dynamic> schedules) {
+    Map<DateTime, List<dynamic>> events = {};
+    for (var schedule in schedules) {
+      DateTime date = DateTime.parse(schedule['schedule_start_time']).toLocal();
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      if (events[dateOnly] == null) {
+        events[dateOnly] = [];
+      }
+      events[dateOnly]!.add(schedule);
+    }
+    return events;
+  }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    // 선택한 날짜로 today_calendar.dart로 이동하고 해당 날짜를 전달
-    context.go('/daily-schedule', extra: selectedDay);
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
     });
+
+    // 선택한 날짜에 해당하는 이벤트들을 가져옵니다.
+    final selectedEvents = _events[selectedDay] ?? [];
+    context.go('/daily-schedule', extra: {'selectedDate': selectedDay, 'events': selectedEvents});
   }
+
 
   String _getLunarDate(DateTime date) {
     final solar = Solar.fromYmd(date.year, date.month, date.day);
@@ -34,17 +73,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text(
-          '일정',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: const Color(0xFFFFC436),
-        border: null,
-      ),
+      navigationBar: null,
       child: SafeArea(
         child: Stack(
           children: [
@@ -53,7 +82,20 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                 _buildMonthSelector(),
                 const SizedBox(height: 10),
                 Expanded(
-                  child: _buildCalendar(),
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _scheduleDataFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CupertinoActivityIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (snapshot.hasData) {
+                        return _buildCalendar();
+                      } else {
+                        return const Center(child: Text('일정이 없습니다.'));
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
@@ -65,18 +107,22 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: () {
-                    context.go('/chat');  // 홈 버튼을 누르면 ChatScreen으로 이동
+                    context.go('/chat');
                   },
                   child: Container(
-                    width: 70,
-                    height: 70,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.orange,
+                      gradient: LinearGradient(
+                        colors: [Colors.yellow, Colors.orange],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      CupertinoIcons.home,
-                      color: Colors.white,
+                      FontAwesomeIcons.home,
+                      color: Colors.black,
                       size: 40,
                     ),
                   ),
@@ -134,7 +180,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   }
 
   Widget _buildCalendar() {
-    return TableCalendar<String>(
+    return TableCalendar<dynamic>(
       firstDay: DateTime.utc(2010, 1, 1),
       lastDay: DateTime.utc(2030, 12, 31),
       focusedDay: _focusedDay,
@@ -143,7 +189,10 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
       },
       onDaySelected: _onDaySelected,
       calendarFormat: CalendarFormat.month,
-      eventLoader: getEventsForDay, // 공통 일정 데이터 사용
+      eventLoader: (day) {
+        final dateOnly = DateTime(day.year, day.month, day.day);
+        return _events[dateOnly] ?? [];
+      },
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle: const TextStyle(fontSize: 24, color: Colors.black),
         weekendStyle: const TextStyle(fontSize: 24, color: Colors.red),
@@ -151,19 +200,22 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
       daysOfWeekHeight: 40.0,
       calendarStyle: CalendarStyle(
         todayDecoration: BoxDecoration(
-          color: CupertinoColors.systemGrey.withOpacity(0.3),
           shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.black,
+            width: 2.0,
+          ),
         ),
         selectedDecoration: BoxDecoration(
-          color: CupertinoColors.activeOrange,
+          color: CupertinoColors.black,
           shape: BoxShape.circle,
         ),
         outsideDaysVisible: false,
         cellMargin: const EdgeInsets.all(6.0),
         defaultTextStyle: const TextStyle(fontSize: 24),
       ),
-      rowHeight: 90.0,
-      calendarBuilders: CalendarBuilders<String>(
+      rowHeight: 100.0,
+      calendarBuilders: CalendarBuilders<dynamic>(
         dowBuilder: (context, day) {
           if (day.weekday == DateTime.saturday) {
             return Center(
@@ -183,8 +235,8 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
           return null;
         },
         defaultBuilder: (context, day, focusedDay) {
-          final isHoliday = holidays.contains(day);
-          final hasEvents = getEventsForDay(day).isNotEmpty;
+          final dateOnly = DateTime(day.year, day.month, day.day);
+          final hasEvents = _events[dateOnly]?.isNotEmpty ?? false;
 
           return Stack(
             alignment: Alignment.center,
@@ -192,12 +244,12 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
               if (hasEvents) ...[
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.lightGreenAccent.withOpacity(0.3),
-                    shape: BoxShape.circle, // 연한 초록색으로 원형 배경을 그립니다.
+                    color: Colors.lightGreenAccent.withOpacity(0.7),
+                    shape: BoxShape.circle,
                   ),
-                  margin: const EdgeInsets.all(6.0), // 여백을 주어 원형을 잘 표시
-                  width: 50, // 크기는 상황에 따라 조절 가능합니다.
-                  height: 50,
+                  margin: const EdgeInsets.all(3.0),
+                  width: 60,
+                  height: 60,
                 ),
               ],
               Center(
@@ -209,9 +261,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                         ? Colors.red
                         : day.weekday == DateTime.saturday
                         ? Colors.blue
-                        : isHoliday
-                        ? Colors.red
-                        : Colors.black, // 일요일은 빨간색, 토요일은 파란색, 나머지는 검은색
+                        : Colors.black,
                   ),
                 ),
               ),
@@ -229,7 +279,6 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
           );
         },
         markerBuilder: (context, day, events) {
-          // 일정 개수에 따른 동그라미 마커 제거
           return Container();
         },
       ),
