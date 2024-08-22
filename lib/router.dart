@@ -12,7 +12,7 @@ import 'screen/map_list/tmap.dart';
 import 'screen/calendar/monthly_calendar.dart';
 import 'screen/calendar/today_calendar.dart';
 import 'screen/summary/sms_received_screen.dart';
-import 'yes_no.dart';
+import 'screen/yes_no.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
