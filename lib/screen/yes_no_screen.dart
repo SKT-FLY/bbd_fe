@@ -4,8 +4,14 @@ import 'package:go_router/go_router.dart';
 class YesNoScreen extends StatelessWidget {
   final String message;
   final int resultCode;
+  final int userId; // userId 추가
 
-  const YesNoScreen({super.key, required this.message, required this.resultCode});
+  const YesNoScreen({
+    super.key,
+    required this.message,
+    required this.resultCode,
+    required this.userId, // userId 추가
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -4,10 +4,12 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:lunar/lunar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:bbd_project_fe/api_service.dart'; // ApiService 임포트
+import 'package:bbd_project_fe/api_service.dart';
 
 class ScheduleMonthlyScreen extends StatefulWidget {
-  const ScheduleMonthlyScreen({Key? key}) : super(key: key);
+  final int userId;
+
+  const ScheduleMonthlyScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   _ScheduleMonthlyScreenState createState() => _ScheduleMonthlyScreenState();
@@ -28,7 +30,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
 
   void _fetchScheduleData() {
     setState(() {
-      _scheduleDataFuture = _apiService.fetchScheduleData(1); // 유저 ID 사용
+      _scheduleDataFuture = _apiService.fetchScheduleData(widget.userId);
       _scheduleDataFuture.then((schedules) {
         setState(() {
           _events = _groupEventsByDate(schedules);
@@ -58,11 +60,9 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
       _focusedDay = focusedDay;
     });
 
-    // 선택한 날짜에 해당하는 이벤트들을 가져옵니다.
     final selectedEvents = _events[selectedDay] ?? [];
-    context.go('/daily-schedule', extra: {'selectedDate': selectedDay, 'events': selectedEvents});
+    context.go('/daily-schedule', extra: {'selectedDate': selectedDay, 'events': selectedEvents, 'userId': widget.userId});
   }
-
 
   String _getLunarDate(DateTime date) {
     final solar = Solar.fromYmd(date.year, date.month, date.day);
@@ -107,7 +107,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: () {
-                    context.go('/chat');
+                    context.go('/chat', extra: widget.userId);
                   },
                   child: Container(
                     width: 80,

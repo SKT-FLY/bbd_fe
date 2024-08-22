@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -14,7 +13,9 @@ import 'package:flutter/services.dart';
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final int userId;
+
+  const ChatScreen({super.key, required this.userId});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -129,6 +130,7 @@ class _ChatScreenState extends State<ChatScreen> {
         extra: {
           'message': _text,
           'resultCode': _resultCode!,
+          'userId': widget.userId,
         },
       );
     } else {
@@ -309,7 +311,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  context.go('/monthly-calendar');
+                                  context.go('/monthly-calendar', extra: widget.userId);
                                 },
                                 child: Container(
                                   width: screenWidth * 0.22,
