@@ -88,6 +88,19 @@ final GoRouter router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/daily-schedule-TTS',
+      builder: (context, state) {
+        final DateTime selectedDate = (state.extra as Map<String, dynamic>?)?['selectedDate'] ?? DateTime.now();
+        final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['data'];
+
+        return ScheduleDailyScreen(
+          selectedDate: selectedDate,
+          extraData: extraData, // extraData를 전달
+        );
+      },
+    ),
+
+    GoRoute(
       path: '/tmap',
       builder: (context, state) {
         // state.extra가 null일 경우를 대비해 기본 Map을 제공

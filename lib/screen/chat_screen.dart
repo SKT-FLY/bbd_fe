@@ -13,7 +13,6 @@ import 'package:flutter/services.dart';
 import 'package:bbd_project_fe/user_provider.dart';
 import 'package:provider/provider.dart';
 
-
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -46,6 +45,13 @@ class _ChatScreenState extends State<ChatScreen> {
     await Permission.storage.request();
   }
 
+  Future<void> _stopSpinnerWithDelay() async {
+    await Future.delayed(Duration(seconds: 5));  // 5초 딜레이
+    setState(() {
+      _showSpinner = false;
+    });
+  }
+
   Future<void> _listen() async {
     HapticFeedback.heavyImpact();
 
@@ -53,6 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _speech.stop();
       setState(() {
         _isListening = false;
+        _showSpinner = false;  // 스피너를 멈춤
       });
     } else {
       bool available = await _speech.initialize(
@@ -61,12 +68,16 @@ class _ChatScreenState extends State<ChatScreen> {
             _speech.stop();
             setState(() {
               _isListening = false;
+              _stopSpinnerWithDelay();
+              _showSpinner = false;  // 스피너를 멈춤
             });
           }
         },
         onError: (val) {
           setState(() {
             _isListening = false;
+            _stopSpinnerWithDelay();
+            _showSpinner = false;  // 스피너를 멈춤
           });
         },
       );
@@ -75,7 +86,7 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _isListening = true;
           _text = "";
-          _showSpinner = true;
+          _showSpinner = true;  // 스피너를 켬
           _showCloudSpinner = false;
         });
 
@@ -85,6 +96,8 @@ class _ChatScreenState extends State<ChatScreen> {
               _text = val.recognizedWords;
               if (val.finalResult) {
                 _isListening = false;
+                _stopSpinnerWithDelay();
+                _showSpinner = false;  // 발화가 끝나면 스피너를 멈춤
                 if (_text.isNotEmpty) {
                   _sendToServer(_text);
                 }
@@ -113,22 +126,23 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (response['url'] != null) {
-        var url = "http://172.23.241.36:8000/" + response['url'];
+        var url = 'http://192.168.0.228:8000/' + response['url'];
         try {
           await _audioPlayer.play(UrlSource(url));
         } catch (e) {
           print('오류 발생: $e');
         }
       }
-
+      print("yes no로 갈 차례");
       _navigateToYesNoScreen();
     }
   }
 
   void _navigateToYesNoScreen() {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
-    if (_resultCode != null) {
-      context.go(
+    if (_resultCode != null && _resultCode != 13) {  // resultCode가 13이 아닐 때만 YesNoPage로 이동
+      print("navigate to Y/N" + _resultCode.toString());
+      context.push(
         '/yesno',
         extra: {
           'message': _text, // 검색 확인 문구
@@ -136,6 +150,9 @@ class _ChatScreenState extends State<ChatScreen> {
           'userId': userId,
         },
       );
+    } else if (_resultCode == 13) {
+      print("resultCode is 13, staying on current screen.");
+      // 13번 코드일 경우 다른 동작을 추가로 넣고 싶으면 여기에 작성
     } else {
       print("Error: resultCode is null.");
     }
@@ -241,8 +258,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: <Widget>[
                               GestureDetector(  // 문자탭
                                 onTap: () { // 클릭 시 문자칸으로 이동
-                                  context.go('/smsListScreen');
-                                  },
+                                  context.push('/smsListScreen');
+                                },
                                 child: Container(
                                   width: screenWidth * 0.22,
                                   height: screenWidth * 0.22,
@@ -315,7 +332,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               GestureDetector( // 달력탭
                                 onTap: () { // 클릭 시 달력으로 이동
-                                  context.go('/monthly-calendar', extra: userId);
+                                  context.push('/monthly-calendar', extra: userId);
                                 },
                                 child: Container(
                                   width: screenWidth * 0.22,

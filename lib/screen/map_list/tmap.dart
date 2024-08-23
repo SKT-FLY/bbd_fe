@@ -31,8 +31,9 @@ class _TmapScreenState extends State<TmapScreen> {
   }
 
   Future<List<NearbyHospital>> _fetchAndProcessHospitals(ApiService apiService) async {
+    print(widget.searchKeyword);
     final data = await apiService.fetchPois(widget.searchKeyword, widget.centerLat, widget.centerLon);
-    //final List<dynamic> pois = data['pois'] as List<dynamic>;
+    final List<dynamic> pois = data['pois'] as List<dynamic>;
     return data.map((json) => NearbyHospital.fromJson(json as Map<String, dynamic>)).toList();
   }
 
@@ -84,7 +85,8 @@ class _TmapScreenState extends State<TmapScreen> {
                     final hospital = nearbyHospitals[index];
                     return GestureDetector(
                       onTap: () {
-                        context.go('/calling-screen', extra: hospital.telNo.toString());
+                        // @@@@@@@@@@@@@@ 병원 즐찾 횟수 증가 API @@@@@@@@@@@@@@@
+                        context.push('/calling-screen', extra: hospital.telNo.toString());
                         print('병원 전화번호: ${hospital.telNo}');
                       },
                       child: _buildHospitalCard(

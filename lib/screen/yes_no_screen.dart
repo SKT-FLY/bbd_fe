@@ -1,18 +1,28 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bbd_project_fe/user_provider.dart';
-import 'package:provider/provider.dart';
+
+import '../api_service.dart';
 
 class YesNoScreen extends StatelessWidget {
   final String message;
   final int resultCode;
   final int userId; // userId 추가
+
   const YesNoScreen({
     super.key,
     required this.message,
     required this.resultCode,
     required this.userId, // userId 추가
   });
+
+  factory YesNoScreen.fromGoRouter(GoRouterState state) {
+    final extra = state.extra as Map<String, dynamic>?;
+    return YesNoScreen(
+      message: extra?['message'] ?? '메시지가 없습니다.',
+      resultCode: extra?['resultCode'] ?? 0,
+      userId: extra?['userId'] ?? 0,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +70,8 @@ class YesNoScreen extends StatelessWidget {
                           const SizedBox(height: 30),
                           SizedBox(
                             width: double.infinity,
-                            child: CupertinoButton( // 예 버튼
-                              onPressed: () { // 클릭 시 intend에 따른 페이지로 진입
+                            child: CupertinoButton(
+                              onPressed: () {
                                 _handleYes(context);
                               },
                               color: CupertinoColors.activeGreen,
@@ -80,9 +90,9 @@ class YesNoScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
-                            child: CupertinoButton( // 아니오 버튼
-                              onPressed: () { // 클릭 시 음성 페이지로 진입
-                                context.go('/chat');  // ChatScreen으로 돌아감
+                            child: CupertinoButton(
+                              onPressed: () {
+                                context.go('/chat');
                               },
                               color: CupertinoColors.destructiveRed,
                               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -141,67 +151,97 @@ class YesNoScreen extends StatelessWidget {
   }
 
   void _handleYes(BuildContext context) {
-    final userId = Provider.of<UserProvider>(context, listen: false).userId;
-    String search = '';
-    // resultCode에 따라 병원 타입 설정
+    print("Handling YES : " + resultCode.toString());
     switch (resultCode) {
       case 1:
-        context.go('/tmap', extra: {
-          'searchKeyword': "이비인후과", // 병원 타입 전달
-          'centerLat': 37.5665, // 적절한 위도 값을 설정
-          'centerLon': 126.9780, // 적절한 경도 값을 설정
-          'userId': userId, // 적절한 userId를 설정
-        });
+        navigateToTmap(context, "이비인후과", userId);
         break;
       case 2:
-        navigateToTmap(context,"내과",userId);
-        break;
+        navigateToTmap(context, "내과", userId);
         break;
       case 3:
-        navigateToTmap(context,"재활의학과",userId);
+        navigateToTmap(context, "재활의학과", userId);
         break;
       case 4:
-        navigateToTmap(context,"안과",userId);
+        navigateToTmap(context, "안과", userId);
         break;
       case 5:
-        navigateToTmap(context,"정형외과",userId);
+        navigateToTmap(context, "정형외과", userId);
         break;
       case 6:
-        navigateToTmap(context,"비뇨기과",userId);
+        navigateToTmap(context, "비뇨기과", userId);
         break;
       case 7:
-        navigateToTmap(context,"신경외과",userId);
+        navigateToTmap(context, "신경외과", userId);
         break;
       case 8:
-        navigateToTmap(context,"병원",userId);
+        navigateToTmap(context, "병원", userId);
         break;
-      case 9: //taxi
-        break;
-        return; // 아래의 코드 실행 방지
+      case 9:
+      // 추가 기능이 있다면 여기에 작성
+        context.push('/tmap', extra: {
+          'searchKeyword': search,
+          'centerLat': 37.5665,
+          'centerLon': 126.9780,
+          'userId': userId,
+        });
+    }
+
+    break;
       case 10:
-        context.go('/SmsListScreen');
-        return; // 아래의 코드 실행 방지
-      case 11: // today 띄우면서 음성재생
-        context.go('/futureSchedule');
-        return; // 아래의 코드 실행 방지
-      case 12:
-        context.go('/todaySchedule');
-        return; // 아래의 코드 실행 방지
+        print("case 10");
+        context.push('/SmsListScreen');
+        break;
+      case 11:
+        print("case 11");
+        context.push('/monthly-calendar');
+        break;
+      case 12: // 오늘의 일정 가져오기
+        print("case 12");
+        _fetchScheduleData(userId, context);
+        break;
       case 13:
-        context.go('/noAnswer');
-        return; // 아래의 코드 실행 방지
+        print("case 13");
+        context.push('/noAnswer');
+        break;
       default:
         print('Unknown result: $resultCode');
-        return; // 아래의 코드 실행 방지
+        break;
     }
   }
+
   void navigateToTmap(BuildContext context, String search, int userId) {
     print(search);
-    context.go('/tmap', extra: {
-      'searchKeyword': search, // 병원 타입 전달
-      'centerLat': 37.5665, // 적절한 위도 값을 설정
-      'centerLon': 126.9780, // 적절한 경도 값을 설정
-      'userId': userId, // 적절한 userId를 설정
+    context.push('/tmap', extra: {
+      'searchKeyword': search,
+      'centerLat': 37.5665,
+      'centerLon': 126.9780,
+      'userId': userId,
     });
+  }
+
+  Future<Map<String, dynamic>> _fetchScheduleData(int userId, BuildContext context) async {
+    final DateTime todayDate = DateTime.now();
+    final String formattedDate = "${todayDate.year}-${todayDate.month.toString().padLeft(2, '0')}-${todayDate.day.toString().padLeft(2, '0')}";
+    final apiService = ApiService();
+    print(formattedDate);
+    print("_fetchScheduleData 함수");
+
+    try {
+      final response = await apiService.fetchSchedule(formattedDate, userId);
+      // GoRouter를 사용하여 '/daily-schedule-TTS' 경로로 이동, 데이터를 함께 전달
+      context.push(
+        '/daily-schedule-TTS',
+        extra: {
+          'selectedDate': todayDate,
+          'data': response, // API 호출 결과를 전달
+        },
+      );
+      return response; // API 호출 결과를 반환
+    } catch (e) {
+      // 예외 처리
+      print('예외 발생: ${e.toString()}');
+      return {'error': '예외 발생', 'exception': e.toString()}; // 예외를 반환
+    }
   }
 }

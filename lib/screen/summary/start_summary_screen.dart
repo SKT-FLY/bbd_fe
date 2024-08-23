@@ -36,8 +36,8 @@ class _MessageSummaryState extends State<SummaryScreen> {
       print("TO GO CAL");
       // 날짜가 있으면 캘린더 결과 화면으로 이동하고 필요한 데이터를 전달
       context.go('/summary-result-calendar', extra: data);
-      };
-    }
+    };
+  }
 
 
 
