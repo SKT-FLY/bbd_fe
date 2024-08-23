@@ -12,23 +12,20 @@ import 'screen/map_list/tmap.dart';
 import 'screen/calendar/monthly_calendar.dart';
 import 'screen/calendar/today_calendar.dart';
 import 'screen/summary/sms_received_screen.dart';
-import 'screen/yes_no.dart';
+import 'screen/yes_no_screen.dart';
+import 'screen/user_id_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const ChatScreen(),
+      builder: (context, state) => const UserSelectionScreen(),
     ),
     GoRoute(
       path: '/chat',
-      builder: (context, state) => const ChatScreen(),
+      builder: (context, state) => ChatScreen(),
     ),
-    // GoRoute(
-    //   path: '/calling-screen',
-    //   builder: (context, state) => const Calling_Screen(),
-    // ),
     GoRoute(
       path: '/calling-screen',
       builder: (context, state) {
@@ -83,24 +80,22 @@ final GoRouter router = GoRouter(
         );
       },
     ),
-
-
     GoRoute(
       path: '/monthly-calendar',
-      builder: (context, state) => const ScheduleMonthlyScreen(),
+      builder: (context, state) {
+        return ScheduleMonthlyScreen(); // userId 파라미터 없이 생성자 호출
+      },
     ),
     GoRoute(
       path: '/daily-schedule',
       builder: (context, state) {
-        final Map<String, Object> data = state.extra as Map<String, Object>;
-        final DateTime selectedDate = data['selectedDate'] as DateTime;
-
+        final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
+        final DateTime selectedDate = extra['selectedDate'];
         return ScheduleDailyScreen(
-          selectedDate: selectedDate,
+          selectedDate: selectedDate, // userId 없이 생성자 호출
         );
       },
     ),
-
     GoRoute(
       path: '/tmap',
       builder: (context, state) {
@@ -121,18 +116,15 @@ final GoRouter router = GoRouter(
         );
       },
     ),
+
     GoRoute(
       path: '/yesno',
       builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        final message = extra?['message'] as String?;
-        final resultCode = extra?['resultCode'] as int?;
-
-        if (message == null || resultCode == null) {
-          return const ChatScreen(); // 예외 처리: 잘못된 경우 ChatScreen으로 돌아감
-        }
-
-        return YesNoScreen(message: message, resultCode: resultCode);
+        final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
+        final String message = extra['message'];
+        final int resultCode = extra['resultCode'];
+        final int userId = extra['userId'];
+        return YesNoScreen(message: message, resultCode: resultCode, userId: userId);
       },
     ),
   ],

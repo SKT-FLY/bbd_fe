@@ -14,6 +14,8 @@ import 'router.dart';
 import 'screen/calendar/monthly_calendar.dart';
 import 'screen/calendar/today_calendar.dart';
 import 'screen/summary/sms_received_screen.dart';
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';
 
 
 import 'package:intl/intl.dart';
@@ -22,7 +24,14 @@ import 'package:intl/date_symbol_data_local.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ko_KR', null); // 로케일 데이터 초기화
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -42,15 +51,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-  //@override
-  //Widget build(BuildContext context) {
-    //return CupertinoApp(
-      //debugShowCheckedModeBanner: false,
-      ///title: 'Flutter Cupertino Demo',
-     // theme: const CupertinoThemeData(
-       // primaryColor: CupertinoColors.activeOrange,
-     // ),
-     // home: ChatScreen(), // Screen()을 호출하여 홈 화면으로 설정
-   // );
- // }
-//}

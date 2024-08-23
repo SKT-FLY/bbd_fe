@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_project_fe/api_service.dart'; // API 서비스 임포트
+import 'package:bbd_project_fe/api_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';  // Provider 패키지 임포트
 
 class ScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
@@ -28,7 +30,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     _selectedMonth = widget.selectedDate.month;
     _selectedDay = widget.selectedDate.day;
 
-    _scheduleDataFuture = _fetchScheduleData(); // API 호출로 데이터 가져오기
+    _scheduleDataFuture = _fetchScheduleData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToSelectedDay();
@@ -37,9 +39,10 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
 
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
-      final List<dynamic> schedules = await _apiService.fetchScheduleData(1); // user_id만 사용
+      final userId = Provider.of<UserProvider>(context, listen: false).userId;  // Provider에서 userId 가져오기
+      final List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
       setState(() {
-        _schedules = schedules; // 로드된 데이터를 저장
+        _schedules = schedules;
       });
       return schedules;
     } catch (e) {
@@ -122,7 +125,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () {
-                  context.go('/monthly-calendar');
+                  final userId = Provider.of<UserProvider>(context, listen: false).userId;  // Provider에서 userId 가져오기
+                  context.go('/monthly-calendar', extra: userId);
                 },
                 child: Container(
                   width: 80,
@@ -201,6 +205,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           String weekDay = _getWeekDay(_selectedYear, _selectedMonth, day);
           DateTime currentDay = DateTime(_selectedYear, _selectedMonth, day);
           bool hasEvent = _hasEventForDay(currentDay);
+          bool isSelected = day == _selectedDay;
 
           return GestureDetector(
             onTap: () {
@@ -218,9 +223,9 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                 day.toString(),
                 weekDay,
                 hasEvent,
-                day == _selectedDay,
+                isSelected,
                 boxWidth,
-                day == _selectedDay ? selectedBoxHeight : boxHeight,
+                isSelected ? selectedBoxHeight : boxHeight,
               ),
             ),
           );
@@ -293,8 +298,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                   ),
                 ],
                 border: Border.all(
-                  color: hasEvent ? Colors.lightGreenAccent : Colors.transparent,
-                  width: 2.0,
+                  color: isSelected ? Colors.transparent : (hasEvent ? Colors.lightGreenAccent : Colors.transparent),
+                  width: isSelected ? 0.0 : 3.0,
                 ),
               ),
               child: Column(
