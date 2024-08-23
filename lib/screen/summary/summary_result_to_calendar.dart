@@ -1,17 +1,17 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // TimeOfDay 사용을 위한 material import
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart'; // DateFormat 사용을 위한 intl import
+import 'package:bbd_project_fe/api_service.dart'; // API 서비스 import
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class SummaryResultToCalendar extends StatefulWidget {
-  final String date;
-  final String time;
-  final String content;
+  final Map<String, dynamic> data; // 서버에서 받은 데이터 객체
 
   const SummaryResultToCalendar({
     Key? key,
-    required this.date,
-    required this.time,
-    required this.content,
+    required this.data,
   }) : super(key: key);
 
   @override
@@ -19,6 +19,54 @@ class SummaryResultToCalendar extends StatefulWidget {
 }
 
 class _SummaryPage2State extends State<SummaryResultToCalendar> {
+  DateTime? scheduleDateTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _parseDateTime();
+  }
+
+  void _parseDateTime() {
+    try {
+      // 서버에서 받은 date를 DateTime 객체로 변환 (예: "2024-08-26 00:00")
+      final String dateTimeString = widget.data['date'];
+
+      // DateTime.parse 사용 대신, DateFormat을 사용하여 보다 정확한 파싱
+      final DateFormat format = DateFormat("yyyy-MM-dd HH:mm");
+      scheduleDateTime = format.parse(dateTimeString);
+    } catch (e) {
+      print('Error parsing date: $e');
+      scheduleDateTime = null; // 에러 발생 시 null로 설정
+    }
+  }
+
+  Future<void> _registerSchedule() async {
+    final userId = Provider.of<UserProvider>(context, listen: false).userId;
+
+    if (scheduleDateTime != null) {
+      // API 호출을 통한 일정 등록
+      final result = await ApiService().postSchedule(
+        userId,
+        widget.data['source'], // 일정 이름을 data['source']로 설정
+        scheduleDateTime!,
+        widget.data['summary'],
+        1, // hospitalId 예시
+      );
+
+      if (result.containsKey('error')) {
+        // 오류 처리
+        print('일정 등록 오류: ${result['error']}');
+      } else {
+        // 성공 처리
+        print('일정 등록 성공');
+        // 추가적으로 성공 알림을 보여주거나 다른 화면으로 이동하는 코드 작성 가능
+      }
+    } else {
+      print('Invalid schedule date time');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -91,46 +139,15 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '날짜',
+                              '요약',
                               style: TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              widget.date,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: CupertinoColors.activeOrange,
                               ),
                             ),
                             SizedBox(height: 8),
                             Text(
-                              '시간',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              widget.time,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: CupertinoColors.activeOrange,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              '내용',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              widget.content,
+                              widget.data['summary'],
                               style: TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
@@ -149,10 +166,7 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                 Expanded( // 일정 등록 버튼 공간
                   flex: 4,
                   child: GestureDetector(
-                    onTap: () {
-                      // 일정 Canlendar api
-                      print('일정등록 버튼 클릭됨');
-                    },
+                    onTap: _registerSchedule, // 일정 등록 함수 호출
                     child: Container(
                       width: screenWidth,
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -189,7 +203,6 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                       padding: EdgeInsets.zero,
                       onPressed: () {
                         // 홈 버튼 클릭 시의 동작
-                        print('홈 버튼 클릭됨');
                         context.go('/chat');
                       },
                       child: Container(

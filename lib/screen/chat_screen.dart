@@ -131,8 +131,8 @@ class _ChatScreenState extends State<ChatScreen> {
       context.go(
         '/yesno',
         extra: {
-          'message': _text,
-          'resultCode': _resultCode!,
+          'message': _text, // 검색 확인 문구
+          'resultCode': _resultCode!, // 티맵 검색 코드
           'userId': userId,
         },
       );
@@ -242,7 +242,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               GestureDetector(  // 문자탭
                                 onTap: () { // 클릭 시 문자칸으로 이동
                                   context.go('/smsListScreen');
-                                },
+                                  },
                                 child: Container(
                                   width: screenWidth * 0.22,
                                   height: screenWidth * 0.22,

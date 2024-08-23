@@ -36,11 +36,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/loading',
-      builder: (context, state) {
-        // 'extra'로 이동할 경로를 결정
-        final bool goToSummaryPage1 = state.extra as bool? ?? false;
-        return LoadingScreen(goToSummaryPage1: goToSummaryPage1);
-      },
+      builder: (context, state) => LoadingScreen(),
     ),
     GoRoute(
       path: '/smsListScreen',
@@ -57,29 +53,24 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/summary-result-normal',
-      builder: (context, state){
-        final messageText = state.extra as String;
-        return SummaryResultScreen_normal(text:messageText);
-      }
+      builder: (context, state) {
+        // state.extra를 Map<String, dynamic>으로 그대로 전달
+        final data = state.extra as Map<String, dynamic>;
+        return SummaryResultScreen_normal(data: data);
+      },
     ),
     GoRoute(
       path: '/summary-result-calendar',
       builder: (context, state) {
         // state.extra가 null일 경우를 대비해 기본 Map을 제공
-        final data = state.extra as Map<String,String>? ?? {};
-
-        // 각 필드가 null일 경우 빈 문자열을 기본값으로 사용
-        final String date = data['date'] ?? '날짜 정보 없음';
-        final String time = data['time'] ?? '시간 정보 없음';
-        final String content = data['content'] ?? '내용 정보 없음';
+        final data = state.extra as Map<String, dynamic>? ?? {};
 
         return SummaryResultToCalendar(
-          date: date,
-          time: time,
-          content: content,
+          data: data,
         );
       },
     ),
+
     GoRoute(
       path: '/monthly-calendar',
       builder: (context, state) {
@@ -116,7 +107,6 @@ final GoRouter router = GoRouter(
         );
       },
     ),
-
     GoRoute(
       path: '/yesno',
       builder: (context, state) {
