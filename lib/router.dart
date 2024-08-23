@@ -25,9 +25,17 @@ final GoRouter router = GoRouter(
       path: '/chat',
       builder: (context, state) => const ChatScreen(),
     ),
+    // GoRoute(
+    //   path: '/calling-screen',
+    //   builder: (context, state) => const Calling_Screen(),
+    // ),
     GoRoute(
-      path: '/start_calling',
-      builder: (context, state) => const Calling_Screen(),
+      path: '/calling-screen',
+      builder: (context, state) {
+        // state.extra가 null일 경우를 대비해 기본 값을 설정
+        final String phoneNumber = (state.extra as String?) ?? '전화번호 없음'; // String?로 안전하게 캐스팅
+        return Calling_Screen(phoneNumber: phoneNumber);
+      },
     ),
     GoRoute(
       path: '/loading',
@@ -36,6 +44,10 @@ final GoRouter router = GoRouter(
         final bool goToSummaryPage1 = state.extra as bool? ?? false;
         return LoadingScreen(goToSummaryPage1: goToSummaryPage1);
       },
+    ),
+    GoRoute(
+      path: '/smsListScreen',
+      builder: (context, state) => SmsListScreen(),
     ),
     GoRoute(
       path: '/start-message-summary',
@@ -90,25 +102,24 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: '/smsListScreen',
-      builder: (context, state) => SmsListScreen(),
-    ),
-    //GoRoute(
-    //path: '/tmap',
-    //builder: (context, state) {
-    // 병원 데이터를 전달받아 사용
-    //final hospitalData = state.extra as List<Map<String, String>>;
-    //return TmapScreen(hospitalData: hospitalData);
-    //},
-    //),
-    GoRoute(
       path: '/tmap',
-      builder: (context, state) => const TmapScreen(),
-    ),
-    // Route for SMS Received Screen
-    GoRoute(
-      path: '/calling-screen',
-      builder: (context, state) => const Calling_Screen(),
+      builder: (context, state) {
+        // state.extra가 null일 경우를 대비해 기본 Map을 제공
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+
+        // 각 필드가 null일 경우 기본값을 제공
+        final int userId = extra['userId'] as int? ?? 0;
+        final double centerLat = extra['centerLat'] as double? ?? 0.0;
+        final double centerLon = extra['centerLon'] as double? ?? 0.0;
+        final String hospitalType = extra['hospitalType'] as String? ?? '병원 유형 없음';
+
+        return TmapScreen(
+          userId: userId,
+          centerLat: centerLat,
+          centerLon: centerLon,
+          hospitalType: hospitalType,
+        );
+      },
     ),
     GoRoute(
       path: '/yesno',
