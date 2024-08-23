@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class ApiService {
 
@@ -188,6 +190,7 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(
             utf8.decode(response.bodyBytes));
+        print(searchKeyword);
         print('API 응답 데이터: $data');
         final List<dynamic> pois = data['pois'] as List<dynamic>;
         print('Pois 리스트: $pois');

@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class YesNoScreen extends StatelessWidget {
   final String message;
   final int resultCode;
   final int userId; // userId 추가
-
   const YesNoScreen({
     super.key,
     required this.message,
@@ -140,41 +141,67 @@ class YesNoScreen extends StatelessWidget {
   }
 
   void _handleYes(BuildContext context) {
-    if (resultCode >= 1 && resultCode <= 8) {
-      // resultCode를 String으로 변환하여 hospitalType으로 전달
-      context.go('/tmap', extra: {
-        'userId': 1, // 필요한 경우 적절한 userId를 설정
-        'centerLat': 37.5665, // 필요한 경우 적절한 위도 값을 설정
-        'centerLon': 126.9780, // 필요한 경우 적절한 경도 값을 설정
-        'hospitalType': resultCode.toString(), // resultCode를 String으로 변환하여 전달
-      });
-    } else {
-      switch (resultCode) {
-        case 9:
-          context.go('/tmap', extra: {
-            'userId': 1, // 필요한 경우 적절한 userId를 설정
-            'centerLat': 37.5665, // 필요한 경우 적절한 위도 값을 설정
-            'centerLon': 126.9780, // 필요한 경우 적절한 경도 값을 설정
-            'hospitalType': resultCode.toString(), // resultCode를 String으로 변환하여 전달
-          });
-          break;
-        case 10:
-          context.go('/smsAnalysis');
-          break;
-        case 11:
-          context.go('/futureSchedule');
-          break;
-        case 12:
-          context.go('/todaySchedule');
-          break;
-        case 13:
-          context.go('/noAnswer');
-          break;
-        default:
-          print('Unknown result: $resultCode');
-          break;
-      }
+    final userId = Provider.of<UserProvider>(context, listen: false).userId;
+    String search = '';
+    // resultCode에 따라 병원 타입 설정
+    switch (resultCode) {
+      case 1:
+        context.go('/tmap', extra: {
+          'searchKeyword': "이비인후과", // 병원 타입 전달
+          'centerLat': 37.5665, // 적절한 위도 값을 설정
+          'centerLon': 126.9780, // 적절한 경도 값을 설정
+          'userId': userId, // 적절한 userId를 설정
+        });
+        break;
+      case 2:
+        navigateToTmap(context,"내과",userId);
+        break;
+        break;
+      case 3:
+        navigateToTmap(context,"재활의학과",userId);
+        break;
+      case 4:
+        navigateToTmap(context,"안과",userId);
+        break;
+      case 5:
+        navigateToTmap(context,"정형외과",userId);
+        break;
+      case 6:
+        navigateToTmap(context,"비뇨기과",userId);
+        break;
+      case 7:
+        navigateToTmap(context,"신경외과",userId);
+        break;
+      case 8:
+        navigateToTmap(context,"병원",userId);
+        break;
+      case 9: //taxi
+        break;
+        return; // 아래의 코드 실행 방지
+      case 10:
+        context.go('/SmsListScreen');
+        return; // 아래의 코드 실행 방지
+      case 11: // today 띄우면서 음성재생
+        context.go('/futureSchedule');
+        return; // 아래의 코드 실행 방지
+      case 12:
+        context.go('/todaySchedule');
+        return; // 아래의 코드 실행 방지
+      case 13:
+        context.go('/noAnswer');
+        return; // 아래의 코드 실행 방지
+      default:
+        print('Unknown result: $resultCode');
+        return; // 아래의 코드 실행 방지
     }
   }
-
+  void navigateToTmap(BuildContext context, String search, int userId) {
+    print(search);
+    context.go('/tmap', extra: {
+      'searchKeyword': search, // 병원 타입 전달
+      'centerLat': 37.5665, // 적절한 위도 값을 설정
+      'centerLon': 126.9780, // 적절한 경도 값을 설정
+      'userId': userId, // 적절한 userId를 설정
+    });
+  }
 }

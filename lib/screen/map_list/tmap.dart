@@ -6,14 +6,14 @@ class TmapScreen extends StatefulWidget {
   final int userId;
   final double centerLat;
   final double centerLon;
-  final String hospitalType;
+  final String searchKeyword;
 
   const TmapScreen({
     super.key,
-    required this.userId,
+    required this.searchKeyword,
     required this.centerLat,
     required this.centerLon,
-    required this.hospitalType,
+    required this.userId,
   });
 
   @override
@@ -31,7 +31,7 @@ class _TmapScreenState extends State<TmapScreen> {
   }
 
   Future<List<NearbyHospital>> _fetchAndProcessHospitals(ApiService apiService) async {
-    final data = await apiService.fetchPois(widget.hospitalType, widget.centerLat, widget.centerLon);
+    final data = await apiService.fetchPois(widget.searchKeyword, widget.centerLat, widget.centerLon);
     //final List<dynamic> pois = data['pois'] as List<dynamic>;
     return data.map((json) => NearbyHospital.fromJson(json as Map<String, dynamic>)).toList();
   }

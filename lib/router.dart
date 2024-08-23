@@ -94,16 +94,16 @@ final GoRouter router = GoRouter(
         final extra = state.extra as Map<String, dynamic>? ?? {};
 
         // 각 필드가 null일 경우 기본값을 제공
+        final String hospitalType = extra['searchKeyword'] as String? ?? '병원';
         final int userId = extra['userId'] as int? ?? 0;
         final double centerLat = extra['centerLat'] as double? ?? 0.0;
         final double centerLon = extra['centerLon'] as double? ?? 0.0;
-        final String hospitalType = extra['hospitalType'] as String? ?? '병원 유형 없음';
-
+        print(extra['searchKeyword']);
         return TmapScreen(
           userId: userId,
           centerLat: centerLat,
           centerLon: centerLon,
-          hospitalType: hospitalType,
+          searchKeyword: hospitalType,
         );
       },
     ),
