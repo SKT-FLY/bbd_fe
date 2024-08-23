@@ -169,8 +169,8 @@ class ApiService {
   /* 3 TMAP API */
 
   // @GET tmap/pois
-  // 티맵 장소 검색 (병원 케이스)
-  Future<Map<String, dynamic>> fetchPois(String searchKeyword, double centerLat, double centerLon) async {
+  // 티맵 장소 검색 (병원 케이스) API 호출 함수
+  Future<List<dynamic>> fetchPois(String searchKeyword, double centerLat, double centerLon) async {
     final String url = 'http://172.23.241.36:8000/api/v1/pois?version=1&searchKeyword=$searchKeyword&centerLat=$centerLat&centerLon=$centerLon&reqCoordType=WGS84GEO&resCoordType=WGS84GEO&radius=0&searchType=all&searchtypCd=R&page=1&count=20&multiPoint=N&poiGroupYn=N';
 
     try {
@@ -182,19 +182,21 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        // 응답 데이터를 디코딩하여 반환
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-        return data;
+        print('API 응답 데이터: $data');
+        final List<dynamic> pois = data['pois'] as List<dynamic>;
+        print('Pois 리스트: $pois');
+
+        //final List<dynamic> pois = data['pois'] as List<dynamic>;  // 'pois'를 리스트로 캐스팅
+        return pois;
       } else {
-        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+        throw Exception('Failed to load nearby hospitals. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      return {
-        'error': '서버와의 통신 오류가 있습니다.',
-        'exception': e.toString(),
-      };
+      throw Exception('Failed to load nearby hospitals. Error: $e');
     }
   }
+
 
   // @POST tmap/taxi-search
   // 티맵 택시 검색
@@ -227,7 +229,7 @@ class ApiService {
   /* 4 hospitals API */
 
   // @GET hospitals/hospitals
-  // 유저별 즐겨찾기 병원 검색
+  // 유저별 즐겨찾기 병원 검색 API 호출 함수
   Future<Map<String, dynamic>> fetchHospitals(int userId) async {
     final String url = 'http://172.23.241.36:8000/api/v1/hospitals?user_id=$userId';
 
@@ -240,17 +242,13 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        // 응답 데이터를 디코딩하여 반환
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         return data;
       } else {
-        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+        throw Exception('Failed to load favorite hospitals. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      return {
-        'error': '서버와의 통신 오류가 있습니다.',
-        'exception': e.toString(),
-      };
+      throw Exception('Failed to load favorite hospitals. Error: $e');
     }
   }
 

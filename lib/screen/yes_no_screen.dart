@@ -59,8 +59,8 @@ class YesNoScreen extends StatelessWidget {
                           const SizedBox(height: 30),
                           SizedBox(
                             width: double.infinity,
-                            child: CupertinoButton(
-                              onPressed: () {
+                            child: CupertinoButton( // 예 버튼
+                              onPressed: () { // 클릭 시 intend에 따른 페이지로 진입
                                 _handleYes(context);
                               },
                               color: CupertinoColors.activeGreen,
@@ -79,8 +79,8 @@ class YesNoScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
-                            child: CupertinoButton(
-                              onPressed: () {
+                            child: CupertinoButton( // 아니오 버튼
+                              onPressed: () { // 클릭 시 음성 페이지로 진입
                                 context.go('/chat');  // ChatScreen으로 돌아감
                               },
                               color: CupertinoColors.destructiveRed,

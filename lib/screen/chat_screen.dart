@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -235,8 +236,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
-                              GestureDetector(
-                                onTap: () {
+                              GestureDetector(  // 문자탭
+                                onTap: () { // 클릭 시 문자칸으로 이동
                                   context.go('/smsListScreen');
                                 },
                                 child: Container(
@@ -269,8 +270,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: _listen,
+                              GestureDetector( // 음성녹음 버튼
+                                onTap: _listen, // 클릭 시 듣기 시작
                                 child: Container(
                                   width: screenWidth * 0.32,
                                   height: screenWidth * 0.32,
@@ -309,8 +310,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
+                              GestureDetector( // 달력탭
+                                onTap: () { // 클릭 시 달력으로 이동
                                   context.go('/monthly-calendar', extra: widget.userId);
                                 },
                                 child: Container(
