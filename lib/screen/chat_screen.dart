@@ -10,13 +10,14 @@ import 'package:bbd_project_fe/api_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';
+
 
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
-  final int userId;
-
-  const ChatScreen({super.key, required this.userId});
+  const ChatScreen({super.key});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -125,13 +126,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _navigateToYesNoScreen() {
+    final userId = Provider.of<UserProvider>(context, listen: false).userId;
     if (_resultCode != null) {
       context.go(
         '/yesno',
         extra: {
           'message': _text,
           'resultCode': _resultCode!,
-          'userId': widget.userId,
+          'userId': userId,
         },
       );
     } else {
@@ -141,6 +143,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    int userId = Provider.of<UserProvider>(context).userId; // userId를 Provider에서 가져옴
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
     const Color activeOrange = Color(0xFFFFA500);
@@ -312,7 +315,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               GestureDetector( // 달력탭
                                 onTap: () { // 클릭 시 달력으로 이동
-                                  context.go('/monthly-calendar', extra: widget.userId);
+                                  context.go('/monthly-calendar', extra: userId);
                                 },
                                 child: Container(
                                   width: screenWidth * 0.22,

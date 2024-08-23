@@ -24,10 +24,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/chat',
-      builder: (context, state) {
-        final int userId = state.extra as int;
-        return ChatScreen(userId: userId);
-      },
+      builder: (context, state) => ChatScreen(),
     ),
     GoRoute(
       path: '/calling-screen',
@@ -83,15 +80,10 @@ final GoRouter router = GoRouter(
         );
       },
     ),
-
-
     GoRoute(
       path: '/monthly-calendar',
       builder: (context, state) {
-        final int userId = state.extra as int;
-        return ScheduleMonthlyScreen(
-          userId: userId, // `userId`를 월간 캘린더 화면으로 전달
-        );
+        return ScheduleMonthlyScreen(); // userId 파라미터 없이 생성자 호출
       },
     ),
     GoRoute(
@@ -99,10 +91,8 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
         final DateTime selectedDate = extra['selectedDate'];
-        final int userId = extra['userId'];
         return ScheduleDailyScreen(
-          selectedDate: selectedDate,
-          userId: userId,
+          selectedDate: selectedDate, // userId 없이 생성자 호출
         );
       },
     ),

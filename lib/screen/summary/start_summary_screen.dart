@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
 import '../chat_screen.dart';  // ChatScreen을 import 합니다.
 import '../loading_screen.dart'; // LoadingScreen을 import 합니다.
 
+import 'package:bbd_project_fe/user_provider.dart';
 class SummaryScreen extends StatefulWidget {
   final String text;
   const SummaryScreen({Key? key, required this.text}) : super(key: key);

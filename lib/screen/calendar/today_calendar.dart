@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_project_fe/api_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';  // Provider 패키지 임포트
 
 class ScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
-  final int userId; // userId 추가
 
-  const ScheduleDailyScreen({Key? key, required this.selectedDate, required this.userId}) : super(key: key);
+  const ScheduleDailyScreen({Key? key, required this.selectedDate}) : super(key: key);
 
   @override
   _ScheduleDailyScreenState createState() => _ScheduleDailyScreenState();
@@ -38,7 +39,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
 
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
-      final List<dynamic> schedules = await _apiService.fetchScheduleData(widget.userId);
+      final userId = Provider.of<UserProvider>(context, listen: false).userId;  // Provider에서 userId 가져오기
+      final List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
       setState(() {
         _schedules = schedules;
       });
@@ -123,7 +125,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () {
-                  context.go('/monthly-calendar', extra: widget.userId);
+                  final userId = Provider.of<UserProvider>(context, listen: false).userId;  // Provider에서 userId 가져오기
+                  context.go('/monthly-calendar', extra: userId);
                 },
                 child: Container(
                   width: 80,

@@ -1,11 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import 'package:bbd_project_fe/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class UserSelectionScreen extends StatelessWidget {
   const UserSelectionScreen({Key? key}) : super(key: key);
 
-  void _selectUser(BuildContext context, int userId) {
-    context.go('/chat', extra: userId);  // 선택한 userId를 extra로 전달
+  void _selectUser(BuildContext context, int id) {
+    Provider.of<UserProvider>(context, listen: false).setUserId(id);
+    context.go('/chat');  // 선택한 userId를 설정하고 채팅 화면으로 이동
   }
 
   @override
