@@ -40,7 +40,7 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   Future<void> _fetchSms() async {
     try {
-      final List<dynamic> smsList = await platform.invokeMethod('getLatestSms');
+      final List<dynamic> smsList = await platform.invokeMethod('getLatestMessage');
       setState(() {
         _smsList = smsList.cast<String>();
       });
