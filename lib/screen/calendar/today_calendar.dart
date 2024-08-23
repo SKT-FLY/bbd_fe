@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_project_fe/api_service.dart'; // API 서비스 임포트
 import 'package:go_router/go_router.dart';
-import 'package:bbd_project_fe/db/schedules.dart'; // 공통 일정 데이터 import
 
 class ScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
@@ -9,14 +9,17 @@ class ScheduleDailyScreen extends StatefulWidget {
   const ScheduleDailyScreen({Key? key, required this.selectedDate}) : super(key: key);
 
   @override
-  _ScheduleScreenState createState() => _ScheduleScreenState();
+  _ScheduleDailyScreenState createState() => _ScheduleDailyScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleDailyScreen> {
+class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   late int _selectedYear;
   late int _selectedMonth;
   late int _selectedDay;
   final ScrollController _scrollController = ScrollController();
+  late Future<List<dynamic>> _scheduleDataFuture;
+  final ApiService _apiService = ApiService();
+  List<dynamic> _schedules = [];
 
   @override
   void initState() {
@@ -25,9 +28,24 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
     _selectedMonth = widget.selectedDate.month;
     _selectedDay = widget.selectedDate.day;
 
+    _scheduleDataFuture = _fetchScheduleData(); // API 호출로 데이터 가져오기
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToSelectedDay();
     });
+  }
+
+  Future<List<dynamic>> _fetchScheduleData() async {
+    try {
+      final List<dynamic> schedules = await _apiService.fetchScheduleData(1); // user_id만 사용
+      setState(() {
+        _schedules = schedules; // 로드된 데이터를 저장
+      });
+      return schedules;
+    } catch (e) {
+      print('Error fetching schedules: $e');
+      return [];
+    }
   }
 
   void _scrollToSelectedDay() {
@@ -40,33 +58,23 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
     );
   }
 
+  bool _hasEventForDay(DateTime day) {
+    return _schedules.any((schedule) {
+      final scheduleDate = DateTime.parse(schedule['schedule_start_time']).toLocal();
+      return scheduleDate.year == day.year &&
+          scheduleDate.month == day.month &&
+          scheduleDate.day == day.day;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     int daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
     double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
-    double boxHeight = 100; // 기존보다 높이를 조금 높임
-    double selectedBoxHeight = 120; // 선택된 상자의 높이도 조정
+    double boxHeight = 100;
+    double selectedBoxHeight = 120;
 
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text(
-          '일정',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {},
-          child: const Icon(
-            CupertinoIcons.person_crop_circle,
-            color: CupertinoColors.black,
-          ),
-        ),
-        backgroundColor: const Color(0xFFFFC436),
-        border: null,
-      ),
       child: Stack(
         children: [
           SafeArea(
@@ -83,27 +91,55 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
                   ),
                 ),
                 Expanded(
-                  child: _buildScheduleList(),
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _scheduleDataFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CupertinoActivityIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                        return _buildScheduleList(snapshot.data!);
+                      } else {
+                        return const Center(
+                          child: Text(
+                            '일정이 없습니다.',
+                            style: TextStyle(fontSize: 20, color: CupertinoColors.systemGrey),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
           ),
-          // 우측 하단에 고정된 캘린더 버튼
           Positioned(
-            bottom: 16,
-            right: 16,
-            child: Container(
-              width: 100,
-              height: 100,
-              child: FloatingActionButton(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: CupertinoButton(
+                padding: EdgeInsets.zero,
                 onPressed: () {
-                  context.go('/monthly-calendar'); // 다시 monthly_calendar로 이동
+                  context.go('/monthly-calendar');
                 },
-                backgroundColor: CupertinoColors.activeOrange,
-                child: const Icon(
-                  CupertinoIcons.calendar,
-                  size: 70,
-                  color: CupertinoColors.white,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.yellow, Colors.orange],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.calendar,
+                    color: Colors.black,
+                    size: 50,
+                  ),
                 ),
               ),
             ),
@@ -163,6 +199,9 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
         children: List.generate(daysInMonth, (index) {
           int day = index + 1;
           String weekDay = _getWeekDay(_selectedYear, _selectedMonth, day);
+          DateTime currentDay = DateTime(_selectedYear, _selectedMonth, day);
+          bool hasEvent = _hasEventForDay(currentDay);
+
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -178,6 +217,7 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
               child: _buildCalendarDate(
                 day.toString(),
                 weekDay,
+                hasEvent,
                 day == _selectedDay,
                 boxWidth,
                 day == _selectedDay ? selectedBoxHeight : boxHeight,
@@ -189,33 +229,26 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
     );
   }
 
-  Widget _buildScheduleList() {
-    final scheduleList = schedules[_getScheduleKey()];
+  Widget _buildScheduleList(List<dynamic> scheduleList) {
+    final filteredSchedules = scheduleList.where((schedule) {
+      final scheduleDate = DateTime.parse(schedule['schedule_start_time']).toLocal();
+      return scheduleDate.year == _selectedYear &&
+          scheduleDate.month == _selectedMonth &&
+          scheduleDate.day == _selectedDay;
+    }).toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: scheduleList != null && scheduleList.isNotEmpty
-          ? ListView.builder(
-        itemCount: scheduleList.length,
+      child: ListView.builder(
+        itemCount: filteredSchedules.length,
         itemBuilder: (context, index) {
-          final schedule = scheduleList[index];
+          final schedule = filteredSchedules[index];
           return _buildScheduleCard(
-            time: schedule['time']!,
-            title: schedule['title']!,
-            description: schedule['description']!,
+            time: schedule['schedule_start_time'] ?? 'N/A',
+            title: schedule['schedule_name'] ?? 'N/A',
+            description: schedule['schedule_description'] ?? 'N/A',
           );
         },
-      )
-          : Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              '일정이 없습니다.',
-              style: TextStyle(fontSize: 20, color: CupertinoColors.systemGrey),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -230,11 +263,7 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
     return weekDays[date.weekday % 7];
   }
 
-  String _getScheduleKey() {
-    return '$_selectedYear-${_selectedMonth.toString().padLeft(2, '0')}-${_selectedDay.toString().padLeft(2, '0')}';
-  }
-
-  Widget _buildCalendarDate(String day, String weekDay, bool isSelected, double width, double height) {
+  Widget _buildCalendarDate(String day, String weekDay, bool hasEvent, bool isSelected, double width, double height) {
     return Container(
       width: width,
       height: height,
@@ -243,9 +272,9 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
         children: [
           Container(
             width: width,
-            height: 16, // 높이를 조금 높여서 overflow 해결
+            height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF8B4513) : CupertinoColors.systemGrey,
+              color: isSelected ? const Color(0xFF8B4513) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),
@@ -263,6 +292,10 @@ class _ScheduleScreenState extends State<ScheduleDailyScreen> {
                     offset: const Offset(0, 2),
                   ),
                 ],
+                border: Border.all(
+                  color: hasEvent ? Colors.lightGreenAccent : Colors.transparent,
+                  width: 2.0,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

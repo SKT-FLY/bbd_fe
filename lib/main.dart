@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'screen/map_list/tmap.dart';
 import 'screen/chat_screen.dart';
-import 'screen/summary/message_summary_normal.dart';
+import 'screen/summary/start_summary_screen.dart';
 import 'screen/summary/summary_result_normal.dart';
 import 'screen/summary/summary_result_to_calendar.dart';
 import 'screen/loading_screen.dart';
