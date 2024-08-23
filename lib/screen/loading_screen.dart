@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
-import 'package:go_router/go_router.dart';
 
 class LoadingScreen extends StatefulWidget {
-  final bool goToSummaryPage1;
-
-  const LoadingScreen({super.key, this.goToSummaryPage1 = false});
+  const LoadingScreen({super.key});
 
   @override
   _LoadingScreenState createState() => _LoadingScreenState();
@@ -35,14 +32,6 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
 
     Timer.periodic(const Duration(seconds: 2), (timer) {
       setState(() {});
-    });
-
-    Future.delayed(const Duration(seconds: 6), () {
-      if (widget.goToSummaryPage1) {
-        context.go('/summary-screen1');
-      } else {
-        context.go('/message-summary');
-      }
     });
   }
 

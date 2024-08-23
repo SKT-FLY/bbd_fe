@@ -140,10 +140,24 @@ class YesNoScreen extends StatelessWidget {
   }
 
   void _handleYes(BuildContext context) {
-    if (resultCode >= 1 && resultCode <= 9) {
-      context.go('/tmap');
+    if (resultCode >= 1 && resultCode <= 8) {
+      // resultCode를 String으로 변환하여 hospitalType으로 전달
+      context.go('/tmap', extra: {
+        'userId': 1, // 필요한 경우 적절한 userId를 설정
+        'centerLat': 37.5665, // 필요한 경우 적절한 위도 값을 설정
+        'centerLon': 126.9780, // 필요한 경우 적절한 경도 값을 설정
+        'hospitalType': resultCode.toString(), // resultCode를 String으로 변환하여 전달
+      });
     } else {
       switch (resultCode) {
+        case 9:
+          context.go('/tmap', extra: {
+            'userId': 1, // 필요한 경우 적절한 userId를 설정
+            'centerLat': 37.5665, // 필요한 경우 적절한 위도 값을 설정
+            'centerLon': 126.9780, // 필요한 경우 적절한 경도 값을 설정
+            'hospitalType': resultCode.toString(), // resultCode를 String으로 변환하여 전달
+          });
+          break;
         case 10:
           context.go('/smsAnalysis');
           break;
@@ -162,4 +176,5 @@ class YesNoScreen extends StatelessWidget {
       }
     }
   }
+
 }

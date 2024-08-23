@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
+import 'package:bbd_project_fe/router.dart';
 import 'package:go_router/go_router.dart';
 
 class SummaryResultScreen_normal extends StatefulWidget {
-  final String text;
-  const SummaryResultScreen_normal({super.key, required this.text});
+  final Map<String, dynamic> data; // 데이터를 객체로 받습니다.
+
+  const SummaryResultScreen_normal({super.key, required this.data});
 
   @override
   _SummaryPage1State createState() => _SummaryPage1State();
@@ -13,6 +15,9 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    // data['summary']만 추출하여 사용합니다.
+    final String summaryText = widget.data['summary'] as String? ?? '요약 정보 없음';
 
     return CupertinoApp(
       theme: const CupertinoThemeData(
@@ -80,7 +85,7 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
                       child: Center(
                         child: SingleChildScrollView( // 긴 텍스트를 위한 스크롤 추가
                           child: Text(
-                            widget.text,
+                            summaryText, // 요약 텍스트만 표시
                             style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
