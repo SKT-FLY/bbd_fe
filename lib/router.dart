@@ -46,6 +46,10 @@ final GoRouter router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/smsListScreen',
+      builder: (context, state) => SmsListScreen(),
+    ),
+    GoRoute(
       path: '/start-message-summary',
       builder: (context, state) {
         // state.extra에서 메시지 내용을 가져옵니다.
@@ -91,10 +95,6 @@ final GoRouter router = GoRouter(
         final selectedDate = state.extra as DateTime;
         return ScheduleDailyScreen(selectedDate: selectedDate);
       },
-    ),
-    GoRoute(
-      path: '/smsListScreen',
-      builder: (context, state) => SmsListScreen(),
     ),
     GoRoute(
       path: '/tmap',
