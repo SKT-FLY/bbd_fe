@@ -9,7 +9,7 @@ import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class ScheduleMonthlyScreen extends StatefulWidget {
-  const ScheduleMonthlyScreen({Key? key}): super(key: key);
+  const ScheduleMonthlyScreen({Key? key}) : super(key: key);
 
   @override
   _ScheduleMonthlyScreenState createState() => _ScheduleMonthlyScreenState();
@@ -75,37 +75,39 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
+
     return CupertinoPageScaffold(
       navigationBar: null,
       child: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              children: [
-                _buildMonthSelector(),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: FutureBuilder<List<dynamic>>(
-                    future: _scheduleDataFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CupertinoActivityIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData) {
-                        return _buildCalendar();
-                      } else {
-                        return const Center(child: Text('일정이 없습니다.'));
-                      }
-                    },
-                  ),
-                ),
-              ],
+            // 상단 월 선택자 (높이 비율: 1/10)
+            Flexible(
+              flex: 2,
+              child: _buildMonthSelector(),
             ),
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
+            const SizedBox(height: 10),
+            // 캘린더 (높이 비율: 8/10)
+            Flexible(
+              flex: 15,
+              child: FutureBuilder<List<dynamic>>(
+                future: _scheduleDataFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CupertinoActivityIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    return _buildCalendar();
+                  } else {
+                    return const Center(child: Text('일정이 없습니다.'));
+                  }
+                },
+              ),
+            ),
+            // 하단 홈 버튼 (높이 비율: 1/10)
+            Flexible(
+              flex: 2,
               child: Center(
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
@@ -113,8 +115,8 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                     context.go('/chat', extra: userId);
                   },
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 85,
+                    height: 85,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Colors.yellow, Colors.orange],
@@ -231,7 +233,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
             return Center(
               child: Text(
                 '일',
-                style: const TextStyle(fontSize: 24, color: Colors.red),
+                style: const TextStyle(fontSize: 24, color: Colors.blue),
               ),
             );
           }

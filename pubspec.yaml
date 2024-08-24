@@ -82,6 +82,10 @@ flutter:
      - assets/images/message.png
      - assets/images/summary.png
      - assets/images/schedule.png
+     - assets/voice/start_shw.wav  # 추가된 wav 파일
+     - assets/voice/starting_voice.wav  # 추가된 wav 파일
+     - assets/voice/shw_today_cal.wav
+     - assets/yellow_nom.gif
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

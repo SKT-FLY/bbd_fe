@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:bbd_project_fe/setting/router.dart';
 import 'package:go_router/go_router.dart';
 
 class SummaryResultScreen_normal extends StatefulWidget {
@@ -24,115 +23,137 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
         primaryColor: CupertinoColors.activeOrange,
       ),
       home: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            '문자분석',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {},
-            child: const Icon(
-              CupertinoIcons.person_crop_circle,
-              color: CupertinoColors.black,
-            ),
-          ),
-          backgroundColor: const Color(0xFFFFC436),
-          border: null,
-        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
-                Spacer(flex: 1),
+                // 비율 1:9(내부 1:14:2):2
 
-                Expanded( // 이미지 공간
-                  flex: 4,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
+                // 1 비율: 상단 요약글자
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '요약 결과',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 9 비율 내부 (1:14:2)
+                Flexible(
+                  flex: 9,
+                  child: Column(
                     children: [
-                      Image.asset(
-                        'assets/images/summary.png', // 이미지 경로 설정
-                        width: 100,
-                        height: 100,
+                      // 1 비율: 메세지 그림 컨테이너
+                      Flexible(
+                        flex: 1,
+                        child: Container(
+                          alignment: Alignment.centerLeft,
+                          child: Image.asset(
+                            'assets/images/summary.png', // 이미지 경로 설정
+                            width: 100,
+                            height: 100,
+                          ),
+                        ),
+                      ),
+
+                      // 14 비율: 메세지 내용 박스
+                      Flexible(
+                        flex: 14,
+                        child: Center(
+                          child: Container(
+                            width: screenWidth * 0.9,
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5EDED), // 연한 배경색
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: CupertinoColors.black.withOpacity(0.25),
+                                  spreadRadius: 1,
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: SingleChildScrollView( // 긴 텍스트를 위한 스크롤 추가
+                                child: Text(
+                                  summaryText, // 요약 텍스트만 표시
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: CupertinoColors.black,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // 2 비율: 요약하기 버튼
+                      Flexible(
+                        flex: 2,
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: CupertinoButton(
+                            color: CupertinoColors.activeBlue,
+                            onPressed: () {
+                              // 요약하기 버튼 클릭 시 수행할 동작
+                            },
+                            child: const Text(
+                              '요약하기',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
 
-                Expanded( // 텍스트 박스 공간
-                  flex: 24,
+                // 2 비율: 하단 중앙 홈 버튼
+                Flexible(
+                  flex: 2,
                   child: Center(
-                    child: Container(
-                      width: screenWidth * 0.9,
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5EDED), // 연한 배경색
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: CupertinoColors.black.withOpacity(0.25),
-                            spreadRadius: 1,
-                            blurRadius: 6,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: SingleChildScrollView( // 긴 텍스트를 위한 스크롤 추가
-                          child: Text(
-                            summaryText, // 요약 텍스트만 표시
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: CupertinoColors.black,
-                            ),
-                            textAlign: TextAlign.start,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                Spacer(flex: 1),
-                Expanded( // 체크 버튼 (홈으로 이동)
-                  flex: 6,
-                  child: Center(
-                    child: CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        context.go('/chat'); // 체크 버튼 클릭 시 ChatScreen으로 이동
+                    child: GestureDetector(
+                      onTap: () {
+                        context.go('/chat'); // 홈 버튼 클릭 시 홈 화면으로 이동
                       },
                       child: Container(
-                        width: 100,
-                        height: 100,
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
-                          color: CupertinoColors.activeOrange, // 주황색 바탕
-                          shape: BoxShape.circle,
+                          color: CupertinoColors.systemYellow,
+                          shape: BoxShape.rectangle,
                           boxShadow: [
                             BoxShadow(
-                              color: CupertinoColors.black.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
+                              color: CupertinoColors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          CupertinoIcons.check_mark, // 체크 아이콘
-                          color: CupertinoColors.white, // 체크 색상 하얀색
-                          size: 70,
+                        child: Icon(
+                          CupertinoIcons.home,
+                          color: CupertinoColors.black,
+                          size: 36,
                         ),
                       ),
                     ),
                   ),
                 ),
-
-                Spacer(flex: 1),
               ],
             ),
           ),
