@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-import '../api_service.dart';
+import '../../setting/api_service.dart';
+import '../../setting/location_provider.dart';
 
 class YesNoScreen extends StatelessWidget {
   final String message;
@@ -150,7 +152,7 @@ class YesNoScreen extends StatelessWidget {
     );
   }
 
-  void _handleYes(BuildContext context) {
+  Future<void> _handleYes(BuildContext context) async {
     print("Handling YES : " + resultCode.toString());
     switch (resultCode) {
       case 1:
@@ -177,9 +179,41 @@ class YesNoScreen extends StatelessWidget {
       case 8:
         navigateToTmap(context, "병원", userId);
         break;
-      case 9:
+      case 9: // 택시 api 호출
+        try {
+          // 위치 권한이 있는지 확인하기 위한 프로바이더 설정
+          final locationProvider = Provider.of<LocationProvider>(context, listen: false);
 
-    break;
+          // 위치 권한 확인
+          if (locationProvider.isLocationPermissionGranted) {
+            // 위치 정보 가져오기
+            final position = locationProvider.currentPosition;
+
+            if (position != null) {
+              // API 호출
+              final apiService = ApiService();
+              final taxiData = await apiService.fetchTaxiSearch(
+                userId: userId,
+                latitude: position.latitude,
+                longitude: position.longitude,
+              );
+
+              // API 응답을 받고 나서 TmapTaxiSearchPage로 데이터를 전달하며 이동
+              context.push('/taxi-search', extra: taxiData);
+            } else {
+              print('Failed to retrieve location');
+              // 오류 처리: 위치 정보가 없을 경우 적절한 오류 메시지를 표시하거나 기본 위치를 설정할 수 있음
+            }
+          } else {
+            print('Location permission not granted');
+            // 오류 처리: 위치 권한이 없을 경우 사용자에게 알림 또는 다른 대체 작업 수행
+          }
+        } catch (e) {
+          print('Error during taxi API request: $e');
+          // 오류 처리: 예외 발생 시 처리할 내용을 작성
+        }
+
+        break;
       case 10:
         print("case 10");
         context.push('/SmsListScreen');
@@ -206,8 +240,6 @@ class YesNoScreen extends StatelessWidget {
     print(search);
     context.push('/tmap', extra: {
       'searchKeyword': search,
-      'centerLat': 37.5665,
-      'centerLon': 126.9780,
       'userId': userId,
     });
   }

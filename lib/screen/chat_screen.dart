@@ -6,13 +6,13 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bbd_project_fe/api_service.dart';
+import 'package:bbd_project_fe/setting/api_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
-import 'package:bbd_project_fe/user_provider.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
-
+import 'package:bbd_project_fe/setting/config.dart';
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -113,8 +113,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendToServer(String userText) async {
-    final response = await _apiService.processCommandApi(userText);
-
+    int userId = Provider.of<UserProvider>(context, listen: false).userId; // listen: false 추가
+    final response = await _apiService.processCommandApi(userText,userId);
     if (response.containsKey('error')) {
       setState(() {
         _text = response['error'];
@@ -126,7 +126,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (response['url'] != null) {
-        var url = 'http://192.168.0.228:8000/' + response['url'];
+        var url = '$testUrl/' + response['url'];
         try {
           await _audioPlayer.play(UrlSource(url));
         } catch (e) {
