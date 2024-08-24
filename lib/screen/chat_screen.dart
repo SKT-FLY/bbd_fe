@@ -25,19 +25,22 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  String _text = "안녕하세요.\n필요하신 것이 있다면\n저에게 말씀해주세요.";
+  String _text = "안녕하세요.\n필요하신 것을 \n 말씀해주세요.";
   final FlutterTts _flutterTts = FlutterTts();
   bool _showSpinner = false;
   bool _showCloudSpinner = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   final ApiService _apiService = ApiService();
   int? _resultCode;
+  bool _isPlayingGif = false; // GIF 재생 상태를 관리할 변수
+
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
     _requestPermissions();
+    _playInitialSound(); // 초기 사운드 재생 함수 호출
   }
 
   Future<void> _requestPermissions() async {
@@ -46,9 +49,45 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _stopSpinnerWithDelay() async {
-    await Future.delayed(Duration(seconds: 5));  // 5초 딜레이
+    await Future.delayed(Duration(seconds: 5)); // 5초 딜레이
     setState(() {
       _showSpinner = false;
+    });
+  }
+
+  Future<void> _playInitialSound() async {
+    print("voice start ~~~~~~~~~~~!");
+    int userId = Provider
+        .of<UserProvider>(context, listen: false)
+        .userId; // UserId 확인
+    print("유저는.............." + userId.toString());
+    String audioFilePath;
+    if (userId == 1) {
+      audioFilePath = 'voice/start_shw.wav';
+    } else {
+      audioFilePath = 'voice/starting_voice.wav';
+    }
+
+    try {
+      // GIF 재생과 음성 재생을 동시에 시작
+      await Future.wait([
+        _playGif(), // GIF 재생 시작
+        _audioPlayer.play(AssetSource(audioFilePath)), // 음성 파일 재생 시작
+      ]);
+    } catch (e) {
+      print('오디오 파일 재생 중 오류 발생: $e');
+    }
+  }
+
+  Future<void> _playGif() async {
+    setState(() {
+      _isPlayingGif = true; // GIF 재생 시작
+    });
+
+    await Future.delayed(Duration(seconds: 3)); // 3초 대기
+
+    setState(() {
+      _isPlayingGif = false; // GIF 재생 종료 후 이미지로 전환
     });
   }
 
@@ -59,7 +98,8 @@ class _ChatScreenState extends State<ChatScreen> {
       _speech.stop();
       setState(() {
         _isListening = false;
-        _showSpinner = false;  // 스피너를 멈춤
+        _text = "안녕하세요 \n필요하신 것을 \n 말씀해주세요."; // _isListening이 false일 때 텍스트 업데이트
+        _showSpinner = false; // 스피너를 멈춤
       });
     } else {
       bool available = await _speech.initialize(
@@ -68,16 +108,20 @@ class _ChatScreenState extends State<ChatScreen> {
             _speech.stop();
             setState(() {
               _isListening = false;
+              _text =
+              "안녕하세요 \n필요하신 것을 \n 말씀해주세요."; // _isListening이 false일 때 텍스트 업데이트
               _stopSpinnerWithDelay();
-              _showSpinner = false;  // 스피너를 멈춤
+              _showSpinner = false; // 스피너를 멈춤
             });
           }
         },
         onError: (val) {
           setState(() {
             _isListening = false;
+            _text =
+            "안녕하세요.\n필요하신 것을 \n 말씀해주세요."; // _isListening이 false일 때 텍스트 업데이트
             _stopSpinnerWithDelay();
-            _showSpinner = false;  // 스피너를 멈춤
+            _showSpinner = false; // 스피너를 멈춤
           });
         },
       );
@@ -86,7 +130,7 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _isListening = true;
           _text = "";
-          _showSpinner = true;  // 스피너를 켬
+          _showSpinner = true; // 스피너를 켬
           _showCloudSpinner = false;
         });
 
@@ -96,8 +140,10 @@ class _ChatScreenState extends State<ChatScreen> {
               _text = val.recognizedWords;
               if (val.finalResult) {
                 _isListening = false;
+                _text =
+                "안녕하세요.\n필요하신 것을 \n 말씀해주세요."; // _isListening이 false일 때 텍스트 업데이트
                 _stopSpinnerWithDelay();
-                _showSpinner = false;  // 발화가 끝나면 스피너를 멈춤
+                _showSpinner = false; // 발화가 끝나면 스피너를 멈춤
                 if (_text.isNotEmpty) {
                   _sendToServer(_text);
                 }
@@ -113,8 +159,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendToServer(String userText) async {
-    int userId = Provider.of<UserProvider>(context, listen: false).userId; // listen: false 추가
-    final response = await _apiService.processCommandApi(userText,userId);
+    int userId = Provider
+        .of<UserProvider>(context, listen: false)
+        .userId; // listen: false 추가
+    final response = await _apiService.processCommandApi(userText, userId);
     if (response.containsKey('error')) {
       setState(() {
         _text = response['error'];
@@ -139,8 +187,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _navigateToYesNoScreen() {
-    final userId = Provider.of<UserProvider>(context, listen: false).userId;
-    if (_resultCode != null && _resultCode != 13) {  // resultCode가 13이 아닐 때만 YesNoPage로 이동
+    final userId = Provider
+        .of<UserProvider>(context, listen: false)
+        .userId;
+    if (_resultCode != null &&
+        _resultCode != 13) { // resultCode가 13이 아닐 때만 YesNoPage로 이동
       print("navigate to Y/N" + _resultCode.toString());
       context.push(
         '/yesno',
@@ -160,9 +211,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int userId = Provider.of<UserProvider>(context).userId; // userId를 Provider에서 가져옴
-    var screenWidth = MediaQuery.of(context).size.width;
-    var screenHeight = MediaQuery.of(context).size.height;
+    int userId = Provider
+        .of<UserProvider>(context)
+        .userId; // userId를 Provider에서 가져옴
+    var screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    var screenHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
     const Color activeOrange = Color(0xFFFFA500);
 
     return CupertinoPageScaffold(
@@ -176,10 +235,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   flex: 75,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.08),
                     child: Container(
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 40),
                       decoration: BoxDecoration(
                         color: CupertinoColors.white,
                         borderRadius: BorderRadius.circular(20.0),
@@ -192,7 +253,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ],
                       ),
                       child: Text(
-                        _text.isEmpty ? 'Listening...' : _text,
+                        _text.isEmpty ? '듣는 중입니다' : _text,
                         style: TextStyle(
                           fontSize: 32.0,
                           color: CupertinoColors.black,
@@ -214,14 +275,18 @@ class _ChatScreenState extends State<ChatScreen> {
                         left: 0,
                         right: 0,
                         child: AnimatedOpacity(
-                          opacity: _showSpinner || _showCloudSpinner ? 0.3 : 1.0,
+                          opacity: _showSpinner || _showCloudSpinner
+                              ? 0.3
+                              : 1.0,
                           duration: const Duration(milliseconds: 500),
                           child: Container(
                             height: screenHeight * 0.3,
-                            child: Image.asset(
-                              'assets/images/yellow_character_full.png',
-                              fit: BoxFit.contain,
-                            ),
+                            child: _isPlayingGif
+                                ? Image.asset(
+                                'assets/yellow_nom.gif', fit: BoxFit.contain)
+                                : Image.asset(
+                                'assets/images/yellow_character_full.png',
+                                fit: BoxFit.contain),
                           ),
                         ),
                       ),
@@ -256,36 +321,27 @@ class _ChatScreenState extends State<ChatScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
-                              GestureDetector(  // 문자탭
-                                onTap: () { // 클릭 시 문자칸으로 이동
+                              GestureDetector(
+                                onTap: () {
                                   context.push('/smsListScreen');
                                 },
                                 child: Container(
-                                  width: screenWidth * 0.22,
-                                  height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        CupertinoColors.systemYellow,
-                                        activeOrange,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16.0),
+                                    shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: CupertinoColors.black.withOpacity(0.2),
-                                        blurRadius: 5,
-                                        offset: const Offset(0, 3),
+                                        color: Colors.orangeAccent.withOpacity(
+                                            0.3),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 4),
                                       ),
                                     ],
                                   ),
-                                  child: const Center(
-                                    child: FaIcon(
-                                      FontAwesomeIcons.solidEnvelope,
-                                      color: Colors.black,
-                                      size: 48,
+                                  child: Center(
+                                    child: Image.asset(
+                                      'assets/images/message.png',
+                                      width: screenWidth * 0.18,
+                                      height: screenWidth * 0.18,
                                     ),
                                   ),
                                 ),
@@ -299,7 +355,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     gradient: RadialGradient(
                                       colors: [
                                         CupertinoColors.white,
-                                        activeOrange.withOpacity(0.5),
+                                        activeOrange.withOpacity(0.6),
                                       ],
                                       radius: 0.85,
                                       center: Alignment.center,
@@ -307,14 +363,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        color: CupertinoColors.black
+                                            .withOpacity(0.2),
                                         blurRadius: 10,
                                         offset: const Offset(0, 5),
                                       ),
                                     ],
                                     border: Border.all(
                                       color: activeOrange,
-                                      width: 6.0,
+                                      width: 1.0,
                                     ),
                                   ),
                                   child: Center(
@@ -330,36 +387,28 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                               ),
-                              GestureDetector( // 달력탭
-                                onTap: () { // 클릭 시 달력으로 이동
-                                  context.push('/monthly-calendar', extra: userId);
+                              GestureDetector(
+                                onTap: () {
+                                  context.push(
+                                      '/monthly-calendar', extra: userId);
                                 },
                                 child: Container(
-                                  width: screenWidth * 0.22,
-                                  height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        CupertinoColors.systemYellow,
-                                        activeOrange,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16.0),
+                                    shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: CupertinoColors.black.withOpacity(0.2),
-                                        blurRadius: 5,
-                                        offset: const Offset(0, 3),
+                                        color: Colors.orangeAccent.withOpacity(
+                                            0.3),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 4),
                                       ),
                                     ],
                                   ),
-                                  child: const Center(
-                                    child: FaIcon(
-                                      FontAwesomeIcons.solidCalendarAlt,
-                                      color: Colors.black,
-                                      size: 48,
+                                  child: Center(
+                                    child: Image.asset(
+                                      'assets/images/schedule.png',
+                                      width: screenWidth * 0.18,
+                                      height: screenWidth * 0.18,
                                     ),
                                   ),
                                 ),
