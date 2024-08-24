@@ -45,8 +45,6 @@ dependencies:
   go_router: ^10.0.0
   flutter_spinkit: ^5.1.0
   font_awesome_flutter: ^10.4.0
-  sms_advanced: 1.0.2
-  readsms: ^0.1.0+3
   telephony: ^0.2.0
   audioplayers: ^2.0.0
   path_provider: ^2.0.9
