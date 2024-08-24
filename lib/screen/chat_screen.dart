@@ -126,7 +126,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (response['url'] != null) {
-        var url = '$testUrl/' + response['url'];
+        var url = '$kimhome/' + response['url'];
         try {
           await _audioPlayer.play(UrlSource(url));
         } catch (e) {

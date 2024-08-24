@@ -8,7 +8,7 @@ class ApiService {
 
   // TTS API - 일정 설명 목소리
   Future<Map<String, dynamic>> fetchSchedule(String date, int userId) async {
-    final String url = '$testUrl/api/v1/schedules/tts/$date?user_id=$userId';
+    final String url = '$kimhome/api/v1/schedules/tts/$date?user_id=$userId';
     print('요청 URL: $url'); // 로그 추가
 
     try {
@@ -49,7 +49,7 @@ class ApiService {
 
   // 일정 등록
   Future<Map<String, dynamic>> postSchedule(int userId, String scheduleName, DateTime scheduleStartTime, String scheduleDescription, int hospitalId) async {
-    final String url = '$testUrl/api/v1/schedule?user_id=$userId';
+    final String url = '$kimhome/api/v1/schedule?user_id=$userId';
 
     try {
       final response = await http.post(
@@ -78,7 +78,7 @@ class ApiService {
 
   // 유저의 전체 일정 조회
   Future<List<dynamic>> fetchScheduleData(int userId) async {
-    final String url = '$testUrl/api/v1/schedule?user_id=$userId';
+    final String url = '$kimhome/api/v1/schedule?user_id=$userId';
 
     try {
       final response = await http.get(
@@ -102,7 +102,7 @@ class ApiService {
 
   // 특정 일정 조회
   Future<Map<String, dynamic>> fetchScheduleDetails(int scheduleId, int userId) async {
-    final String url = '$testUrl/api/v1/schedule/$scheduleId?user_id=$userId';
+    final String url = '$kimhome/api/v1/schedule/$scheduleId?user_id=$userId';
 
     try {
       final response = await http.get(
@@ -125,7 +125,7 @@ class ApiService {
 
   // 보호자 일정 확인
   Future<Map<String, dynamic>> fetchGuardianSchedules(int guardianId) async {
-    final String url = '$testUrl/api/v1/guardian/$guardianId/schedules';
+    final String url = '$kimhome/api/v1/guardian/$guardianId/schedules';
 
     try {
       final response = await http.get(
@@ -148,7 +148,7 @@ class ApiService {
 
   // 날짜 별 일정 검색
   Future<Map<String, dynamic>> fetchSchedulesByDate(String date, int userId) async {
-    final String url = '$testUrl/api/v1/schedules/date/$date?user_id=$userId';
+    final String url = '$kimhome/api/v1/schedules/date/$date?user_id=$userId';
 
     try {
       final response = await http.get(
@@ -175,7 +175,7 @@ class ApiService {
 
     final double lat = latitude;
     final double lon = longitude;
-    final String url = '$testUrl/api/v1/pois?version=1&searchKeyword=$searchKeyword&centerLat=$lat&centerLon=$lon&reqCoordType=WGS84GEO&resCoordType=WGS84GEO&radius=0&searchType=all&searchtypCd=R&page=1&count=20&multiPoint=N&poiGroupYn=N';
+    final String url = '$kimhome/api/v1/pois?version=1&searchKeyword=$searchKeyword&centerLat=$lat&centerLon=$lon&reqCoordType=WGS84GEO&resCoordType=WGS84GEO&radius=0&searchType=all&searchtypCd=R&page=1&count=20&multiPoint=N&poiGroupYn=N';
 
     try {
       final response = await http.get(
@@ -207,7 +207,7 @@ class ApiService {
   }) async {
     print('Using Latitude: $latitude, Longitude: $longitude');
 
-    final String url = '$testUrl/api/v1/taxi-search/?user_id=$userId&lat=$latitude&lon=$longitude&coordType=WGS84GEO&addressType=A03&coordYn=N&keyInfo=N&newAddressExtend=Y';
+    final String url = '$kimhome/api/v1/taxi-search/?user_id=$userId&lat=$latitude&lon=$longitude&coordType=WGS84GEO&addressType=A03&coordYn=N&keyInfo=N&newAddressExtend=Y';
     print("~~~~~~taxi 서버님~~~~~~~~");
     try {
       final response = await http.post(
@@ -233,7 +233,7 @@ class ApiService {
 
   // 즐겨찾는 병원 목록
   Future<List<dynamic>> fetchfavoriteHospitals(int userId) async {
-    final String url = '$testUrl/api/v1/hospitals?user_id=$userId';
+    final String url = '$kimhome/api/v1/hospitals?user_id=$userId';
 
     try {
       final response = await http.get(
@@ -267,7 +267,7 @@ class ApiService {
       double hospitalCenterLat,  // 위도 타입 변경
       double hospitalCenterLon   // 경도 타입 변경
       ) async {
-    final String url = '$testUrl/api/v1/hospitals/update_visits_count?user_id=$userId';
+    final String url = '$kimhome/api/v1/hospitals/update_visits_count?user_id=$userId';
 
     try {
       final response = await http.post(
@@ -298,34 +298,36 @@ class ApiService {
     }
   }
 
-
-  // 발화 의도 추출
-  Future<Map<String, dynamic>> processCommandApi(String message,int userId) async {
-    final String url = '$testUrl/api/v1/process-command';
-
+  Future<Map<String, dynamic>> processCommandApi(String message, int userId) async {
+    final String url = '$kimhome/api/v1/process-command';
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{'command': message,'user_id':userId}),
+        body: jsonEncode(<String, dynamic>{'command': message, 'user_id': userId}),
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         return data;
       } else {
-        return {'error': '서버와의 통신 오류가 있습니다.'};
+        final errorMessage = '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}';
+        print(errorMessage);
+        return {'error': errorMessage};
       }
     } catch (e) {
+      final exceptionMessage = '서버와의 통신 오류가 있습니다. 예외: ${e.toString()}';
+      print(exceptionMessage);
       return {'error': '서버와의 통신 오류가 있습니다.', 'exception': e.toString()};
     }
   }
 
+
   // 메세지 분석
   Future<Map<String, dynamic>> analyzeAndForwardMessage(String message) async {
-    final String url = '$testUrl/api/v1/analyze_and_forward';
+    final String url = '$kimhome/api/v1/analyze_and_forward';
 
     try {
       final response = await http.post(
