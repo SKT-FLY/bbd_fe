@@ -3,6 +3,7 @@ package com.example.bbd_project_fe
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
@@ -14,17 +15,17 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "sms_retriever"
-    private val smsList = mutableListOf<String>()  // 최신 10개의 메세지를 저장할 리스트
+    private val mmsList = mutableListOf<String>()  // 최신 10개의 MMS 메시지를 저장할 리스트
     private val SMS_PERMISSION_CODE = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // SMS 읽기 권한 요청
+        // MMS 읽기 권한 요청
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_SMS), SMS_PERMISSION_CODE)
         } else {
-            loadSmsFromInbox()  // 권한이 이미 허용된 경우 SMS 로드
+            loadMmsFromInbox()  // 권한이 이미 허용된 경우 MMS 로드
         }
 
         // 액티비티가 처음 생성되었을 때 인텐트 처리
@@ -35,35 +36,83 @@ class MainActivity : FlutterActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == SMS_PERMISSION_CODE) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                loadSmsFromInbox()  // 권한이 허용되면 SMS 로드
+                loadMmsFromInbox()  // 권한이 허용되면 MMS 로드
             } else {
                 // 권한이 거부된 경우 처리
             }
         }
     }
 
-    private fun loadSmsFromInbox() {
-        // SMS 인박스에서 메시지를 읽어와 smsList에 최신 10개 메시지를 추가하는 로직
-        val cursor = contentResolver.query(
-            Uri.parse("content://sms/inbox"),
-            arrayOf("address", "body"),  // 읽어올 열 지정
+    private fun loadMmsFromInbox() {
+        println("LOAD MMS =============================")
+        val mmsCursor = contentResolver.query(
+            Uri.parse("content://mms/inbox"),
+            arrayOf("_id", "sub", "date"),
             null,
             null,
-            "date DESC"  // 날짜 순서로 내림차순 정렬
+            "date DESC"
         )
 
-        cursor?.let {
-            val bodyIndex = cursor.getColumnIndex("body")
-            val addressIndex = cursor.getColumnIndex("address")
+        mmsCursor?.let {
+            val idIndex = mmsCursor.getColumnIndex("_id")
+            val subjectIndex = mmsCursor.getColumnIndex("sub")
 
-            while (cursor.moveToNext() && smsList.size < 10) {
-                val body = cursor.getString(bodyIndex)
-                val address = cursor.getString(addressIndex)
-                val smsMessage = "From: $address\nMessage: $body"
-                smsList.add(smsMessage)
+            while (mmsCursor.moveToNext() && mmsList.size < 10) {
+                val id = mmsCursor.getString(idIndex)
+                val subject = mmsCursor.getString(subjectIndex) ?: "No Subject"
+                val mmsMessage = "MMS with subject: $subject\nMessage: ${getMmsText(id)}"
+                mmsList.add(mmsMessage)
+            }
+            mmsCursor.close()
+        }
+
+        // 최신 10개까지만 유지
+        while (mmsList.size > 10) {
+            mmsList.removeAt(0)
+        }
+    }
+
+    private fun getMmsText(id: String): String {
+        var message = ""
+        val uri = Uri.parse("content://mms/part")
+        val selection = "mid=$id"
+        val cursor: Cursor? = contentResolver.query(uri, null, selection, null, null)
+
+        cursor?.let {
+            while (cursor.moveToNext()) {
+                val partId = cursor.getString(cursor.getColumnIndex("_id"))
+                val type = cursor.getString(cursor.getColumnIndex("ct"))
+
+                if ("text/plain" == type) {
+                    val data = cursor.getString(cursor.getColumnIndex("_data"))
+                    message += if (data != null) {
+                        getMmsTextFromPart(partId)
+                    } else {
+                        cursor.getString(cursor.getColumnIndex("text"))
+                    }
+                }
             }
             cursor.close()
         }
+
+        return message
+    }
+
+    private fun getMmsTextFromPart(partId: String): String {
+        val partUri = Uri.parse("content://mms/part/$partId")
+        val sb = StringBuilder()
+        val inputStream = contentResolver.openInputStream(partUri)
+        inputStream?.let {
+            val reader = it.bufferedReader()
+            var line: String?
+
+            while (reader.readLine().also { line = it } != null) {
+                sb.append(line)
+            }
+
+            inputStream.close()
+        }
+        return sb.toString()
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -71,8 +120,9 @@ class MainActivity : FlutterActivity() {
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getLatestSms" -> {
-                    result.success(smsList)  // 현재 저장된 최신 10개의 메세지 반환
+                "getLatestMessage" -> {
+                    loadMmsFromInbox()  // MMS를 업데이트
+                    result.success(mmsList)  // 최신 MMS 메시지 반환
                 }
                 else -> result.notImplemented()
             }
@@ -89,20 +139,19 @@ class MainActivity : FlutterActivity() {
         val body = intent.getStringExtra("sms_body")
 
         if (sender != null && body != null) {
-            val smsMessage = "From: $sender\nMessage: $body"
-            updateSmsList(smsMessage)
+            val mmsMessage = "From: $sender\nMessage: $body"
+            updateMmsList(mmsMessage)
 
-            // 새로운 SMS 수신 시 Dart 측에 신호를 보냄
             flutterEngine?.let {
                 MethodChannel(it.dartExecutor.binaryMessenger, CHANNEL).invokeMethod("newSmsReceived", null)
             }
         }
     }
 
-    private fun updateSmsList(newMessage: String) {
-        if (smsList.size >= 10) {
-            smsList.removeAt(0)  // 가장 오래된 메세지 제거
+    private fun updateMmsList(newMessage: String) {
+        if (mmsList.size >= 10) {
+            mmsList.removeAt(0)
         }
-        smsList.add(newMessage)  // 새 메세지 추가
+        mmsList.add(newMessage)
     }
 }
