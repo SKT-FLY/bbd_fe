@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_project_fe/api_service.dart';
+import 'package:bbd_project_fe/setting/api_service.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bbd_project_fe/user_provider.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:logger/logger.dart';
@@ -47,48 +47,60 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       _scrollToSelectedDay();
     });
 
-    if (widget.extraData != null) {
-      _handleExtraData(widget.extraData!);
-    }
+    _fetchAndPlaySchedule();  // 추가된 부분
   }
 
-  void _handleExtraData(Map<String, dynamic> data) async {
-    if (data.containsKey('message')) {
-      final message = data['message'];
-      _logger.d('Received message: $message');
+  Future<void> _fetchAndPlaySchedule() async {
+    final userId = Provider.of<UserProvider>(context, listen: false).userId;
+    final date = '${_selectedYear}-${_selectedMonth}-${_selectedDay}';
 
-      if (message == '일정이 없습니다') {
-        context.go('/chatscreen');
-      } else if (message is String && message.endsWith('.wav')) {
-        await _playAudio(message);
-      } else {
-        _logger.d('Message is not an audio file path.');
-      }
-    }
-  }
+    final result = await _apiService.fetchSchedule(date, userId);
 
-  Future<void> _playAudio(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        Uint8List audioBytes = response.bodyBytes;
+    if (result['status'] == 'success') {
+      if (result.containsKey('data')) {
+        Uint8List audioBytes = Uint8List.fromList(result['data']);
         await _audioPlayer.play(BytesSource(audioBytes));
-        _logger.i('Audio is playing from $url');
-      } else {
-        _logger.e('Failed to load audio: ${response.statusCode}');
+        _logger.i('Audio is playing.');
+      } else if (result.containsKey('message')) {
+        String message = result['message'];
+        _logger.i('Received message: $message');
+        // 메시지를 화면에 표시하거나 다른 작업 수행
       }
-    } catch (e) {
-      _logger.e('Error playing audio: $e');
+    } else {
+      _logger.e('Error: ${result['message'] ?? result['exception']}');
     }
+  }
+
+  List<dynamic> _sortSchedules(List<dynamic> schedules) {
+    schedules.sort((a, b) {
+      String timeA = a['schedule_start_time'] ?? '';
+      String timeB = b['schedule_start_time'] ?? '';
+
+      // '하루 종일' 일정인 경우, time 값이 'N/A', 빈 문자열, 또는 'T00:00:00'으로 설정되어 있다고 가정
+      if (timeA.isEmpty || timeA == 'N/A' || timeA.endsWith('T00:00:00')) return -1;
+      if (timeB.isEmpty || timeB == 'N/A' || timeB.endsWith('T00:00:00')) return 1;
+
+      // 하루 종일 일정이 아니면 시간으로 정렬
+      DateTime dateTimeA = DateTime.parse(timeA);
+      DateTime dateTimeB = DateTime.parse(timeB);
+      return dateTimeA.compareTo(dateTimeB);
+    });
+
+    return schedules;
   }
 
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
       final userId = Provider.of<UserProvider>(context, listen: false).userId;
-      final List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
+      List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
+
+      // 스케줄 데이터를 정렬
+      schedules = _sortSchedules(schedules);
+
       setState(() {
         _schedules = schedules;
       });
+
       return schedules;
     } catch (e) {
       _logger.e('Error fetching schedules: $e');
@@ -108,14 +120,29 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
 
   bool _hasEventForDay(DateTime day) {
     return _schedules.any((schedule) {
-      final scheduleDate = DateTime.parse(schedule['schedule_start_time'])
-          .toLocal();
+      final scheduleDate = DateTime.parse(schedule['schedule_start_time']).toLocal();
       return scheduleDate.year == day.year &&
           scheduleDate.month == day.month &&
           scheduleDate.day == day.day;
     });
   }
 
+  String formatTime(String time) {
+    // time이 'N/A'거나 빈 문자열이거나 'T00:00:00'으로 끝나는 경우 "하루 종일" 반환
+    if (time == 'N/A' || time.isEmpty || time.endsWith('T00:00:00')) {
+      return "하루 종일";
+    }
+
+    try {
+      DateTime dateTime = DateTime.parse(time);
+      String hour = dateTime.hour.toString().padLeft(2, '0');
+      String minute = dateTime.minute.toString().padLeft(2, '0');
+
+      return "$hour시 $minute분";
+    } catch (e) {
+      return "하루 종일";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +175,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                           ),
                         ),
                       ),
-                      // 플로팅 좌우 슬라이드바
                     ],
                   ),
                 ),
@@ -161,7 +187,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                 ),
               ],
             ),
-          ),Positioned(
+          ),
+          Positioned(
             bottom: screenHeight * 0.77, // 아래에서 띄운 위치 조정
             left: screenWidth * 0.05, // 좌측 여백 조정
             right: screenWidth * 0.05, // 우측 여백 조정
@@ -305,6 +332,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       },
     );
   }
+
   Widget _buildScheduleCard({
     required String time,
     required String title,
@@ -330,7 +358,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            time,
+            formatTime(time),
             style: TextStyle(
               fontSize: screenHeight * 0.03,
               color: CupertinoColors.inactiveGray,
