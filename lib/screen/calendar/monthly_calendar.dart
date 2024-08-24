@@ -4,8 +4,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:lunar/lunar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:bbd_project_fe/api_service.dart';
-import 'package:bbd_project_fe/user_provider.dart';
+import 'package:bbd_project_fe/setting/api_service.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class ScheduleMonthlyScreen extends StatefulWidget {

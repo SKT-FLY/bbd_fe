@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
-import 'package:bbd_project_fe/api_service.dart';  // ApiService를 import 합니다.
+import 'package:bbd_project_fe/setting/api_service.dart';  // ApiService를 import 합니다.
 
 class SummaryScreen extends StatefulWidget {
   final String text;
@@ -36,8 +36,8 @@ class _MessageSummaryState extends State<SummaryScreen> {
       print("TO GO CAL");
       // 날짜가 있으면 캘린더 결과 화면으로 이동하고 필요한 데이터를 전달
       context.go('/summary-result-calendar', extra: data);
-      };
-    }
+    };
+  }
 
 
 

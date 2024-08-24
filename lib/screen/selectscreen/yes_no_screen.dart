@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../../setting/api_service.dart';
+import '../../setting/location_provider.dart';
 
 class YesNoScreen extends StatelessWidget {
   final String message;
@@ -12,6 +16,15 @@ class YesNoScreen extends StatelessWidget {
     required this.resultCode,
     required this.userId, // userId 추가
   });
+
+  factory YesNoScreen.fromGoRouter(GoRouterState state) {
+    final extra = state.extra as Map<String, dynamic>?;
+    return YesNoScreen(
+      message: extra?['message'] ?? '메시지가 없습니다.',
+      resultCode: extra?['resultCode'] ?? 0,
+      userId: extra?['userId'] ?? 0,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +72,8 @@ class YesNoScreen extends StatelessWidget {
                           const SizedBox(height: 30),
                           SizedBox(
                             width: double.infinity,
-                            child: CupertinoButton( // 예 버튼
-                              onPressed: () { // 클릭 시 intend에 따른 페이지로 진입
+                            child: CupertinoButton(
+                              onPressed: () {
                                 _handleYes(context);
                               },
                               color: CupertinoColors.activeGreen,
@@ -79,9 +92,9 @@ class YesNoScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
-                            child: CupertinoButton( // 아니오 버튼
-                              onPressed: () { // 클릭 시 음성 페이지로 진입
-                                context.go('/chat');  // ChatScreen으로 돌아감
+                            child: CupertinoButton(
+                              onPressed: () {
+                                context.go('/chat');
                               },
                               color: CupertinoColors.destructiveRed,
                               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -139,42 +152,120 @@ class YesNoScreen extends StatelessWidget {
     );
   }
 
-  void _handleYes(BuildContext context) {
-    if (resultCode >= 1 && resultCode <= 8) {
-      // resultCode를 String으로 변환하여 hospitalType으로 전달
-      context.go('/tmap', extra: {
-        'userId': 1, // 필요한 경우 적절한 userId를 설정
-        'centerLat': 37.5665, // 필요한 경우 적절한 위도 값을 설정
-        'centerLon': 126.9780, // 필요한 경우 적절한 경도 값을 설정
-        'hospitalType': resultCode.toString(), // resultCode를 String으로 변환하여 전달
-      });
-    } else {
-      switch (resultCode) {
-        case 9:
-          context.go('/tmap', extra: {
-            'userId': 1, // 필요한 경우 적절한 userId를 설정
-            'centerLat': 37.5665, // 필요한 경우 적절한 위도 값을 설정
-            'centerLon': 126.9780, // 필요한 경우 적절한 경도 값을 설정
-            'hospitalType': resultCode.toString(), // resultCode를 String으로 변환하여 전달
-          });
-          break;
-        case 10:
-          context.go('/smsAnalysis');
-          break;
-        case 11:
-          context.go('/futureSchedule');
-          break;
-        case 12:
-          context.go('/todaySchedule');
-          break;
-        case 13:
-          context.go('/noAnswer');
-          break;
-        default:
-          print('Unknown result: $resultCode');
-          break;
-      }
+  Future<void> _handleYes(BuildContext context) async {
+    print("Handling YES : " + resultCode.toString());
+    switch (resultCode) {
+      case 1:
+        navigateToTmap(context, "이비인후과", userId);
+        break;
+      case 2:
+        navigateToTmap(context, "내과", userId);
+        break;
+      case 3:
+        navigateToTmap(context, "재활의학과", userId);
+        break;
+      case 4:
+        navigateToTmap(context, "안과", userId);
+        break;
+      case 5:
+        navigateToTmap(context, "정형외과", userId);
+        break;
+      case 6:
+        navigateToTmap(context, "비뇨기과", userId);
+        break;
+      case 7:
+        navigateToTmap(context, "신경외과", userId);
+        break;
+      case 8:
+        navigateToTmap(context, "병원", userId);
+        break;
+      case 9: // 택시 api 호출
+        try {
+          // 위치 권한이 있는지 확인하기 위한 프로바이더 설정
+          final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+
+          // 위치 권한 확인
+          if (locationProvider.isLocationPermissionGranted) {
+            // 위치 정보 가져오기
+            final position = locationProvider.currentPosition;
+
+            if (position != null) {
+              // API 호출
+              final apiService = ApiService();
+              final taxiData = await apiService.fetchTaxiSearch(
+                userId: userId,
+                latitude: position.latitude,
+                longitude: position.longitude,
+              );
+
+              // API 응답을 받고 나서 TmapTaxiSearchPage로 데이터를 전달하며 이동
+              context.push('/taxi-search', extra: taxiData);
+            } else {
+              print('Failed to retrieve location');
+              // 오류 처리: 위치 정보가 없을 경우 적절한 오류 메시지를 표시하거나 기본 위치를 설정할 수 있음
+            }
+          } else {
+            print('Location permission not granted');
+            // 오류 처리: 위치 권한이 없을 경우 사용자에게 알림 또는 다른 대체 작업 수행
+          }
+        } catch (e) {
+          print('Error during taxi API request: $e');
+          // 오류 처리: 예외 발생 시 처리할 내용을 작성
+        }
+
+        break;
+      case 10:
+        print("case 10");
+        context.push('/SmsListScreen');
+        break;
+      case 11:
+        print("case 11");
+        context.push('/monthly-calendar');
+        break;
+      case 12: // 오늘의 일정 가져오기
+        print("case 12");
+        _fetchScheduleData(userId, context);
+        break;
+      case 13:
+        print("case 13");
+        context.push('/noAnswer');
+        break;
+      default:
+        print('Unknown result: $resultCode');
+        break;
     }
   }
 
+  void navigateToTmap(BuildContext context, String search, int userId) {
+    print(search);
+    context.push('/tmap', extra: {
+      'searchKeyword': search,
+      'userId': userId,
+    });
+  }
+
+  Future<Map<String, dynamic>> _fetchScheduleData(int userId, BuildContext context) async {
+    final DateTime todayDate = DateTime.now();
+    final String formattedDate = "${todayDate.year}-${todayDate.month.toString().padLeft(2, '0')}-${todayDate.day.toString().padLeft(2, '0')}";
+    final apiService = ApiService();
+    print(formattedDate);
+    print("_fetchScheduleData 함수");
+
+    try {
+      final response = await apiService.fetchSchedule(formattedDate, userId);
+      // GoRouter를 사용하여 '/daily-schedule-TTS' 경로로 이동, 데이터를 함께 전달
+      context.push(
+        '/daily-schedule-TTS',
+        extra: {
+          'selectedDate': todayDate,
+          'data': response, // API 호출 결과를 전달
+        },
+      );
+      return response; // API 호출 결과를 반환
+    } catch (e) {
+      // 예외 처리
+      print('예외 발생: ${e.toString()}');
+      return {'error': '예외 발생', 'exception': e.toString()}; // 예외를 반환
+    }
+  }
 }

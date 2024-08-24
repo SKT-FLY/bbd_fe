@@ -1,19 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'screen/chat_screen.dart';
-import 'screen/map_list/calling_screen.dart';
-import 'screen/loading_screen.dart';
+import '../data/gpsScreen.dart';
+import '../screen/chat_screen.dart';
+import '../screen/loading_screen.dart';
 
-import 'screen/summary/start_summary_screen.dart';
-import 'screen/summary/summary_result_normal.dart';
-import 'screen/summary/summary_result_to_calendar.dart';
-import 'screen/map_list/tmap.dart';
+import '../screen/map_list/tmap_taxi.dart';
+import '../screen/summary/start_summary_screen.dart';
+import '../screen/summary/summary_result_normal.dart';
+import '../screen/summary/summary_result_to_calendar.dart';
+import '../screen/summary/sms_received_screen.dart';
 
-import 'screen/calendar/monthly_calendar.dart';
-import 'screen/calendar/today_calendar.dart';
-import 'screen/summary/sms_received_screen.dart';
-import 'screen/yes_no_screen.dart';
-import 'screen/user_id_screen.dart';
+import '../screen/calendar/monthly_calendar.dart';
+import '../screen/calendar/today_calendar.dart';
+
+import '../screen/map_list/user_id_screen.dart';
+import '../screen/map_list/calling_screen.dart';
+import '../screen/map_list/tmap_pois.dart';
+
+import '../screen/selectscreen/yes_no_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -29,11 +33,14 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/calling-screen',
       builder: (context, state) {
-        // state.extra가 null일 경우를 대비해 기본 값을 설정
-        final String phoneNumber = (state.extra as String?) ?? '전화번호 없음'; // String?로 안전하게 캐스팅
-        return Calling_Screen(phoneNumber: phoneNumber);
+        // state.extra가 null이 아닌지 확인하고, 기본값을 제공
+        final String phoneNumber = state.extra != null && state.extra is String
+            ? state.extra as String
+            : '전화번호 없음';
+        return CallingScreen(phoneNumber: phoneNumber);
       },
     ),
+
     GoRoute(
       path: '/loading',
       builder: (context, state) => LoadingScreen(),
@@ -88,22 +95,40 @@ final GoRouter router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/daily-schedule-TTS',
+      builder: (context, state) {
+        final DateTime selectedDate = (state.extra as Map<String, dynamic>?)?['selectedDate'] ?? DateTime.now();
+        final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['data'];
+
+        return ScheduleDailyScreen(
+          selectedDate: selectedDate,
+          extraData: extraData, // extraData를 전달
+        );
+      },
+    ),
+
+    GoRoute(
+      path: '/taxi-search',
+      builder: (context, state) {
+        final taxiData = state.extra as Map<String, dynamic>; // extra를 통해 데이터를 가져옴
+        return TaxiSearchPage(taxiData: taxiData);
+      },
+    ),
+    GoRoute(
       path: '/tmap',
       builder: (context, state) {
         // state.extra가 null일 경우를 대비해 기본 Map을 제공
         final extra = state.extra as Map<String, dynamic>? ?? {};
 
         // 각 필드가 null일 경우 기본값을 제공
+        final String hospitalType = extra['searchKeyword'] as String? ?? '병원';
         final int userId = extra['userId'] as int? ?? 0;
         final double centerLat = extra['centerLat'] as double? ?? 0.0;
         final double centerLon = extra['centerLon'] as double? ?? 0.0;
-        final String hospitalType = extra['hospitalType'] as String? ?? '병원 유형 없음';
-
+        print(extra['searchKeyword']);
         return TmapScreen(
           userId: userId,
-          centerLat: centerLat,
-          centerLon: centerLon,
-          hospitalType: hospitalType,
+          searchKeyword: hospitalType,
         );
       },
     ),

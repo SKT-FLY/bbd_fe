@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:bbd_project_fe/router.dart';
+import 'package:bbd_project_fe/setting/router.dart';
 import 'package:go_router/go_router.dart';
 
 class SummaryResultScreen_normal extends StatefulWidget {
