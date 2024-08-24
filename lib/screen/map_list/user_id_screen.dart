@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bbd_project_fe/user_provider.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class UserSelectionScreen extends StatelessWidget {

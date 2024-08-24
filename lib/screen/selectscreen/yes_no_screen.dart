@@ -178,14 +178,6 @@ class YesNoScreen extends StatelessWidget {
         navigateToTmap(context, "병원", userId);
         break;
       case 9:
-      // 추가 기능이 있다면 여기에 작성
-        context.push('/tmap', extra: {
-          'searchKeyword': search,
-          'centerLat': 37.5665,
-          'centerLon': 126.9780,
-          'userId': userId,
-        });
-    }
 
     break;
       case 10:

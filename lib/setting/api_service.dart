@@ -277,7 +277,6 @@ class ApiService {
         print(searchKeyword);
         print('API 응답 데이터: $data');
         final List<dynamic> pois = data['pois'] as List<dynamic>;
-        print('Pois 리스트: $pois');
 
         //final List<dynamic> pois = data['pois'] as List<dynamic>;  // 'pois'를 리스트로 캐스팅
         return pois;
@@ -323,10 +322,9 @@ class ApiService {
   }
 
   /* 4 hospitals API */
-
+  //즐겨찾는병원
   // @GET hospitals/hospitals
-  // 유저별 즐겨찾기 병원 검색 API 호출 함수
-  Future<Map<String, dynamic>> fetchHospitals(int userId) async {
+  Future<List<dynamic>> fetchHospitals(int userId) async {
     final String url = '$domitoryUrl/api/v1/hospitals?user_id=$userId';
 
     try {
@@ -338,18 +336,29 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(
-            utf8.decode(response.bodyBytes));
+        // 서버로부터 데이터를 성공적으로 받았음을 알리는 프린트문
+        print('서버로부터 데이터를 성공적으로 받았습니다.');
+
+        // JSON 응답을 디코딩하고 'hospitals' 키의 데이터를 추출합니다.
+        final List<dynamic> data = jsonDecode(
+            utf8.decode(response.bodyBytes))['hospitals'];
+
+        // 응답 데이터를 출력하여 확인합니다.
+        print('응답 데이터: $data');
+
         return data;
       } else {
+        print('서버로부터 데이터를 받지 못했습니다. 상태 코드: ${response.statusCode}');
         throw Exception(
-            'Failed to load favorite hospitals. Status code: ${response
-                .statusCode}');
+            'Failed to load favorite hospitals. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      print('서버로부터 데이터를 받는 도중 오류 발생: $e');
       throw Exception('Failed to load favorite hospitals. Error: $e');
     }
   }
+
+
 
   // @POST hospitals/update_visits_count
   // 유저 장소 방문 횟수 증가

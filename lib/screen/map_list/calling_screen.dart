@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Calling_Screen extends StatefulWidget {
+class CallingScreen extends StatefulWidget {
   final String phoneNumber;  // 전화번호 파라미터 추가
 
-  const Calling_Screen({super.key, required this.phoneNumber});
+  const CallingScreen({super.key, required this.phoneNumber});
 
   @override
-  _MapScreenState createState() => _MapScreenState();
+  _CallingScreenState createState() => _CallingScreenState();
 }
 
-class _MapScreenState extends State<Calling_Screen> {
+class _CallingScreenState extends State<CallingScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
@@ -21,48 +21,60 @@ class _MapScreenState extends State<Calling_Screen> {
         child: SafeArea(
           child: Column(
             children: [
-              // 상단 병원 이름 및 상태 표시
+              // 상단 병원 이름 및 상태 표시 (3 flex)
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 40.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        '보라매 정형외과',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
+                      // 병원 이름
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: const Text(
+                          '보라매 정형외과',
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '전화번호: ${widget.phoneNumber}',  // 전화번호 표시
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: CupertinoColors.inactiveGray,
+                      const SizedBox(height: 8),
+                      // 전화번호
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '전화번호: ${widget.phoneNumber}',  // 전화번호 표시
+                          style: const TextStyle(
+                            fontSize: 22,
+                            color: CupertinoColors.inactiveGray,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        '에이닷 전화 거는중 ...',
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: CupertinoColors.inactiveGray,
+                      const SizedBox(height: 8),
+                      // 통화 상태 표시
+                      const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '에이닷 전화 거는중 ...',
+                          style: TextStyle(
+                            fontSize: 22,
+                            color: CupertinoColors.inactiveGray,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              // 번호 패드 영역
+              // 번호 패드 영역 (8 flex)
               Expanded(
-                flex: 5,
+                flex: 8,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 50),
                   child: GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       mainAxisSpacing: 20,
@@ -70,27 +82,12 @@ class _MapScreenState extends State<Calling_Screen> {
                       childAspectRatio: 1.0,
                     ),
                     itemCount: 12,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(), // 내부 스크롤 방지
                     itemBuilder: (context, index) {
                       final digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
                       return _buildDialButton(digits[index]);
                     },
-                  ),
-                ),
-              ),
-              // 하단 버튼 영역
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildActionButton(CupertinoIcons.mic_slash, CupertinoColors.systemGrey, 75),
-                      const SizedBox(width: 10), // 간격을 넓혀서 아이콘을 적절히 배치
-                      _buildActionButton(CupertinoIcons.phone_down_fill, CupertinoColors.systemRed, 100),
-                      const SizedBox(width: 10), // 간격을 넓혀서 아이콘을 적절히 배치
-                      _buildActionButton(CupertinoIcons.speaker_2, CupertinoColors.systemGrey, 75),
-                    ],
                   ),
                 ),
               ),
@@ -118,23 +115,6 @@ class _MapScreenState extends State<Calling_Screen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-    );
-  }
-
-  // 하단 액션 버튼 생성
-  Widget _buildActionButton(IconData icon, Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        icon,
-        color: CupertinoColors.white,
-        size: size / 2,
       ),
     );
   }
