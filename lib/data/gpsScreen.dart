@@ -111,4 +111,4 @@ class _GpsScreenState extends State<GpsScreen> {
       ),
     );
   }
-  }
+}
