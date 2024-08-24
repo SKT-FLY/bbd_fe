@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';  // GoRouter를 import 합니다.
-import 'package:bbd_project_fe/api_service.dart';  // ApiService를 import 합니다.
+import 'package:bbd_project_fe/setting/api_service.dart';  // ApiService를 import 합니다.
 
 class SummaryScreen extends StatefulWidget {
   final String text;

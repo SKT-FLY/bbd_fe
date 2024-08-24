@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart'; // TimeOfDay 사용을 위한 material import
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // DateFormat 사용을 위한 intl import
-import 'package:bbd_project_fe/api_service.dart'; // API 서비스 import
-import 'package:bbd_project_fe/user_provider.dart';
+import 'package:bbd_project_fe/setting/api_service.dart'; // API 서비스 import
+import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class SummaryResultToCalendar extends StatefulWidget {
