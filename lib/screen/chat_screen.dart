@@ -32,6 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ApiService _apiService = ApiService();
   int? _resultCode;
   bool _isPlayingGif = false; // GIF 재생 상태를 관리할 변수
+  bool _isPlayingSound = false; // 음성 재생 상태를 관리할 변수
 
   @override
   void initState() {
@@ -46,7 +47,6 @@ class _ChatScreenState extends State<ChatScreen> {
     print("화면전환 인식");
     super.didChangeDependencies();
     _resetScreen(); // 화면이 전환될 때 초기화 작업 수행
-
   }
 
   Future<void> _resetScreen() async {
@@ -70,15 +70,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _playInitialSound() async {
-    int userId = Provider.of<UserProvider>(context, listen: false).userId; // UserId 확인
-    String audioFilePath;
-
-    // 유저 아이디가 1이면 다른 경로를 설정
-    if (userId == 1) {
-      audioFilePath = 'voice/start_shw.wav'; // 유저 아이디가 1일 때 경로
-    } else {
-      audioFilePath = 'voice/starting_voice.wav'; // 기본 경로'assets/voice/start_shw.wav'
+    if (_isPlayingSound) {
+      return; // 이미 재생 중이면 중복 재생 방지
     }
+
+    _isPlayingSound = true; // 재생 시작
+    int userId = Provider.of<UserProvider>(context, listen: false).userId;
+    String audioFilePath = userId == 1 ? 'voice/start_shw.wav' : 'voice/starting_voice.wav';
 
     try {
       await Future.wait([
@@ -87,9 +85,10 @@ class _ChatScreenState extends State<ChatScreen> {
       ]);
     } catch (e) {
       print('오디오 파일 재생 중 오류 발생: $e');
+    } finally {
+      _isPlayingSound = false; // 재생 완료 후 플래그 초기화
     }
   }
-
 
   Future<void> _playGif() async {
     setState(() {
@@ -226,6 +225,14 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       print("Error: resultCode is null.");
     }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.stop(); // 음성 재생 중지
+    _audioPlayer.dispose(); // AudioPlayer 자원 해제
+    _speech.stop(); // 음성 인식 중지
+    super.dispose();
   }
 
   @override
