@@ -34,132 +34,135 @@ class _YesNoScreenState extends State<YesNoScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 이 메서드는 상태가 변경되거나 의존성이 변경될 때 호출됩니다.
     print("YesNoScreen dependencies changed.");
   }
 
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
+    var screenHeight = MediaQuery.of(context).size.height;
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGrey6,
-      child: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                const Spacer(flex: 4),
-                Expanded(
-                  flex: 75,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                    child: Container(
+      child: Stack(
+        children: [
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+              child: Container(
+                height: screenHeight * 0.6, // 흰색 상자의 높이를 조정
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.white,
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: CupertinoColors.black.withOpacity(0.1),
+                      blurRadius: 15,
+                      offset: const Offset(0, 7),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 첫 번째 컨테이너: 텍스트
+                    Container(
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
-                      decoration: BoxDecoration(
-                        color: CupertinoColors.white,
-                        borderRadius: BorderRadius.circular(20.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: CupertinoColors.black.withOpacity(0.1),
-                            blurRadius: 15,
-                            offset: const Offset(0, 7),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            widget.message,
-                            style: const TextStyle(
-                              fontSize: 32.0,
-                              color: CupertinoColors.black,
-                              fontWeight: FontWeight.w600,
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: double.infinity,
-                            child: CupertinoButton(
-                              onPressed: () {
-                                _handleYes(context);
-                              },
-                              color: CupertinoColors.activeGreen,
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              borderRadius: BorderRadius.circular(12.0),
-                              child: const Text(
-                                '예',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: CupertinoColors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: CupertinoButton(
-                              onPressed: () {
-                                context.go('/chat');
-                              },
-                              color: CupertinoColors.destructiveRed,
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              borderRadius: BorderRadius.circular(12.0),
-                              child: const Text(
-                                '아니오',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: CupertinoColors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                      // 텍스트 아래쪽으로 간격 추가
+                      //padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        "\n"+widget.message,
+                        style: const TextStyle(
+                          fontSize: 45.0,
+                          color: CupertinoColors.black,
+                          fontWeight: FontWeight.w600,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                ),
-                const Spacer(flex: 45),
-              ],
-            ),
-            Positioned(
-              bottom: 16,
-              left: (screenWidth - 100) / 2,
-              child: GestureDetector(
-                onTap: () {
-                  context.go('/');
-                },
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemYellow,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: CupertinoColors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    CupertinoIcons.home,
-                    color: CupertinoColors.black,
-                    size: 50,
-                  ),
+                    // 두 번째 컨테이너: 버튼들
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: CupertinoButton(
+                            onPressed: () {
+                              _handleYes(context);
+                            },
+                            color: CupertinoColors.activeGreen,
+                            padding: const EdgeInsets.symmetric(vertical: 22), // 1.1배로 키움
+                            borderRadius: BorderRadius.circular(12.0),
+                            child: const Text(
+                              '예',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: CupertinoButton(
+                            onPressed: () {
+                              context.go('/chat');
+                            },
+                            color: CupertinoColors.destructiveRed,
+                            padding: const EdgeInsets.symmetric(vertical: 22), // 1.1배로 키움
+                            borderRadius: BorderRadius.circular(12.0),
+                            child: const Text(
+                              '아니오',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          // 하단에 홈화면으로 가는 플로팅 버튼 추가
+          Positioned(
+            bottom: 16,
+            left: (screenWidth - 100) / 2, // 화면 가로축의 중앙에 배치
+            child: GestureDetector(
+              onTap: () {
+                context.go('/');
+              },
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemYellow,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: CupertinoColors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  CupertinoIcons.home,
+                  color: CupertinoColors.black,
+                  size: 50,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

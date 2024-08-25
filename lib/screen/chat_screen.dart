@@ -1,17 +1,16 @@
-import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bbd_project_fe/setting/api_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter/services.dart';
-import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:bbd_project_fe/setting/config.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
+import '../setting/config.dart';
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -182,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (_resultCode == null || _resultCode == 13) {
-        await Future.delayed(Duration(seconds: 2)); // 2초 딜레이 후
+        await Future.delayed(Duration(seconds: 1)); // 2초 딜레이 후
         setState(() {
           _text = response['message'] != null && response['message'] != 'result message not found'
               ? response['message']
@@ -271,7 +270,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Text(
                         _text.isEmpty ? '' : _text,
                         style: TextStyle(
-                          fontSize: 32.0,
+                          fontSize: 47.0,
                           color: CupertinoColors.black,
                           fontWeight: FontWeight.w600,
                           height: 1.5,
@@ -329,7 +328,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                       Positioned(
-                        bottom: 0,
+                        bottom: 20, // 버튼 아래에 공간을 확보하기 위해 약간의 여백 추가
                         left: 0,
                         right: 0,
                         child: Padding(
@@ -339,30 +338,39 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: <Widget>[
                               GestureDetector(
                                 onTap: () {
-                                  context.push('/smsListScreen');
+                                  context.go('/smsListScreen');
                                 },
                                 child: Container(
+                                  width: screenWidth * 0.22,
+                                  height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CupertinoColors.systemYellow,
+                                        activeOrange,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.orangeAccent.withOpacity(
-                                            0.3),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
                                       ),
                                     ],
                                   ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'assets/images/message.png',
-                                      width: screenWidth * 0.18,
-                                      height: screenWidth * 0.18,
+                                  child: const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.solidEnvelope,
+                                      color: Colors.black,
+                                      size: 48,
                                     ),
                                   ),
                                 ),
                               ),
-                              GestureDetector( // 음성녹음 버튼
+                              GestureDetector(
                                 onTap: _listen, // 클릭 시 듣기 시작
                                 child: Container(
                                   width: screenWidth * 0.32,
@@ -379,8 +387,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: CupertinoColors.black
-                                            .withOpacity(0.2),
+                                        color: CupertinoColors.black.withOpacity(0.2),
                                         blurRadius: 10,
                                         offset: const Offset(0, 5),
                                       ),
@@ -405,26 +412,34 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  context.push(
-                                      '/monthly-calendar', extra: userId);
+                                  context.go('/monthly-calendar', extra: userId);
                                 },
                                 child: Container(
+                                  width: screenWidth * 0.22,
+                                  height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CupertinoColors.systemYellow,
+                                        activeOrange,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.orangeAccent.withOpacity(
-                                            0.3),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
                                       ),
                                     ],
                                   ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'assets/images/schedule.png',
-                                      width: screenWidth * 0.18,
-                                      height: screenWidth * 0.18,
+                                  child: const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.solidCalendarAlt,
+                                      color: Colors.black,
+                                      size: 48,
                                     ),
                                   ),
                                 ),

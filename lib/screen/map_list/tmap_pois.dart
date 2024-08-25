@@ -183,7 +183,10 @@ class _TmapScreenState extends State<TmapScreen> {
         double.parse(hospital.frontLat), // 병원 위도 값 전달
         double.parse(hospital.frontLon), // 병원 경도 값 전달
       );
-      context.push('/calling-screen', extra: hospital.telNo.toString());
+      context.push('/calling-screen-pois', extra: {
+        'phoneNumber': hospital.telNo,
+        'hospitalName': hospital.name,
+      });
     } catch (e) {
       print('Failed to update visit count: $e');
     }
