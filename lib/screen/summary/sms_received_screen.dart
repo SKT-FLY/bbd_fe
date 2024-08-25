@@ -14,7 +14,6 @@ class SmsListScreen extends StatefulWidget {
 class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserver {
   static const platform = MethodChannel('sms_retriever');
   List<String> _smsList = [];
-  bool _newSmsReceived = false;
 
   @override
   void initState() {
@@ -40,15 +39,23 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   Future<void> _fetchSms() async {
     try {
-      final List<dynamic> smsList = await platform.invokeMethod('getLatestMessage');
+      final List<dynamic> smsList = await platform.invokeMethod(
+          'getLatestMessage');
       setState(() {
-        _smsList = smsList.cast<String>();
+        _smsList = smsList.cast<String>().take(10).toList(); // 최신 10개의 메시지만 가져옴
       });
     } on PlatformException catch (e) {
       setState(() {
         _smsList = ['Failed to get SMS: ${e.message}'];
       });
     }
+  }
+
+// 유효한 한글, 영어, 숫자, 공백 및 특정 기호를 포함하는 텍스트만 추출하는 함수
+  String extractValidText(String input) {
+    final regex = RegExp(r'[가-힣a-zA-Z0-9~₩!@#$%^&*()_+\-={}|:.,?><\s]');
+    Iterable<RegExpMatch> matches = regex.allMatches(input);
+    return matches.map((match) => match.group(0)).join('');
   }
 
   void _listenForNewSms() {
@@ -58,6 +65,7 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
       }
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +87,7 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
   }
 
   Widget _buildSmsCard(String message) {
+    final filteredMessage = extractValidText(message); // 유효한 텍스트만 추출
     return GestureDetector(
       onTap: () => _handleSmsTap(message),
       child: Container(
@@ -99,12 +108,13 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              message,
-              style: CupertinoTheme.of(context)
+              filteredMessage.isEmpty ? '[내용 없음]' : filteredMessage,
+              style: CupertinoTheme
+                  .of(context)
                   .textTheme
                   .textStyle
                   .copyWith(fontSize: 25, fontWeight: FontWeight.w600),
-              maxLines: 12, // 최대 3줄까지만 표시
+              maxLines: 12, // 최대 12줄까지만 표시
               overflow: TextOverflow.ellipsis, // 텍스트가 넘칠 경우 말줄임표 처리
             ),
             SizedBox(height: 8), // 간격을 줄임
@@ -113,10 +123,12 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
               children: [
                 Text(
                   '받은 메시지',
-                  style: CupertinoTheme.of(context)
+                  style: CupertinoTheme
+                      .of(context)
                       .textTheme
                       .textStyle
-                      .copyWith(fontSize: 16, color: CupertinoColors.systemGrey),
+                      .copyWith(
+                      fontSize: 16, color: CupertinoColors.systemGrey),
                 ),
                 FaIcon(
                   FontAwesomeIcons.arrowRight,
@@ -132,7 +144,7 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
   }
 
   void _handleSmsTap(String message) {
-    // MessageSummaryScreen으로 이동하면서 message 전달
-    context.push('/start-message-summary', extra: message);
+    // MessageSummaryScreen으로 이동하면서 파싱된 메시지를 전달
+    context.push('/start-message-summary', extra: extractValidText(message));
   }
 }
