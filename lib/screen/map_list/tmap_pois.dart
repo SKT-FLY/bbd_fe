@@ -8,6 +8,7 @@ import '../../setting/location_provider.dart';
 class TmapScreen extends StatefulWidget {
   final int userId;
   final String searchKeyword;
+  static const Color customOrange = Color(0xFFF6B32A); // #F6B32A 색상을 정의
 
   const TmapScreen({
     super.key,
@@ -156,7 +157,13 @@ class _TmapScreenState extends State<TmapScreen> {
           hospital.hospitalCenterLat, // 병원 위도 값 전달
           hospital.hospitalCenterLon  // 병원 경도 값 전달
       );
-      context.push('/calling-screen', extra: hospital.hospitalPhone.toString());
+      context.push(
+        '/calling-screen-pois',
+        extra: {
+          'phoneNumber': hospital.hospitalPhone,
+          'hospitalName': hospital.hospitalName,
+        },
+      );
     } catch (e) {
       print('Failed to update visit count: $e');
     }
@@ -185,8 +192,9 @@ class _TmapScreenState extends State<TmapScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
+      debugShowCheckedModeBanner:false,
       theme: const CupertinoThemeData(
-        primaryColor: CupertinoColors.activeOrange,
+        primaryColor: TmapScreen.customOrange, // customOrange로 변경
       ),
       home: CupertinoPageScaffold(
         child: SafeArea(
@@ -329,7 +337,7 @@ class _TmapScreenState extends State<TmapScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               decoration: BoxDecoration(
-                color: CupertinoColors.systemOrange.withOpacity(0.8),
+                color: TmapScreen.customOrange.withOpacity(0.8), // customOrange 사용
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
@@ -363,7 +371,7 @@ class _TmapScreenState extends State<TmapScreen> {
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: CupertinoColors.systemOrange,
+                  color: TmapScreen.customOrange, // customOrange 사용
                 ),
               ),
               const SizedBox(height: 8),
@@ -433,7 +441,7 @@ class _TmapScreenState extends State<TmapScreen> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: CupertinoColors.systemOrange,
+              color: TmapScreen.customOrange, // customOrange 사용
             ),
           ),
           const SizedBox(height: 8),

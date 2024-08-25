@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class GpsScreen extends StatefulWidget {
-  const GpsScreen({Key? key}) : super(key: key);
+  const GpsScreen({super.key});
 
   @override
   _GpsScreenState createState() => _GpsScreenState();

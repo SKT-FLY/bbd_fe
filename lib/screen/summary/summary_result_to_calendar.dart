@@ -72,6 +72,7 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return CupertinoApp(
+      debugShowCheckedModeBanner : false,
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),

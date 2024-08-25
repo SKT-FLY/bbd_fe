@@ -82,8 +82,8 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
     return GestureDetector(
       onTap: () => _handleSmsTap(message),
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 12),
-        padding: EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(vertical: 8), // 여백을 줄임
+        padding: EdgeInsets.all(16), // 패딩을 줄임
         decoration: BoxDecoration(
           color: CupertinoColors.white,
           borderRadius: BorderRadius.circular(12),
@@ -103,9 +103,11 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
               style: CupertinoTheme.of(context)
                   .textTheme
                   .textStyle
-                  .copyWith(fontSize: 22, fontWeight: FontWeight.w600),
+                  .copyWith(fontSize: 25, fontWeight: FontWeight.w600),
+              maxLines: 12, // 최대 3줄까지만 표시
+              overflow: TextOverflow.ellipsis, // 텍스트가 넘칠 경우 말줄임표 처리
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 8), // 간격을 줄임
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -114,12 +116,12 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
                   style: CupertinoTheme.of(context)
                       .textTheme
                       .textStyle
-                      .copyWith(fontSize: 18, color: CupertinoColors.systemGrey),
+                      .copyWith(fontSize: 16, color: CupertinoColors.systemGrey),
                 ),
                 FaIcon(
                   FontAwesomeIcons.arrowRight,
                   color: CupertinoColors.systemYellow,
-                  size: 36,
+                  size: 28, // 아이콘 크기를 줄임
                 ),
               ],
             ),

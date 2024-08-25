@@ -13,7 +13,9 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:label="bbd_project_fe"
         android:name="${applicationName}"
+
         android:icon="@mipmap/ic_launcher">
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

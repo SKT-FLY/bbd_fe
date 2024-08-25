@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class CupertinoCloudSpinner extends StatefulWidget {
+  const CupertinoCloudSpinner({super.key});
+
   @override
   _CupertinoCloudSpinnerState createState() => _CupertinoCloudSpinnerState();
 }
@@ -18,7 +19,7 @@ class _CupertinoCloudSpinnerState extends State<CupertinoCloudSpinner>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
 
     _animation1 = CurvedAnimation(
@@ -47,7 +48,7 @@ class _CupertinoCloudSpinnerState extends State<CupertinoCloudSpinner>
           Container(
             width: 100,
             height: 100,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: CupertinoColors.activeOrange,
               shape: BoxShape.circle,
             ),
@@ -59,7 +60,7 @@ class _CupertinoCloudSpinnerState extends State<CupertinoCloudSpinner>
                   child: Container(
                     width: 80,
                     height: 80,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: CupertinoColors.systemOrange,
                       shape: BoxShape.circle,
                     ),
@@ -81,7 +82,7 @@ class _CupertinoCloudSpinnerState extends State<CupertinoCloudSpinner>
             child: Container(
               width: 20,
               height: 20,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: CupertinoColors.systemYellow,
                 shape: BoxShape.circle,
               ),
@@ -100,7 +101,7 @@ class _CupertinoCloudSpinnerState extends State<CupertinoCloudSpinner>
             child: Container(
               width: 15,
               height: 15,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: CupertinoColors.systemOrange,
                 shape: BoxShape.circle,
               ),
@@ -119,7 +120,7 @@ class _CupertinoCloudSpinnerState extends State<CupertinoCloudSpinner>
             child: Container(
               width: 10,
               height: 10,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: CupertinoColors.systemRed,
                 shape: BoxShape.circle,
               ),

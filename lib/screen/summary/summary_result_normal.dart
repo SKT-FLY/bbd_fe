@@ -20,6 +20,7 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
     final String summaryText = widget.data['summary'] as String? ?? '요약 정보 없음';
 
     return CupertinoApp(
+      debugShowCheckedModeBanner :false,
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
