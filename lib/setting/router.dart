@@ -31,15 +31,42 @@ final GoRouter router = GoRouter(
       builder: (context, state) => ChatScreen(),
     ),
     GoRoute(
-      path: '/calling-screen',
+      path: '/calling-screen-pois',
       builder: (context, state) {
-        // state.extra가 null이 아닌지 확인하고, 기본값을 제공
-        final String phoneNumber = state.extra != null && state.extra is String
-            ? state.extra as String
-            : '전화번호 없음';
-        return CallingScreen(phoneNumber: phoneNumber);
+        // state.extra가 Map<String, String> 타입인지 확인하고 기본값 제공
+        final Map<String, String> extraData = state.extra != null && state.extra is Map<String, String>
+            ? state.extra as Map<String, String>
+            : {'phoneNumber': '전화번호 없음', 'hospitalName': '병원 이름 없음'};
+
+        final String phoneNumber = extraData['phoneNumber'] ?? '전화번호 없음';
+        final String hospitalName = extraData['hospitalName'] ?? '병원 이름 없음';
+
+        return CallingScreen(
+          phoneNumber: phoneNumber,
+          displayName: hospitalName, // 병원 이름을 displayName으로 전달
+        );
       },
     ),
+
+
+    GoRoute(
+      path: '/calling-screen-taxi',
+      builder: (context, state) {
+        // state.extra가 Map<String, String> 타입인지 확인하고 기본값 제공
+        final Map<String, String> extraData = state.extra != null && state.extra is Map<String, String>
+            ? state.extra as Map<String, String>
+            : {'phoneNumber': '전화번호 없음', 'taxiName': '택시 이름 없음'};
+
+        final String phoneNumber = extraData['phoneNumber'] ?? '전화번호 없음';
+        final String taxiName = extraData['taxiName'] ?? '택시 이름 없음';
+
+        return CallingScreen(
+          phoneNumber: phoneNumber,
+          displayName: taxiName, // 택시 이름을 displayName으로 전달
+        );
+      },
+    ),
+
 
     GoRoute(
       path: '/loading',
