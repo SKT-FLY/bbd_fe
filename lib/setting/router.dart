@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../data/gpsScreen.dart';
+import '../screen/adot.dart';
 import '../screen/calendar/guardian_calendar_daily.dart';
 import '../screen/calendar/guardian_calendar_monthly.dart';
 import '../screen/chat_screen.dart';
 import '../screen/loading_screen.dart';
+import 'package:bbd_project_fe/screen/chat_screen.dart';
 
 import '../screen/map_list/tmap_taxi.dart';
 import '../screen/summary/start_summary_screen.dart';
@@ -15,18 +17,19 @@ import '../screen/summary/sms_received_screen.dart';
 import '../screen/calendar/monthly_calendar.dart';
 import '../screen/calendar/today_calendar.dart';
 
-import '../screen/map_list/user_id_screen.dart';
+import '../user_id_screen.dart';
 import '../screen/map_list/calling_screen.dart';
 import '../screen/map_list/tmap_pois.dart';
 
 import '../screen/selectscreen/yes_no_screen.dart';
+//builder: (context, state) => const UserSelectionScreen(),
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const UserSelectionScreen(),
+      builder: (context, state) => AdotScreen(),
     ),
     GoRoute(
       path: '/chat',
