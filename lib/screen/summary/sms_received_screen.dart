@@ -59,8 +59,8 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   String formatMessage(String message) {
     List<String> lines = message.split('\n');
-    lines = lines.skip(2).take(4).toList(); // 첫 두 줄을 건너뛰고, 다음 4줄을 선택
-    return lines.join('\n').trim(); // 줄바꿈으로 연결된 문자열을 반환
+    lines = lines.take(4).toList(); // 최대 4줄만 표시
+    return lines.join('\n').trim();
   }
 
   String getIndexText(int index) {
@@ -132,8 +132,11 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   Widget _buildSmsCard(int index, String message, double screenHeight) {
     final filteredMessage = extractValidText(message); // 유효한 텍스트만 추출
-    final formattedMessage = formatMessage(filteredMessage); // 첫 두 줄을 제거하고 4줄까지만 표시
+    final formattedMessage = formatMessage(filteredMessage); // 최대 4줄까지만 표시
     final indexText = getIndexText(index); // 인덱스 텍스트 생성
+
+    // 텍스트의 높이를 계산하여 동적으로 메시지 박스의 높이를 설정
+    double messageHeight = _calculateTextHeight(formattedMessage, 25, FontWeight.w600, screenHeight);
 
     return GestureDetector(
       onTap: () => _handleSmsTap(message),
@@ -168,12 +171,15 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
               ),
             ),
             SizedBox(height: 8),
-            Text(
-              formattedMessage.isEmpty ? '[내용 없음]' : formattedMessage,
-              style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
-                  fontSize: 25, fontWeight: FontWeight.w600),
-              maxLines: 4, // 최대 4줄까지만 표시
-              overflow: TextOverflow.ellipsis, // 텍스트가 넘칠 경우 말줄임표 처리
+            Container(
+              height: messageHeight,
+              child: Text(
+                formattedMessage.isEmpty ? '[내용 없음]' : formattedMessage,
+                style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                    fontSize: 25, fontWeight: FontWeight.w600),
+                maxLines: null, // 줄 수 제한 없음
+                overflow: TextOverflow.ellipsis, // 텍스트가 넘칠 경우 말줄임표 처리
+              ),
             ),
             SizedBox(height: 8), // 간격을 줄임
             Row(
@@ -193,9 +199,22 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
             ),
           ],
         ),
-        height: screenHeight * 0.37, // 박스 높이를 화면 높이의 60%로 설정
       ),
     );
+  }
+
+  double _calculateTextHeight(String text, double fontSize, FontWeight fontWeight, double maxHeight) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+      ),
+      maxLines: null, // 줄 수 제한 없음
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: double.infinity);
+
+    // 텍스트 높이가 주어진 최대 높이를 초과하지 않도록 설정
+    return textPainter.size.height > maxHeight ? maxHeight : textPainter.size.height;
   }
 
   void _handleSmsTap(String message) {
