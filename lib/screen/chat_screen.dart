@@ -208,10 +208,11 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _navigateToYesNoScreen(String str) {
+  Future<void> _navigateToYesNoScreen(String str) async {
 
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     if (_resultCode != null && _resultCode != 13) {
+      await _audioPlayer.stop();
       context.push(
         '/yesno',
         extra: {
@@ -227,13 +228,13 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _audioPlayer.stop(); // 음성 재생 중지
-    _audioPlayer.dispose(); // AudioPlayer 자원 해제
-    _speech.stop(); // 음성 인식 중지
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _audioPlayer.stop(); // 음성 재생 중지
+  //   _audioPlayer.dispose(); // AudioPlayer 자원 해제
+  //   _speech.stop(); // 음성 인식 중지
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -338,7 +339,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               GestureDetector(
-                                onTap: () {
+                                onTap: () async {
+                                  await _audioPlayer.stop();
                                   context.go('/smsListScreen');
                                 },
                                 child: Container(
@@ -414,9 +416,21 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                               ),
+                              // GestureDetector(
+                              //   onTap: () {
+                              //     context.go('/monthly-calendar', extra: userId);
+                              //   },
                               GestureDetector(
-                                onTap: () {
-                                  context.go('/monthly-calendar', extra: userId);
+                                onTap: () async {
+                                  await _audioPlayer.stop();
+                                  if (userId == 3) {
+                                    // userId가 3이면 보호자 월간 캘린더로 이동
+                                    //context.go('/guardian-monthly-schedule', extra: {'guardianId': userId});
+                                    context.go('/guardian-monthly-schedule',extra:userId);
+                                  } else {
+                                    // 그 외의 경우 기본 월간 캘린더로 이동
+                                    context.go('/monthly-calendar',extra:userId);
+                                  }
                                 },
                                 child: Container(
                                   width: screenWidth * 0.22,
