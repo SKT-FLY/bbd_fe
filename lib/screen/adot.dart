@@ -49,7 +49,11 @@ class _AdotScreenState extends State<AdotScreen> with SingleTickerProviderStateM
         backgroundColor: CupertinoColors.white,
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: () => _selectUser(context, 1),
+          onPressed: () {
+            // 버튼 클릭 시 실행할 기능 추가
+            _selectUser(context, 1);
+            context.go('/chat');
+          },
           child: CustomPaint(
             size: Size(24, 24), // 아이콘의 크기를 설정
             painter: MenuIconPainter(), // CustomPainter로 아이콘을 그림
@@ -57,7 +61,11 @@ class _AdotScreenState extends State<AdotScreen> with SingleTickerProviderStateM
         ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: () => _selectUser(context, 3),
+          onPressed: () {
+            // 버튼 클릭 시 실행할 기능 추가
+            _selectUser(context, 3);
+            context.go('/chat');
+          },
           child: CustomPaint(
             size: Size(24, 24), // 아이콘의 크기를 설정
             painter: DotsIconPainter(), // CustomPainter로 점 세 개 아이콘을 그림
@@ -155,6 +163,8 @@ class _AdotScreenState extends State<AdotScreen> with SingleTickerProviderStateM
                     ),
                     onPressed: () {
                       // 버튼 클릭 시 실행할 기능 추가
+                      _selectUser(context, 2);
+                      context.go('/chat');
                     },
                   ),
                 ),

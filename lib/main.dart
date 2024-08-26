@@ -7,11 +7,6 @@ import 'package:bbd_project_fe/setting/location_provider.dart';
 import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:bbd_project_fe/setting/router.dart';
 
-// 스크린 관련 파일
-
-
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ko_KR', null); // 로케일 데이터 초기화
