@@ -164,7 +164,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             child: Center(
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
-                onPressed: () {
+                onPressed: () async {
+                  await _audioPlayer.stop();
                   final userId = Provider.of<UserProvider>(context, listen: false).userId;
                   context.go('/monthly-calendar', extra: userId);
                 },
