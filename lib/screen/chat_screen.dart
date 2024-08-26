@@ -209,6 +209,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _navigateToYesNoScreen(String str) {
+
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     if (_resultCode != null && _resultCode != 13) {
       context.push(
@@ -344,14 +345,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                   width: screenWidth * 0.22,
                                   height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        CupertinoColors.systemYellow,
-                                        activeOrange,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
+                                    color: CupertinoColors.systemYellow,
+                                    // gradient: LinearGradient(
+                                    //   colors: [
+                                    //     CupertinoColors.systemYellow,
+                                    //     activeOrange,
+                                    //   ],
+                                    //   begin: Alignment.topLeft,
+                                    //   end: Alignment.bottomRight,
+                                    // ),
                                     borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
@@ -393,7 +395,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                       ),
                                     ],
                                     border: Border.all(
-                                      color: activeOrange,
+                                      color: CupertinoColors.systemYellow,
+                                      //color: activeOrange,
                                       width: 2.0,
                                     ),
                                   ),
@@ -403,7 +406,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                           ? FontAwesomeIcons.microphoneAlt
                                           : FontAwesomeIcons.microphone,
                                       color: _isListening
-                                          ? activeOrange
+                                          //? activeOrange
+                                          ? CupertinoColors.systemYellow
                                           : CupertinoColors.black,
                                       size: screenWidth * 0.18,
                                     ),
@@ -418,14 +422,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                   width: screenWidth * 0.22,
                                   height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        CupertinoColors.systemYellow,
-                                        activeOrange,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
+                                    color: CupertinoColors.systemYellow,
+                                    // gradient: LinearGradient(
+                                    //   // colors: [
+                                    //   //   CupertinoColors.systemYellow,
+                                    //   //   activeOrange,
+                                    //   // ],
+                                    //   begin: Alignment.topLeft,
+                                    //   end: Alignment.bottomRight,
+                                    // ),
                                     borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(

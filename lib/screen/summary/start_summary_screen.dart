@@ -51,32 +51,12 @@ class _MessageSummaryState extends State<SummaryScreen> {
         primaryColor: CupertinoColors.activeOrange,
       ),
       home: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            '요약',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {},
-            child: const Icon(
-              CupertinoIcons.person_crop_circle,
-              color: CupertinoColors.black,
-            ),
-          ),
-          backgroundColor: const Color(0xFFFFC436),
-          border: null,
-        ),
         child: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               children: [
-                Spacer(flex: 1),
-
+                Spacer(flex: 2),
                 Expanded( // 메세지 그림 에셋 공간
                   flex: 4,
                   child: Row(
@@ -90,6 +70,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                     ],
                   ),
                 ),
+                Spacer(flex:1),
                 Expanded( // 메세지 텍스트 공간
                   flex: 20,
                   child: Center(
@@ -175,7 +156,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: CupertinoColors.activeOrange,
+                          color: CupertinoColors.systemYellow,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -188,8 +169,8 @@ class _MessageSummaryState extends State<SummaryScreen> {
                         ),
                         child: const Icon(
                           CupertinoIcons.home,
-                          color: CupertinoColors.white,
-                          size: 40,
+                          color: CupertinoColors.black,
+                          size: 50,
                         ),
                       ),
                     ),

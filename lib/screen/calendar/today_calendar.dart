@@ -113,7 +113,10 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   @override
   Widget build(BuildContext context) {
     int daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
-    double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
+    double boxWidth = MediaQuery
+        .of(context)
+        .size
+        .width / 5 - 8;
     double boxHeight = 100;
     double selectedBoxHeight = 120;
 
@@ -125,7 +128,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               children: [
                 _buildMonthSelector(),
                 const SizedBox(height: 16),
-                _buildDaySelector(daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
+                _buildDaySelector(
+                    daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 4.0),
                   child: Divider(
@@ -138,16 +142,19 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                     future: _scheduleDataFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CupertinoActivityIndicator());
+                        return const Center(
+                            child: CupertinoActivityIndicator());
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      } else
+                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                         return _buildScheduleList(snapshot.data!);
                       } else {
                         return const Center(
                           child: Text(
                             '일정이 없습니다.',
-                            style: TextStyle(fontSize: 20, color: CupertinoColors.systemGrey),
+                            style: TextStyle(fontSize: 20,
+                                color: CupertinoColors.systemGrey),
                           ),
                         );
                       }
@@ -157,7 +164,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               ],
             ),
           ),
-          Positioned(
+          Positioned( // 캘린더 버튼을 하단 중앙에 배치
             bottom: 20,
             left: 0,
             right: 0,
@@ -166,19 +173,30 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                 padding: EdgeInsets.zero,
                 onPressed: () async {
                   await _audioPlayer.stop();
-                  final userId = Provider.of<UserProvider>(context, listen: false).userId;
+                  final userId = Provider
+                      .of<UserProvider>(context, listen: false)
+                      .userId;
                   context.go('/monthly-calendar', extra: userId);
                 },
                 child: Container(
-                  width: 80,
-                  height: 80,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.yellow, Colors.orange],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: CupertinoColors.systemYellow,
+                    // gradient: LinearGradient(
+                    //   colors: CupertinoColors.systemYellow, //[Colors.yellow, Colors.orange],
+                    //   begin: Alignment.topLeft,
+                    //   end: Alignment.bottomRight,
+                    // ),
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: CupertinoColors.black.withOpacity(0.25),
+                        spreadRadius: 1,
+                        blurRadius: 6,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: const Icon(
                     CupertinoIcons.calendar,
@@ -193,6 +211,43 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       ),
     );
   }
+
+          // Positioned(
+          //   bottom: 20,
+          //   left: 0,
+          //   right: 0,
+          //   child: Center(
+          //     child: CupertinoButton(
+          //       padding: EdgeInsets.zero,
+          //       onPressed: () async {
+          //         await _audioPlayer.stop();
+          //         final userId = Provider.of<UserProvider>(context, listen: false).userId;
+          //         context.go('/monthly-calendar', extra: userId);
+          //       },
+          //       child: Container(
+          //         width: 80,
+          //         height: 80,
+          //         decoration: BoxDecoration(
+          //           gradient: LinearGradient(
+          //             colors: [Colors.yellow, Colors.orange],
+          //             begin: Alignment.topLeft,
+          //             end: Alignment.bottomRight,
+          //           ),
+          //           shape: BoxShape.circle,
+          //         ),
+          //         child: const Icon(
+          //           CupertinoIcons.calendar,
+          //           color: Colors.black,
+          //           size: 50,
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+        //],
+      //),
+    //);
+
 
   Widget _buildMonthSelector() {
     return Row(
@@ -250,6 +305,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
 
           return GestureDetector(
             onTap: () {
+              //await _audioPlayer.stop();
               setState(() {
                 _selectedDay = day;
               });
@@ -320,7 +376,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF8B4513) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
+              color: isSelected ? const Color(0xFFFFC600) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),

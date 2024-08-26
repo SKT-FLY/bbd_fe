@@ -89,7 +89,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
             const SizedBox(height: 10),
             // 캘린더 (높이 비율: 8/10)
             Flexible(
-              flex: 15,
+              flex: 16,
               child: FutureBuilder<List<dynamic>>(
                 future: _scheduleDataFuture,
                 builder: (context, snapshot) {
@@ -106,29 +106,33 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
               ),
             ),
             // 하단 홈 버튼 (높이 비율: 1/10)
-            Flexible(
-              flex: 2,
+            Expanded( //홈화면 버튼
+              flex: 3,
               child: Center(
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: () {
-                    context.go('/chat', extra: userId);
+                    context.go('/chat');
                   },
                   child: Container(
-                    width: 85,
-                    height: 85,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.yellow, Colors.orange],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.systemYellow,
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: CupertinoColors.black.withOpacity(0.25),
+                          spreadRadius: 1,
+                          blurRadius: 6,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Icon(
-                      FontAwesomeIcons.home,
-                      color: Colors.black,
-                      size: 40,
+                      CupertinoIcons.home,
+                      color: CupertinoColors.white,
+                      size: 50,
                     ),
                   ),
                 ),
