@@ -11,18 +11,14 @@ import 'package:logger/logger.dart';
 import '../../setting/api_service.dart';
 import '../../setting/user_provider.dart';
 
-// class ScheduleDailyScreen extends StatefulWidget {
-//   final DateTime selectedDate;
-//
-//   const ScheduleDailyScreen({Key? key, required this.selectedDate}) : super(key: key);
 class ScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
-  final Map<String, dynamic>? extraData; // extraData 추가
+  final Map<String, dynamic>? extraData;
 
   const ScheduleDailyScreen({
     Key? key,
     required this.selectedDate,
-    this.extraData, // 생성자에서 extraData를 받도록 추가
+    this.extraData,
   }) : super(key: key);
 
   @override
@@ -59,6 +55,9 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   Future<void> _fetchAndPlaySchedule() async {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     final date = '${_selectedYear}-${_selectedMonth}-${_selectedDay}';
+
+    // 이전에 재생 중이던 음성을 정지
+    await _audioPlayer.stop();
 
     final result = await _apiService.fetchSchedule(date, userId);
 
@@ -113,10 +112,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   @override
   Widget build(BuildContext context) {
     int daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
-    double boxWidth = MediaQuery
-        .of(context)
-        .size
-        .width / 5 - 8;
+    double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
     double boxHeight = 100;
     double selectedBoxHeight = 120;
 
@@ -142,19 +138,17 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                     future: _scheduleDataFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                            child: CupertinoActivityIndicator());
+                        return const Center(child: CupertinoActivityIndicator());
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
-                      } else
-                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                         return _buildScheduleList(snapshot.data!);
                       } else {
                         return const Center(
                           child: Text(
                             '일정이 없습니다.',
-                            style: TextStyle(fontSize: 20,
-                                color: CupertinoColors.systemGrey),
+                            style: TextStyle(
+                                fontSize: 20, color: CupertinoColors.systemGrey),
                           ),
                         );
                       }
@@ -164,7 +158,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               ],
             ),
           ),
-          Positioned( // 캘린더 버튼을 하단 중앙에 배치
+          Positioned(
             bottom: 20,
             left: 0,
             right: 0,
@@ -173,9 +167,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                 padding: EdgeInsets.zero,
                 onPressed: () async {
                   await _audioPlayer.stop();
-                  final userId = Provider
-                      .of<UserProvider>(context, listen: false)
-                      .userId;
+                  final userId = Provider.of<UserProvider>(context, listen: false).userId;
                   context.go('/monthly-calendar', extra: userId);
                 },
                 child: Container(
@@ -183,11 +175,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                   height: 100,
                   decoration: BoxDecoration(
                     color: CupertinoColors.systemYellow,
-                    // gradient: LinearGradient(
-                    //   colors: CupertinoColors.systemYellow, //[Colors.yellow, Colors.orange],
-                    //   begin: Alignment.topLeft,
-                    //   end: Alignment.bottomRight,
-                    // ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -212,43 +199,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     );
   }
 
-          // Positioned(
-          //   bottom: 20,
-          //   left: 0,
-          //   right: 0,
-          //   child: Center(
-          //     child: CupertinoButton(
-          //       padding: EdgeInsets.zero,
-          //       onPressed: () async {
-          //         await _audioPlayer.stop();
-          //         final userId = Provider.of<UserProvider>(context, listen: false).userId;
-          //         context.go('/monthly-calendar', extra: userId);
-          //       },
-          //       child: Container(
-          //         width: 80,
-          //         height: 80,
-          //         decoration: BoxDecoration(
-          //           gradient: LinearGradient(
-          //             colors: [Colors.yellow, Colors.orange],
-          //             begin: Alignment.topLeft,
-          //             end: Alignment.bottomRight,
-          //           ),
-          //           shape: BoxShape.circle,
-          //         ),
-          //         child: const Icon(
-          //           CupertinoIcons.calendar,
-          //           color: Colors.black,
-          //           size: 50,
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-        //],
-      //),
-    //);
-
-
   Widget _buildMonthSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -266,6 +216,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               _selectedDay = 1;
             });
             _scrollToSelectedDay();
+            _fetchAndPlaySchedule();  // 날짜 변경 시 새로운 음성 재생
           },
         ),
         Text(
@@ -285,6 +236,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               _selectedDay = 1;
             });
             _scrollToSelectedDay();
+            _fetchAndPlaySchedule();  // 날짜 변경 시 새로운 음성 재생
           },
         ),
       ],
@@ -304,12 +256,13 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           bool isSelected = day == _selectedDay;
 
           return GestureDetector(
-            onTap: () {
-              //await _audioPlayer.stop();
+            onTap: () async {
+              await _audioPlayer.stop();  // 기존 음성을 정지
               setState(() {
                 _selectedDay = day;
               });
               _scrollToSelectedDay();
+              _fetchAndPlaySchedule();  // 새 날짜의 음성 재생
             },
             child: ConstrainedBox(
               constraints: BoxConstraints(
