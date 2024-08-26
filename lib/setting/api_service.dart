@@ -79,7 +79,7 @@ class ApiService {
   // 유저의 전체 일정 조회
   Future<List<dynamic>> fetchScheduleData(int userId) async {
     final String url = '$kimhome/api/v1/schedule?user_id=$userId';
-
+    print("전체일정조회");
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -90,6 +90,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
+        print(data);
         return data;
       } else {
         return []; // 서버 오류 시 빈 리스트 반환
@@ -103,7 +104,7 @@ class ApiService {
   // 특정 일정 조회
   Future<Map<String, dynamic>> fetchScheduleDetails(int scheduleId, int userId) async {
     final String url = '$kimhome/api/v1/schedule/$scheduleId?user_id=$userId';
-
+    print("특정일정조회");
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -114,6 +115,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        print(data);
         return data;
       } else {
         return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
@@ -168,6 +170,8 @@ class ApiService {
       return {'error': '서버와의 통신 오류가 있습니다.', 'exception': e.toString()};
     }
   }
+
+  // 병원 검색
   Future<List<dynamic>> fetchPois(String searchKeyword, {required double latitude, required double longitude}) async {
     print("~~~~fetchpois~~~~~~");
 

@@ -1,17 +1,16 @@
-import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bbd_project_fe/setting/api_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter/services.dart';
-import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:bbd_project_fe/setting/config.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
+import '../setting/config.dart';
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -32,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ApiService _apiService = ApiService();
   int? _resultCode;
   bool _isPlayingGif = false; // GIF 재생 상태를 관리할 변수
+  bool _isPlayingSound = false; // 음성 재생 상태를 관리할 변수
 
   @override
   void initState() {
@@ -46,7 +46,6 @@ class _ChatScreenState extends State<ChatScreen> {
     print("화면전환 인식");
     super.didChangeDependencies();
     _resetScreen(); // 화면이 전환될 때 초기화 작업 수행
-
   }
 
   Future<void> _resetScreen() async {
@@ -70,15 +69,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _playInitialSound() async {
-    int userId = Provider.of<UserProvider>(context, listen: false).userId; // UserId 확인
-    String audioFilePath;
-
-    // 유저 아이디가 1이면 다른 경로를 설정
-    if (userId == 1) {
-      audioFilePath = 'voice/start_shw.wav'; // 유저 아이디가 1일 때 경로
-    } else {
-      audioFilePath = 'voice/starting_voice.wav'; // 기본 경로'assets/voice/start_shw.wav'
+    if (_isPlayingSound) {
+      return; // 이미 재생 중이면 중복 재생 방지
     }
+
+    _isPlayingSound = true; // 재생 시작
+    int userId = Provider.of<UserProvider>(context, listen: false).userId;
+    String audioFilePath = userId == 1 ? 'voice/start_shw.wav' : 'voice/starting_voice.wav';
 
     try {
       await Future.wait([
@@ -87,9 +84,10 @@ class _ChatScreenState extends State<ChatScreen> {
       ]);
     } catch (e) {
       print('오디오 파일 재생 중 오류 발생: $e');
+    } finally {
+      _isPlayingSound = false; // 재생 완료 후 플래그 초기화
     }
   }
-
 
   Future<void> _playGif() async {
     setState(() {
@@ -183,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (_resultCode == null || _resultCode == 13) {
-        await Future.delayed(Duration(seconds: 2)); // 2초 딜레이 후
+        await Future.delayed(Duration(seconds: 1)); // 2초 딜레이 후
         setState(() {
           _text = response['message'] != null && response['message'] != 'result message not found'
               ? response['message']
@@ -229,6 +227,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   @override
+  void dispose() {
+    _audioPlayer.stop(); // 음성 재생 중지
+    _audioPlayer.dispose(); // AudioPlayer 자원 해제
+    _speech.stop(); // 음성 인식 중지
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     int userId = Provider.of<UserProvider>(context).userId; // userId를 Provider에서 가져옴
     var screenWidth = MediaQuery.of(context).size.width;
@@ -264,7 +270,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Text(
                         _text.isEmpty ? '' : _text,
                         style: TextStyle(
-                          fontSize: 32.0,
+                          fontSize: 47.0,
                           color: CupertinoColors.black,
                           fontWeight: FontWeight.w600,
                           height: 1.5,
@@ -322,7 +328,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                       Positioned(
-                        bottom: 0,
+                        bottom: 20, // 버튼 아래에 공간을 확보하기 위해 약간의 여백 추가
                         left: 0,
                         right: 0,
                         child: Padding(
@@ -332,30 +338,39 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: <Widget>[
                               GestureDetector(
                                 onTap: () {
-                                  context.push('/smsListScreen');
+                                  context.go('/smsListScreen');
                                 },
                                 child: Container(
+                                  width: screenWidth * 0.22,
+                                  height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CupertinoColors.systemYellow,
+                                        activeOrange,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.orangeAccent.withOpacity(
-                                            0.3),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
                                       ),
                                     ],
                                   ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'assets/images/message.png',
-                                      width: screenWidth * 0.18,
-                                      height: screenWidth * 0.18,
+                                  child: const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.solidEnvelope,
+                                      color: Colors.black,
+                                      size: 48,
                                     ),
                                   ),
                                 ),
                               ),
-                              GestureDetector( // 음성녹음 버튼
+                              GestureDetector(
                                 onTap: _listen, // 클릭 시 듣기 시작
                                 child: Container(
                                   width: screenWidth * 0.32,
@@ -372,8 +387,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: CupertinoColors.black
-                                            .withOpacity(0.2),
+                                        color: CupertinoColors.black.withOpacity(0.2),
                                         blurRadius: 10,
                                         offset: const Offset(0, 5),
                                       ),
@@ -398,26 +412,34 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  context.push(
-                                      '/monthly-calendar', extra: userId);
+                                  context.go('/monthly-calendar', extra: userId);
                                 },
                                 child: Container(
+                                  width: screenWidth * 0.22,
+                                  height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CupertinoColors.systemYellow,
+                                        activeOrange,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.orangeAccent.withOpacity(
-                                            0.3),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
+                                        color: CupertinoColors.black.withOpacity(0.2),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
                                       ),
                                     ],
                                   ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'assets/images/schedule.png',
-                                      width: screenWidth * 0.18,
-                                      height: screenWidth * 0.18,
+                                  child: const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.solidCalendarAlt,
+                                      color: Colors.black,
+                                      size: 48,
                                     ),
                                   ),
                                 ),

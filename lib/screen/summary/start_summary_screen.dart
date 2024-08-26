@@ -46,6 +46,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return CupertinoApp(
+      debugShowCheckedModeBanner: false,
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),

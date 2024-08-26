@@ -14,7 +14,6 @@ class SmsListScreen extends StatefulWidget {
 class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserver {
   static const platform = MethodChannel('sms_retriever');
   List<String> _smsList = [];
-  bool _newSmsReceived = false;
 
   @override
   void initState() {
@@ -42,12 +41,53 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
     try {
       final List<dynamic> smsList = await platform.invokeMethod('getLatestMessage');
       setState(() {
-        _smsList = smsList.cast<String>();
+        _smsList = smsList.cast<String>().take(10).toList(); // 최신 10개의 메시지만 가져옴
       });
     } on PlatformException catch (e) {
       setState(() {
         _smsList = ['Failed to get SMS: ${e.message}'];
       });
+    }
+  }
+
+  // 유효한 한글, 영어, 숫자, 공백 및 특정 기호를 포함하는 텍스트만 추출하는 함수
+  String extractValidText(String input) {
+    final regex = RegExp(r'[가-힣a-zA-Z0-9~₩!@#$%^&*()_+\-={}|:.,?><\s]');
+    Iterable<RegExpMatch> matches = regex.allMatches(input);
+    return matches.map((match) => match.group(0)).join('');
+  }
+
+  String formatMessage(String message) {
+    List<String> lines = message.split('\n');
+    lines = lines.skip(2).take(4).toList(); // 첫 두 줄을 건너뛰고, 다음 4줄을 선택
+    return lines.join('\n').trim(); // 줄바꿈으로 연결된 문자열을 반환
+  }
+
+  String getIndexText(int index) {
+    // 인덱스를 한글로 변환
+    switch (index) {
+      case 1:
+        return "첫 번째 문자";
+      case 2:
+        return "두 번째 문자";
+      case 3:
+        return "세 번째 문자";
+      case 4:
+        return "네 번째 문자";
+      case 5:
+        return "다섯 번째 문자";
+      case 6:
+        return "여섯 번째 문자";
+      case 7:
+        return "일곱 번째 문자";
+      case 8:
+        return "여덟 번째 문자";
+      case 9:
+        return "아홉 번째 문자";
+      case 10:
+        return "열 번째 문자";
+      default:
+        return "$index 번째 문자";
     }
   }
 
@@ -61,9 +101,21 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: CupertinoNavigationBar(
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Icon(
+            CupertinoIcons.back,
+            color: CupertinoColors.activeBlue,
+          ),
+          onPressed: () {
+            context.go('/chat'); // 이전 화면으로 이동
+          },
+        ),
         middle: Text('최근 문자 메시지', style: TextStyle(fontSize: 22)),
       ),
       child: SafeArea(
@@ -71,19 +123,23 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
           padding: EdgeInsets.all(16),
           itemCount: _smsList.length,
           itemBuilder: (context, index) {
-            return _buildSmsCard(_smsList[index]);
+            return _buildSmsCard(index + 1, _smsList[index], screenHeight);
           },
         ),
       ),
     );
   }
 
-  Widget _buildSmsCard(String message) {
+  Widget _buildSmsCard(int index, String message, double screenHeight) {
+    final filteredMessage = extractValidText(message); // 유효한 텍스트만 추출
+    final formattedMessage = formatMessage(filteredMessage); // 첫 두 줄을 제거하고 4줄까지만 표시
+    final indexText = getIndexText(index); // 인덱스 텍스트 생성
+
     return GestureDetector(
       onTap: () => _handleSmsTap(message),
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 8), // 여백을 줄임
-        padding: EdgeInsets.all(16), // 패딩을 줄임
+        margin: EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: CupertinoColors.white,
           borderRadius: BorderRadius.circular(12),
@@ -98,13 +154,25 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              width: double.infinity, // 부모의 너비를 가득 채우도록 설정
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemYellow, // 노란색 배경
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                indexText,
+                style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                    fontSize: 35, fontWeight: FontWeight.bold, color: CupertinoColors.black),
+              ),
+            ),
+            SizedBox(height: 8),
             Text(
-              message,
-              style: CupertinoTheme.of(context)
-                  .textTheme
-                  .textStyle
-                  .copyWith(fontSize: 25, fontWeight: FontWeight.w600),
-              maxLines: 12, // 최대 3줄까지만 표시
+              formattedMessage.isEmpty ? '[내용 없음]' : formattedMessage,
+              style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                  fontSize: 25, fontWeight: FontWeight.w600),
+              maxLines: 4, // 최대 4줄까지만 표시
               overflow: TextOverflow.ellipsis, // 텍스트가 넘칠 경우 말줄임표 처리
             ),
             SizedBox(height: 8), // 간격을 줄임
@@ -113,10 +181,8 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
               children: [
                 Text(
                   '받은 메시지',
-                  style: CupertinoTheme.of(context)
-                      .textTheme
-                      .textStyle
-                      .copyWith(fontSize: 16, color: CupertinoColors.systemGrey),
+                  style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                      fontSize: 16, color: CupertinoColors.systemGrey),
                 ),
                 FaIcon(
                   FontAwesomeIcons.arrowRight,
@@ -127,12 +193,13 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
             ),
           ],
         ),
+        height: screenHeight * 0.37, // 박스 높이를 화면 높이의 60%로 설정
       ),
     );
   }
 
   void _handleSmsTap(String message) {
-    // MessageSummaryScreen으로 이동하면서 message 전달
-    context.push('/start-message-summary', extra: message);
+    // MessageSummaryScreen으로 이동하면서 파싱된 메시지를 전달
+    context.push('/start-message-summary', extra: extractValidText(message));
   }
 }
