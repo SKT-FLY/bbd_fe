@@ -25,32 +25,12 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
         primaryColor: CupertinoColors.activeOrange,
       ),
       home: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            '문자분석',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {},
-            child: const Icon(
-              CupertinoIcons.person_crop_circle,
-              color: CupertinoColors.black,
-            ),
-          ),
-          backgroundColor: const Color(0xFFFFC436),
-          border: null,
-        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
-                Spacer(flex: 1),
-
+                Spacer(flex: 2),
                 Expanded( // 이미지 공간
                   flex: 4,
                   child: Row(
@@ -64,7 +44,7 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
                     ],
                   ),
                 ),
-
+                Spacer(flex:1),
                 Expanded( // 텍스트 박스 공간
                   flex: 24,
                   child: Center(
@@ -76,7 +56,7 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: CupertinoColors.black.withOpacity(0.25),
+                            color: CupertinoColors.black.withOpacity(0.3),
                             spreadRadius: 1,
                             blurRadius: 6,
                             offset: const Offset(0, 4),
@@ -113,7 +93,7 @@ class _SummaryPage1State extends State<SummaryResultScreen_normal> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: CupertinoColors.activeOrange, // 주황색 바탕
+                          color: CupertinoColors.systemYellow, // 주황색 바탕
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(

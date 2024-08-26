@@ -77,31 +77,12 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
         primaryColor: CupertinoColors.activeOrange,
       ),
       home: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            '문자분석',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {},
-            child: const Icon(
-              CupertinoIcons.person_crop_circle,
-              color: CupertinoColors.black,
-            ),
-          ),
-          backgroundColor: const Color(0xFFFFC436),
-          border: null,
-        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
-                Spacer(flex: 1),
+                Spacer(flex: 2),
 
                 Expanded( // 이미지 공간
                   flex: 4,
@@ -109,53 +90,43 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Image.asset(
-                        'assets/images/schedule.png', // 이미지 경로 설정
+                        'assets/images/message.png', // 이미지 경로 설정
                         width: 100,
                         height: 100,
                       ),
                     ],
                   ),
                 ),
-
+                Spacer(flex: 1),
                 Expanded( // 텍스트 박스 공간
-                  flex: 24,
+                  flex: 22,
                   child: Center(
                     child: Container(
                       width: screenWidth * 0.9,
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: CupertinoColors.white,
+                        color: const Color(0xFFF5EDED), // 연한 배경색
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: CupertinoColors.black.withOpacity(0.25),
+                            color: CupertinoColors.black.withOpacity(0.3),
                             spreadRadius: 1,
                             blurRadius: 6,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '요약',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Center(
+                        child: SingleChildScrollView( // 긴 텍스트를 위한 스크롤 추가
+                          child: Text(
+                            widget.data['summary'], // 요약 텍스트만 표시
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: CupertinoColors.black,
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              widget.data['summary'],
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: CupertinoColors.activeOrange,
-                              ),
-                            ),
-                          ],
+                            textAlign: TextAlign.start,
+                          ),
                         ),
                       ),
                     ),
@@ -183,18 +154,19 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                           ),
                         ],
                       ),
-                      child: const Text(
-                        '일정등록',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
+                      child: const Center(
+                        child: Text(
+                          '일정등록',
+                          //textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-
                 Spacer(flex: 1),
 
                 Expanded( // 홈 버튼 공간
@@ -203,27 +175,27 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                     child: CupertinoButton(
                       padding: EdgeInsets.zero,
                       onPressed: () {
-                        // 홈 버튼 클릭 시의 동작
                         context.go('/chat');
                       },
                       child: Container(
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: CupertinoColors.activeOrange,
+                          color: CupertinoColors.systemYellow,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: CupertinoColors.black.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
+                              color: CupertinoColors.black.withOpacity(0.25),
+                              spreadRadius: 1,
+                              blurRadius: 6,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: const Icon(
                           CupertinoIcons.home,
-                          color: CupertinoColors.white,
-                          size: 70,
+                          color: CupertinoColors.black,
+                          size: 50,
                         ),
                       ),
                     ),

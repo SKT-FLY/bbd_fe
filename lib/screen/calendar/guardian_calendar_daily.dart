@@ -11,11 +11,11 @@ import 'package:logger/logger.dart';
 import '../../setting/api_service.dart';
 import '../../setting/user_provider.dart';
 
-class ScheduleDailyScreen extends StatefulWidget {
+class GuardianScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
-  final Map<String, dynamic>? extraData;
+  final List<dynamic>? extraData;
 
-  const ScheduleDailyScreen({
+  const GuardianScheduleDailyScreen({
     Key? key,
     required this.selectedDate,
     this.extraData,
@@ -25,7 +25,7 @@ class ScheduleDailyScreen extends StatefulWidget {
   _ScheduleDailyScreenState createState() => _ScheduleDailyScreenState();
 }
 
-class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
+class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
   late int _selectedYear;
   late int _selectedMonth;
   late int _selectedDay;
@@ -42,7 +42,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     _selectedYear = widget.selectedDate.year;
     _selectedMonth = widget.selectedDate.month;
     _selectedDay = widget.selectedDate.day;
-
+    print("투데이 진입완료"+_selectedYear.toString()+_selectedMonth.toString()+_selectedDay.toString());
     _scheduleDataFuture = _fetchScheduleData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,7 +79,9 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
       final userId = Provider.of<UserProvider>(context, listen: false).userId;
-      final List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
+      final List<dynamic> schedules = await _apiService.fetchGuardianSchedules(userId);
+      print("스케줄은...");
+      print(schedules);
       setState(() {
         _schedules = schedules;
       });
@@ -168,7 +170,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                 onPressed: () async {
                   await _audioPlayer.stop();
                   final userId = Provider.of<UserProvider>(context, listen: false).userId;
-                  context.go('/monthly-calendar', extra: userId);
+                  context.go('/guardian-monthly-schedule', extra: userId);
                 },
                 child: Container(
                   width: 100,
@@ -299,6 +301,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
         itemBuilder: (context, index) {
           final schedule = filteredSchedules[index];
           return _buildScheduleCard(
+            userId: schedule['user_id'],
             time: schedule['schedule_start_time'] ?? 'N/A',
             title: schedule['schedule_name'] ?? 'N/A',
             description: schedule['schedule_description'] ?? 'N/A',
@@ -382,10 +385,25 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   }
 
   Widget _buildScheduleCard({
+    required int userId,
     required String time,
     required String title,
     required String description,
   }) {
+    Color cardColor;
+
+    // userId에 따라 카드 상단의 색상 결정
+    switch (userId) {
+      case 1:
+        cardColor = Colors.red;
+        break;
+      case 2:
+        cardColor = Colors.blue;
+        break;
+      default:
+        cardColor = Colors.grey;
+    }
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       margin: const EdgeInsets.only(top: 10.0),
@@ -403,6 +421,12 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            height: 6.0,
+            width: double.infinity,
+            color: cardColor, // userId에 따라 다르게 지정된 색상
+          ),
+          const SizedBox(height: 10),
           Text(
             time,
             style: const TextStyle(

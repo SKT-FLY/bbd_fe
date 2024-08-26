@@ -100,7 +100,31 @@ class ApiService {
       return [];
     }
   }
+// 보호자 일정 확인
+  Future<List<dynamic>> fetchGuardianSchedules(int guardianId) async {
+    final String url =
+        '$kimhome/api/v1/guardian/$guardianId/schedules'; // 실제 API 주소로 변경해야 합니다.
 
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> schedules = jsonDecode(utf8.decode(response.bodyBytes))  as List<dynamic>;;
+        return schedules;
+        // 일정 데이터를 날짜별로 그룹화
+        //return _groupEventsByDate(schedules);
+      } else {
+        throw Exception('서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('서버와의 통신 오류가 있습니다. 에러: $e');
+    }
+  }
   // 특정 일정 조회
   Future<Map<String, dynamic>> fetchScheduleDetails(int scheduleId, int userId) async {
     final String url = '$kimhome/api/v1/schedule/$scheduleId?user_id=$userId';
@@ -116,29 +140,6 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         print(data);
-        return data;
-      } else {
-        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
-      }
-    } catch (e) {
-      return {'error': '서버와의 통신 오류가 있습니다.', 'exception': e.toString()};
-    }
-  }
-
-  // 보호자 일정 확인
-  Future<Map<String, dynamic>> fetchGuardianSchedules(int guardianId) async {
-    final String url = '$kimhome/api/v1/guardian/$guardianId/schedules';
-
-    try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         return data;
       } else {
         return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
