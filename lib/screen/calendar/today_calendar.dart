@@ -1,13 +1,20 @@
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_project_fe/setting/api_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bbd_project_fe/setting/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:logger/logger.dart';
-import 'package:provider/provider.dart';
 
+import '../../setting/api_service.dart';
 import '../../setting/user_provider.dart';
 
+// class ScheduleDailyScreen extends StatefulWidget {
+//   final DateTime selectedDate;
+//
+//   const ScheduleDailyScreen({Key? key, required this.selectedDate}) : super(key: key);
 class ScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
   final Map<String, dynamic>? extraData; // extraData 추가
@@ -15,7 +22,7 @@ class ScheduleDailyScreen extends StatefulWidget {
   const ScheduleDailyScreen({
     Key? key,
     required this.selectedDate,
-    this.extraData,
+    this.extraData, // 생성자에서 extraData를 받도록 추가
   }) : super(key: key);
 
   @override
@@ -26,7 +33,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   late int _selectedYear;
   late int _selectedMonth;
   late int _selectedDay;
-  late int userId = Provider.of<UserProvider>(context, listen: false).userId; // userId를 추가
   final ScrollController _scrollController = ScrollController();
   late Future<List<dynamic>> _scheduleDataFuture;
   final ApiService _apiService = ApiService();
@@ -41,26 +47,46 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     _selectedMonth = widget.selectedDate.month;
     _selectedDay = widget.selectedDate.day;
 
-    // extraData에서 userId 가져오기
-    userId = widget.extraData?['userId'] ?? 0;
-
     _scheduleDataFuture = _fetchScheduleData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToSelectedDay();
     });
 
+    _fetchAndPlaySchedule();  // 음성 재생 기능 추가
+  }
+
+  Future<void> _fetchAndPlaySchedule() async {
+    final userId = Provider.of<UserProvider>(context, listen: false).userId;
+    final date = '${_selectedYear}-${_selectedMonth}-${_selectedDay}';
+
+    final result = await _apiService.fetchSchedule(date, userId);
+
+    if (result['status'] == 'success') {
+      if (result.containsKey('data')) {
+        Uint8List audioBytes = Uint8List.fromList(result['data']);
+        await _audioPlayer.play(BytesSource(audioBytes));
+        _logger.i('Audio is playing.');
+      } else if (result.containsKey('message')) {
+        String message = result['message'];
+        _logger.i('Received message: $message');
+        // 메시지를 화면에 표시하거나 다른 작업 수행
+      }
+    } else {
+      _logger.e('Error: ${result['message'] ?? result['exception']}');
+    }
   }
 
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
+      final userId = Provider.of<UserProvider>(context, listen: false).userId;
       final List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
       setState(() {
         _schedules = schedules;
       });
       return schedules;
     } catch (e) {
-      print('Error fetching schedules: $e');
+      _logger.e('Error fetching schedules: $e');
       return [];
     }
   }
@@ -139,6 +165,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () {
+                  final userId = Provider.of<UserProvider>(context, listen: false).userId;
                   context.go('/monthly-calendar', extra: userId);
                 },
                 child: Container(
@@ -292,7 +319,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFFF9500) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
+              color: isSelected ? const Color(0xFF8B4513) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),

@@ -111,6 +111,30 @@ final GoRouter router = GoRouter(
         return ScheduleMonthlyScreen(); // userId 파라미터 없이 생성자 호출
       },
     ),
+    ///// map 라우터
+    ///// map 라우터
+    GoRoute(
+      path: '/daily-schedule',
+      builder: (context, state) {
+        final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
+        final DateTime selectedDate = extra['selectedDate'];
+        return ScheduleDailyScreen(
+          selectedDate: selectedDate,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/daily-schedule-TTS',
+      builder: (context, state) {
+        final DateTime selectedDate = (state.extra as Map<String, dynamic>?)?['selectedDate'] ?? DateTime.now();
+        final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['extraData'];
+
+        return ScheduleDailyScreen(
+          selectedDate: selectedDate,
+          extraData: extraData, // extraData를 전달
+        );
+      },
+    ),
     GoRoute(
       path: '/daily-schedule',
       builder: (context, state) {
@@ -125,7 +149,7 @@ final GoRouter router = GoRouter(
       path: '/daily-schedule-TTS',
       builder: (context, state) {
         final DateTime selectedDate = (state.extra as Map<String, dynamic>?)?['selectedDate'] ?? DateTime.now();
-        final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['data'];
+        final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['extraData'];
 
         return ScheduleDailyScreen(
           selectedDate: selectedDate,
@@ -133,6 +157,7 @@ final GoRouter router = GoRouter(
         );
       },
     ),
+
 
     GoRoute(
       path: '/taxi-search',
