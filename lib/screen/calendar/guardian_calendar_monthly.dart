@@ -8,10 +8,8 @@ import 'package:bbd_project_fe/setting/api_service.dart';
 import '../../setting/user_provider.dart';
 
 class GuardianScheduleMonthlyScreen extends StatefulWidget {
-  //final int userId;
 
   const GuardianScheduleMonthlyScreen({super.key});
-    //required this.userId});
 
   @override
   _GuardianScheduleMonthlyScreenState createState() =>
@@ -22,17 +20,15 @@ class _GuardianScheduleMonthlyScreenState
     extends State<GuardianScheduleMonthlyScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
-  final ApiService _apiService = ApiService(); // ApiService 인스턴스 생성
   late Future<List<dynamic>> _scheduleDataFuture;
   Map<DateTime, List<dynamic>> _events = {};
   Map<int, Color> _userColors = {};
   //late int guardianId;
+  final ApiService _apiService = ApiService(); // ApiService 인스턴스 생성
 
   @override
   void initState() {
     super.initState();
-    //guardianId = widget.userId;
-    //guardianId =
     _fetchGuardianSchedules();
   }
 
@@ -40,17 +36,14 @@ class _GuardianScheduleMonthlyScreenState
     final guardianId = Provider.of<UserProvider>(context, listen: false).userId;
     setState(() {
       print("가디언 페이지");
-      //final guardianId = Provider.of<UserProvider>(context, listen: false).userId;
+      //_scheduleDataFuture = _apiService.fetchGuardianSchedules(guardianId);
       _scheduleDataFuture = _apiService.fetchGuardianSchedules(guardianId);
-      _scheduleDataFuture.then((schedules) {
+      _scheduleDataFuture.then((events) {
         setState(() {
-          _events = _groupEventsByDate(schedules);
+          //_events = events;
+          _events = _groupEventsByDate(events);
+          _assignColorsToUsers();
         });
-        // _scheduleDataFuture.then((events) {
-        //   setState(() {
-        //     _events = events;
-        //     _assignColorsToUsers();
-        //   });
       }).catchError((error) {
         print('Error fetching schedules: $error');
       });
@@ -69,7 +62,6 @@ class _GuardianScheduleMonthlyScreenState
     }
     return events;
   }
-
   void _assignColorsToUsers() {
     int colorIndex = 0;
     List<Color> colors = [
@@ -80,7 +72,7 @@ class _GuardianScheduleMonthlyScreenState
       Colors.purple,
       Colors.cyan,
       Colors.amber
-    ]; // 피보호자별 색상 지정Future<List<dynamic>>
+    ]; // 피보호자별 색상 지정
 
     _events.forEach((date, schedules) {
       for (var schedule in schedules) {
@@ -94,7 +86,6 @@ class _GuardianScheduleMonthlyScreenState
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    //print("날짜 선택"+selectedDay.toString()+_events.toString()+guardianId.toString());
     final guardianId = Provider.of<UserProvider>(context, listen: false).userId;
     setState(() {
       _selectedDay = selectedDay;
@@ -105,13 +96,12 @@ class _GuardianScheduleMonthlyScreenState
     context.go('/guardian-daily-schedule', extra: {
       'selectedDate': selectedDay,
       'events': selectedEvents,
-      'userId': guardianId,
+      'userId': guardianId
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final guardianId = Provider.of<UserProvider>(context, listen:false).userId;
     return CupertinoPageScaffold(
       navigationBar: null,
       child: SafeArea(
@@ -178,7 +168,6 @@ class _GuardianScheduleMonthlyScreenState
   }
 
   Widget _buildMonthSelector() {
-    final guardianId = Provider.of<UserProvider>(context, listen: false).userId;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -279,7 +268,6 @@ class _GuardianScheduleMonthlyScreenState
         },
         defaultBuilder: (context, day, focusedDay) {
           final dateOnly = DateTime(day.year, day.month, day.day);
-          final hasEvents = _events[dateOnly]?.isNotEmpty ?? false;
           final events = _events[dateOnly] ?? [];
 
           return Stack(
@@ -305,43 +293,43 @@ class _GuardianScheduleMonthlyScreenState
 
               if (events.isNotEmpty)
 
-              Positioned(
-                top: 36, // 숫자 아래로 여유를 둠
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(events.length, (index) {
-                    int userId = events[index]['user_id'];
-                    String scheduleName = events[index]['schedule_name'];
+                Positioned(
+                  top: 36, // 숫자 아래로 여유를 둠
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: List.generate(events.length, (index) {
+                      int userId = events[index]['user_id'];
+                      String scheduleName = events[index]['schedule_name'];
 
-                    // 제목이 6글자를 넘을 경우 잘라서 표시
-                    if (scheduleName.length > 6) {
-                      scheduleName = scheduleName.substring(0, 6) + '...';
-                    }
+                      // 제목이 6글자를 넘을 경우 잘라서 표시
+                      if (scheduleName.length > 6) {
+                        scheduleName = scheduleName.substring(0, 6) + '...';
+                      }
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 1.0), // 네모 사이의 간격을 더 넓게
-                      child: Container(
-                        width: 90, // 직사각형의 너비를 지정
-                        height: 15, // 직사각형의 높이를 지정
-                        decoration: BoxDecoration(
-                          color: _userColors[userId]?.withOpacity(0.8) ?? Colors.black.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 적용
-                        ),
-                        child: Center(
-                          child: Text(
-                            scheduleName,
-                            style: TextStyle(
-                              color: Colors.white, // 텍스트 색상
-                              fontSize: 10, // 작은 글씨 크기
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1.0), // 네모 사이의 간격을 더 넓게
+                        child: Container(
+                          width: 90, // 직사각형의 너비를 지정
+                          height: 15, // 직사각형의 높이를 지정
+                          decoration: BoxDecoration(
+                            color: _userColors[userId]?.withOpacity(0.8) ?? Colors.black.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 적용
+                          ),
+                          child: Center(
+                            child: Text(
+                              scheduleName,
+                              style: TextStyle(
+                                color: Colors.white, // 텍스트 색상
+                                fontSize: 10, // 작은 글씨 크기
+                              ),
+                              maxLines: 1, // 한 줄로 표시
                             ),
-                            maxLines: 1, // 한 줄로 표시
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
-              ),
 
             ],
           );

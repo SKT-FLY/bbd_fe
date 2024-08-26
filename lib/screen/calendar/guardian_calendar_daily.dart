@@ -13,7 +13,6 @@ import '../../setting/user_provider.dart';
 
 class GuardianScheduleDailyScreen extends StatefulWidget {
   final DateTime selectedDate;
-  //final Map<String, dynamic>? extraData;
   final List<dynamic>? extraData;
 
   const GuardianScheduleDailyScreen({
@@ -302,6 +301,7 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
         itemBuilder: (context, index) {
           final schedule = filteredSchedules[index];
           return _buildScheduleCard(
+            userId: schedule['user_id'],
             time: schedule['schedule_start_time'] ?? 'N/A',
             title: schedule['schedule_name'] ?? 'N/A',
             description: schedule['schedule_description'] ?? 'N/A',
@@ -385,10 +385,25 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
   }
 
   Widget _buildScheduleCard({
+    required int userId,
     required String time,
     required String title,
     required String description,
   }) {
+    Color cardColor;
+
+    // userId에 따라 카드 상단의 색상 결정
+    switch (userId) {
+      case 1:
+        cardColor = Colors.red;
+        break;
+      case 2:
+        cardColor = Colors.blue;
+        break;
+      default:
+        cardColor = Colors.grey;
+    }
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       margin: const EdgeInsets.only(top: 10.0),
@@ -406,6 +421,12 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            height: 6.0,
+            width: double.infinity,
+            color: cardColor, // userId에 따라 다르게 지정된 색상
+          ),
+          const SizedBox(height: 10),
           Text(
             time,
             style: const TextStyle(
