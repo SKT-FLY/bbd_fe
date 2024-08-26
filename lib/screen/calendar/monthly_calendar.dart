@@ -18,8 +18,8 @@ class ScheduleMonthlyScreen extends StatefulWidget {
 class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
-  late Future<List<dynamic>> _scheduleDataFuture;
   final ApiService _apiService = ApiService();
+  late Future<List<dynamic>> _scheduleDataFuture;
   Map<DateTime, List<dynamic>> _events = {};
 
   @override
@@ -63,7 +63,10 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
     });
 
     final selectedEvents = _events[selectedDay] ?? [];
-    context.go('/daily-schedule', extra: {'selectedDate': selectedDay, 'events': selectedEvents, 'userId': userId});
+    context.go('/daily-schedule', extra: {
+      'selectedDate': selectedDay,
+      'events': selectedEvents,
+      'userId': userId});
   }
 
   String _getLunarDate(DateTime date) {
@@ -237,7 +240,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
             return const Center(
               child: Text(
                 '일',
-                style: TextStyle(fontSize: 24, color: Colors.blue),
+                style: TextStyle(fontSize: 24, color: Colors.red),
               ),
             );
           }

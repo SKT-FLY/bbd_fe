@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../data/gpsScreen.dart';
+import '../screen/calendar/guardian_calendar_daily.dart';
+import '../screen/calendar/guardian_calendar_monthly.dart';
 import '../screen/chat_screen.dart';
 import '../screen/loading_screen.dart';
 
@@ -111,7 +113,29 @@ final GoRouter router = GoRouter(
         return ScheduleMonthlyScreen(); // userId 파라미터 없이 생성자 호출
       },
     ),
-    ///// map 라우터
+    ///// 보호자 달력 라우터final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
+    //         final int userId = extra['guardianId'] as int;
+    GoRoute(
+      path: '/guardian-monthly-schedule',
+      builder: (context, state) {
+        return GuardianScheduleMonthlyScreen();
+      },
+    ),
+    GoRoute(
+      path: '/guardian-daily-schedule',
+      builder: (context, state) {
+        final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
+        final DateTime selectedDate = extra['selectedDate'];
+        final List<dynamic> events = extra['events']; // 전달된 일정 데이터를 받아옵니다.
+
+        return GuardianScheduleDailyScreen(
+          selectedDate: selectedDate,
+          extraData: events, // 일정을 넘겨줍니다.
+        );
+      },
+    ),
+
+
     ///// map 라우터
     GoRoute(
       path: '/daily-schedule',
