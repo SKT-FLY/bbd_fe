@@ -169,7 +169,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                         ),
                         child: const Icon(
                           CupertinoIcons.home,
-                          color: CupertinoColors.black,
+                          color: CupertinoColors.white,
                           size: 50,
                         ),
                       ),
