@@ -64,7 +64,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     if (result['status'] == 'success') {
       if (result.containsKey('data')) {
         Uint8List audioBytes = Uint8List.fromList(result['data']);
-        await _audioPlayer.stop();
         await _audioPlayer.play(BytesSource(audioBytes));
         _logger.i('Audio is playing.');
       } else if (result.containsKey('message')) {

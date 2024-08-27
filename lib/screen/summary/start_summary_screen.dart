@@ -28,15 +28,14 @@ class _MessageSummaryState extends State<SummaryScreen> {
     print(data['date']);
     // 날짜 값이 'none'이거나 비어 있는지 확인하여 적절한 라우팅 결정
     if (!mounted) return; // 현재 State가 여전히 활성화된 상태인지 확인
-    if (data['date'] == null || data['date'].isEmpty || data['date'].toLowerCase() == 'none') {
-      print("Date NONE");
-      // 날짜가 없으면 요약 결과 화면으로 이동하고 data를 그대로 전달
-      context.go('/summary-result-normal', extra: data);
-    } else {
-      print("TO GO CAL");
-      // 날짜가 있으면 캘린더 결과 화면으로 이동하고 필요한 데이터를 전달
+    // 조건: data['date']가 null이고, message_type이 "스미싱 문자"가 아닌 경우 캘린더 결과 화면으로 이동
+    if (data['date'] == null && data['message_type'] != '스미싱 문자') {
+      print("TO GO CAL"+data['message_type']);
       context.go('/summary-result-calendar', extra: data);
-    };
+    } else {
+      print("Date NONE or 스미싱 문자");
+      context.go('/summary-result-normal', extra: data);
+    }
   }
 
 

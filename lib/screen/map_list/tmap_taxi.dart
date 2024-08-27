@@ -1,24 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
-class TaxiSearchPage extends StatefulWidget {
+class TaxiSearchPage extends StatelessWidget {
   final Map<String, dynamic>? taxiData;
   static const Color customOrange = Color(0xFFF6B32A); // #F6B32A 색상을 정의
 
   const TaxiSearchPage({Key? key, required this.taxiData}) : super(key: key);
-
-  @override
-  _TaxiSearchPageState createState() => _TaxiSearchPageState();
-}
-
-class _TaxiSearchPageState extends State<TaxiSearchPage> {
-  late String fullAddress;
-
-  @override
-  void initState() {
-    super.initState();
-    fullAddress = _formatAddress(widget.taxiData?['fullAddress'] ?? '위치 정보 없음');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +13,7 @@ class _TaxiSearchPageState extends State<TaxiSearchPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     // 택시 데이터가 null이거나, 유효한 데이터가 없을 때의 처리
-    if (widget.taxiData == null || widget.taxiData!['type_0'] == null) {
+    if (taxiData == null || taxiData!['type_0'] == null) {
       return CupertinoPageScaffold(
         child: Center(
           child: Text(
@@ -37,11 +24,13 @@ class _TaxiSearchPageState extends State<TaxiSearchPage> {
       );
     }
 
-    final String? type1 = widget.taxiData!['type_1'];
-    final String type0 = widget.taxiData!['type_0'];
+    String fullAddress = taxiData!['fullAddress'] ?? '위치 정보 없음';
+    fullAddress = _formatAddress(fullAddress); // 주소를 적절한 위치에서 줄바꿈 처리
+
+    final String? type1 = taxiData!['type_1'];
+    final String type0 = taxiData!['type_0'];
 
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemGrey6,
       child: SafeArea(
         child: Column(
           children: [
@@ -49,12 +38,12 @@ class _TaxiSearchPageState extends State<TaxiSearchPage> {
             Expanded(
               flex: 2,
               child: Container(
-                color: CupertinoColors.systemGrey4, // 연한 회색 배경색 설정
+                color: CupertinoColors.systemGrey5, // 연한 회색 배경색 설정
                 child: Center(
                   child: Text(
                     '택시 검색',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: CupertinoColors.black,
                     ),
@@ -64,18 +53,16 @@ class _TaxiSearchPageState extends State<TaxiSearchPage> {
             ),
             // Flex 3: 현재 위치
             Expanded(
-              flex: 7,
+              flex: 5,
               child: Center(
                 child: Text(
                   '현재 위치:\n$fullAddress', // 줄바꿈 적용
                   style: TextStyle(
-                    fontSize: 35,
+                    fontSize: 30,
                     fontWeight: FontWeight.normal,
                     color: CupertinoColors.black,
                   ),
                   textAlign: TextAlign.center,
-                  softWrap: true, // 텍스트 자동 줄바꿈 활성화
-                  overflow: TextOverflow.visible, // 텍스트 오버플로우 시 보여줄 방식 설정
                 ),
               ),
             ),
@@ -136,7 +123,7 @@ class _TaxiSearchPageState extends State<TaxiSearchPage> {
                   },
                   child: Icon(
                     CupertinoIcons.home,
-                    color: TaxiSearchPage.customOrange,
+                    color: customOrange,
                     size: 40.0,
                   ),
                 ),
@@ -199,7 +186,7 @@ class _TaxiSearchPageState extends State<TaxiSearchPage> {
             phone,
             style: TextStyle(
               fontSize: 40,  // 전화번호를 22로 설정
-              color: TaxiSearchPage.customOrange, // 커스텀 색상 사용
+              color: customOrange, // 커스텀 색상 사용
               fontWeight: FontWeight.bold,
             ),
           ),

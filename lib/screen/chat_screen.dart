@@ -190,33 +190,35 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       if (response['url'] != null) {
-        var url = '$kimhome/${response['url']}';
-        print("여기 링크" + url);
+        var url = '$kimhome/' + response['url'];
 
         // URL 유효성 검사
-        if (Uri.tryParse(url)?.hasAbsolutePath == true) {
-          print('Valid URL: $url');
+        if (Uri.tryParse(url)?.hasAbsolutePath ?? false) {
+          try {
+            await _audioPlayer.play(UrlSource(url));
+          } catch (e) {
+            print('오류 발생: $e');
+          }
         } else {
           print('Invalid URL: $url');
-          url = ''; // URL이 유효하지 않다면 빈 문자열로 설정
-        }
-
-        _navigateToYesNoScreen(response['message'], url);
         }
       }
-    }
 
-  Future<void> _navigateToYesNoScreen(String str,String url) async {
+      _navigateToYesNoScreen(response['message']);
+    }
+  }
+
+  Future<void> _navigateToYesNoScreen(String str) async {
 
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     if (_resultCode != null && _resultCode != 13) {
       await _audioPlayer.stop();
-      print("전달"+url.toString());
-      context.push('/yesno', extra: {
+      context.push(
+        '/yesno',
+        extra: {
           'message': str, // 검색 확인 문구
           'resultCode': _resultCode!, // 티맵 검색 코드
           'userId': userId,
-          'url':url,
         },
       );
     } else if (_resultCode == 13) {
