@@ -23,7 +23,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  String _text = "안녕하세요.\n필요하신 것을 \n 말씀해주세요.";
+  String _text = "안녕하세요.\n필요한 것을 \n 말씀해주세요.";
   String _userSpeechText = ""; // 사용자 발화 텍스트를 위한 변수 추가
   bool _showSpinner = false;
   bool _showCloudSpinner = false;
@@ -51,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _resetScreen() async {
     print("화면전환 함수 진입");
     setState(() {
-      _text = "안녕하세요.\n필요하신 것을 \n 말씀해주세요."; // 텍스트 초기화
+      _text = "안녕하세요.\n필요한 것을 \n 말씀해주세요."; // 텍스트 초기화
     });
     await _playInitialSound(); // starting_voice.wav 재생
   }
@@ -190,35 +190,33 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       if (response['url'] != null) {
-        var url = '$kimhome/' + response['url'];
+        var url = '$kimhome/${response['url']}';
+        print("여기 링크" + url);
 
         // URL 유효성 검사
-        if (Uri.tryParse(url)?.hasAbsolutePath ?? false) {
-          try {
-            await _audioPlayer.play(UrlSource(url));
-          } catch (e) {
-            print('오류 발생: $e');
-          }
+        if (Uri.tryParse(url)?.hasAbsolutePath == true) {
+          print('Valid URL: $url');
         } else {
           print('Invalid URL: $url');
+          url = ''; // URL이 유효하지 않다면 빈 문자열로 설정
+        }
+
+        _navigateToYesNoScreen(response['message'], url);
         }
       }
-
-      _navigateToYesNoScreen(response['message']);
     }
-  }
 
-  Future<void> _navigateToYesNoScreen(String str) async {
+  Future<void> _navigateToYesNoScreen(String str,String url) async {
 
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     if (_resultCode != null && _resultCode != 13) {
       await _audioPlayer.stop();
-      context.push(
-        '/yesno',
-        extra: {
+      print("전달"+url.toString());
+      context.push('/yesno', extra: {
           'message': str, // 검색 확인 문구
           'resultCode': _resultCode!, // 티맵 검색 코드
           'userId': userId,
+          'url':url,
         },
       );
     } else if (_resultCode == 13) {
