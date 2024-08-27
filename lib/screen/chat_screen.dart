@@ -61,6 +61,14 @@ class _ChatScreenState extends State<ChatScreen> {
     await Permission.storage.request();
   }
 
+  @override
+  void dispose() {
+    _audioPlayer.stop(); // 음성 재생 중지
+    _audioPlayer.dispose(); // AudioPlayer 자원 해제
+    _speech.stop(); // 음성 인식 중지
+    super.dispose();
+  }
+
   Future<void> _stopSpinnerWithDelay() async {
     await Future.delayed(Duration(seconds: 5)); // 5초 딜레이
     setState(() {
@@ -225,14 +233,6 @@ class _ChatScreenState extends State<ChatScreen> {
       print("Error: resultCode is null.");
     }
   }
-
-  // @override
-  // void dispose() {
-  //   _audioPlayer.stop(); // 음성 재생 중지
-  //   _audioPlayer.dispose(); // AudioPlayer 자원 해제
-  //   _speech.stop(); // 음성 인식 중지
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -21,11 +22,28 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<dynamic>> _scheduleDataFuture;
   Map<DateTime, List<dynamic>> _events = {};
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
     _fetchScheduleData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print("투데이에서 먼슬리 진입");
+    _stopAudioPlayer(); // 스크린으로 들어올 때 오디오 플레이어 정지
+  }
+
+  Future<void> _stopAudioPlayer() async {
+    try {
+      print("audio stop");
+      await _audioPlayer.stop();  // 이전 음성을 확실히 정지
+    } catch (e) {
+      print('Failed to stop audio player: $e');
+    }
   }
 
   void _fetchScheduleData() {
@@ -63,7 +81,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
     });
 
     final selectedEvents = _events[selectedDay] ?? [];
-    context.go('/daily-schedule', extra: {
+    context.push('/daily-schedule', extra: {
       'selectedDate': selectedDay,
       'events': selectedEvents,
       'userId': userId});

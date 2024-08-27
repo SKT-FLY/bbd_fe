@@ -52,6 +52,13 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
     _fetchAndPlaySchedule();  // 음성 재생 기능 추가
   }
 
+  @override
+  void dispose() {
+    _audioPlayer.stop(); // 음성 재생 중지
+    _audioPlayer.dispose(); // AudioPlayer 자원 해제
+    super.dispose();
+  }
+
   Future<void> _fetchAndPlaySchedule() async {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     final date = '${_selectedYear}-${_selectedMonth}-${_selectedDay}';

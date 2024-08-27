@@ -52,6 +52,13 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     _fetchAndPlaySchedule();  // 음성 재생 기능 추가
   }
 
+  @override
+  void dispose() {
+    _audioPlayer.stop(); // 음성 재생 중지
+    _audioPlayer.dispose(); // AudioPlayer 자원 해제
+    super.dispose();
+  }
+
   Future<void> _fetchAndPlaySchedule() async {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
     final date = '${_selectedYear}-${_selectedMonth}-${_selectedDay}';
@@ -64,6 +71,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     if (result['status'] == 'success') {
       if (result.containsKey('data')) {
         Uint8List audioBytes = Uint8List.fromList(result['data']);
+        await _audioPlayer.stop();
         await _audioPlayer.play(BytesSource(audioBytes));
         _logger.i('Audio is playing.');
       } else if (result.containsKey('message')) {
