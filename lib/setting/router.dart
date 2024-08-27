@@ -218,7 +218,14 @@ final GoRouter router = GoRouter(
         final String message = extra['message'];
         final int resultCode = extra['resultCode'];
         final int userId = extra['userId'];
-        return YesNoScreen(message: message, resultCode: resultCode, userId: userId);
+        final String url = extra['url'] as String; // URL을 추가로 받음
+        print("router"+url.toString());
+        return YesNoScreen(
+          message: message,
+          resultCode: resultCode,
+          userId: userId,
+          url: url, // URL을 YesNoScreen에 전달
+        );
       },
     ),
   ],
