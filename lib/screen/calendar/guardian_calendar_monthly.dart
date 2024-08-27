@@ -113,7 +113,7 @@ class _GuardianScheduleMonthlyScreenState
             ),
             const SizedBox(height: 10),
             Flexible(
-              flex: 14,
+              flex: 16,
               child: FutureBuilder<List<dynamic>>(
                 future: _scheduleDataFuture,
                 builder: (context, snapshot) {
@@ -130,7 +130,7 @@ class _GuardianScheduleMonthlyScreenState
               ),
             ),
             Expanded(
-              flex: 2,
+              flex: 3,
               child: Center(
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
@@ -154,7 +154,7 @@ class _GuardianScheduleMonthlyScreenState
                     ),
                     child: const Icon(
                       CupertinoIcons.home,
-                      color: CupertinoColors.white,
+                      color: CupertinoColors.black,
                       size: 50,
                     ),
                   ),
@@ -172,7 +172,11 @@ class _GuardianScheduleMonthlyScreenState
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CupertinoButton(
-          child: const Icon(CupertinoIcons.left_chevron, size: 30),
+          child: const Icon(
+            CupertinoIcons.left_chevron,
+            color: CupertinoColors.systemYellow,
+            size:30,// 아이콘 색상을 노란색으로 설정
+          ),
           onPressed: () {
             setState(() {
               _focusedDay = DateTime(
@@ -192,7 +196,11 @@ class _GuardianScheduleMonthlyScreenState
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         CupertinoButton(
-          child: const Icon(CupertinoIcons.right_chevron, size: 30),
+          child: const Icon(
+            CupertinoIcons.right_chevron,
+            color: CupertinoColors.systemYellow,
+            size:30,// 아이콘 색상을 노란색으로 설정
+          ),
           onPressed: () {
             setState(() {
               _focusedDay = DateTime(
@@ -210,7 +218,6 @@ class _GuardianScheduleMonthlyScreenState
       ],
     );
   }
-
   Widget _buildCalendar() {
     return TableCalendar<dynamic>(
       firstDay: DateTime.utc(2010, 1, 1),
@@ -238,10 +245,8 @@ class _GuardianScheduleMonthlyScreenState
             width: 2.0,
           ),
         ),
-        selectedDecoration: const BoxDecoration(
-          color: CupertinoColors.black,
-          shape: BoxShape.circle,
-        ),
+        selectedDecoration: const BoxDecoration(), // 선택된 날짜에 대한 꾸밈 제거
+        selectedTextStyle: const TextStyle(), // 선택된 날짜의 텍스트 스타일을 일반 텍스트와 동일하게 설정
         outsideDaysVisible: false,
         cellMargin: const EdgeInsets.all(6.0),
         defaultTextStyle: const TextStyle(fontSize: 24),
@@ -267,74 +272,11 @@ class _GuardianScheduleMonthlyScreenState
           return null;
         },
         defaultBuilder: (context, day, focusedDay) {
-          final dateOnly = DateTime(day.year, day.month, day.day);
-          final events = _events[dateOnly] ?? [];
-
-          return Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0), // 상단에서 8.0 여백을 줌
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: day.weekday == DateTime.sunday
-                          ? Colors.red
-                          : day.weekday == DateTime.saturday
-                          ? Colors.blue
-                          : Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-
-              if (events.isNotEmpty)
-
-                Positioned(
-                  top: 36, // 숫자 아래로 여유를 둠
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: List.generate(events.length, (index) {
-                      int userId = events[index]['user_id'];
-                      String scheduleName = events[index]['schedule_name'];
-
-                      // 제목이 6글자를 넘을 경우 잘라서 표시
-                      if (scheduleName.length > 6) {
-                        scheduleName = scheduleName.substring(0, 6) + '...';
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 1.0), // 네모 사이의 간격을 더 넓게
-                        child: Container(
-                          width: 90, // 직사각형의 너비를 지정
-                          height: 15, // 직사각형의 높이를 지정
-                          decoration: BoxDecoration(
-                            color: _userColors[userId]?.withOpacity(0.8) ?? Colors.black.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 적용
-                          ),
-                          child: Center(
-                            child: Text(
-                              scheduleName,
-                              style: TextStyle(
-                                color: Colors.white, // 텍스트 색상
-                                fontSize: 10, // 작은 글씨 크기
-                              ),
-                              maxLines: 1, // 한 줄로 표시
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-
-            ],
-          );
+          return _buildDayCell(day, focusedDay);
         },
-
+        selectedBuilder: (context, day, focusedDay) {
+          return _buildDayCell(day, focusedDay);
+        },
         markerBuilder: (context, day, events) {
           return Container();
         },
@@ -349,4 +291,79 @@ class _GuardianScheduleMonthlyScreenState
       },
     );
   }
+
+  Widget _buildDayCell(DateTime day, DateTime focusedDay) {
+    final dateOnly = DateTime(day.year, day.month, day.day);
+    final events = _events[dateOnly] ?? [];
+
+    return Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0), // 상단에서 8.0 여백을 줌
+            child: Text(
+              '${day.day}',
+              style: TextStyle(
+                fontSize: 24,
+                color: day.weekday == DateTime.sunday
+                    ? Colors.red
+                    : day.weekday == DateTime.saturday
+                    ? Colors.blue
+                    : Colors.black,
+              ),
+            ),
+          ),
+        ),
+        if (events.isNotEmpty)
+          Positioned(
+            top: 36, // 숫자 아래로 여유를 둠
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: List.generate(events.length, (index) {
+                int userId = events[index]['user_id'];
+                String scheduleName = events[index]['schedule_name'];
+
+                // 제목이 6글자를 넘을 경우 잘라서 표시
+                if (scheduleName.length > 6) {
+                  scheduleName = scheduleName.substring(0, 6) + '...';
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 1.0), // 네모 사이의 간격을 더 넓게
+                  child: Container(
+                    width: 90, // 직사각형의 너비를 지정
+                    height: 15, // 직사각형의 높이를 지정
+                    decoration: BoxDecoration(
+                      color: _userColors[userId]?.withOpacity(0.8) ?? Colors.black.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 적용
+                    ),
+                    child: Center(
+                      child: Text(
+                        scheduleName,
+                        style: TextStyle(
+                          color: Colors.white, // 텍스트 색상
+                          fontSize: 10, // 작은 글씨 크기
+                        ),
+                        maxLines: 1, // 한 줄로 표시
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
+    );
+  }
+
+
+
+
+
+
+
+
+
 }
