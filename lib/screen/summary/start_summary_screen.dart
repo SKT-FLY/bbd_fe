@@ -25,7 +25,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
     // ApiService의 analyzeAndForwardMessage 함수 호출
     final data = await apiService.analyzeAndForwardMessage(parsedText);
     print(data);
-
+    print(data['date']);
     // 날짜 값이 'none'이거나 비어 있는지 확인하여 적절한 라우팅 결정
     if (!mounted) return; // 현재 State가 여전히 활성화된 상태인지 확인
     if (data['date'] == null || data['date'].isEmpty || data['date'].toLowerCase() == 'none') {
@@ -51,6 +51,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
         primaryColor: CupertinoColors.activeOrange,
       ),
       home: CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.systemGrey6,
         child: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -79,7 +80,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
                         color: CupertinoColors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(16.0),
                         boxShadow: [
                           BoxShadow(
                             color: CupertinoColors.black.withOpacity(0.25),
@@ -118,8 +119,8 @@ class _MessageSummaryState extends State<SummaryScreen> {
                       width: screenWidth,
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFB9B0B0),
-                        borderRadius: BorderRadius.circular(8),
+                        color: CupertinoColors.systemYellow,
+                        borderRadius: BorderRadius.circular(16.0),
                         boxShadow: [
                           BoxShadow(
                             color: CupertinoColors.black.withOpacity(0.25),
@@ -133,7 +134,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                         '요약하기',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 25,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

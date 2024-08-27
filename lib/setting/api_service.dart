@@ -76,7 +76,7 @@ class ApiService {
     }
   }
 
-  // 유저의 전체 일정 조회
+  // 유저의 전체(먼슬리) 일정 조회
   Future<List<dynamic>> fetchScheduleData(int userId) async {
     final String url = '$kimhome/api/v1/schedule?user_id=$userId';
     print("전체일정조회");
@@ -100,7 +100,7 @@ class ApiService {
       return [];
     }
   }
-// 보호자 일정 확인
+// 보호자 전체 (먼슬리) 일정 확인
   Future<List<dynamic>> fetchGuardianSchedules(int guardianId) async {
     final String url =
         '$kimhome/api/v1/guardian/$guardianId/schedules'; // 실제 API 주소로 변경해야 합니다.

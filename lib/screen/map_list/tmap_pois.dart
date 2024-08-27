@@ -200,6 +200,7 @@ class _TmapScreenState extends State<TmapScreen> {
         primaryColor: TmapScreen.customOrange, // customOrange로 변경
       ),
       home: CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.systemGrey6,
         child: SafeArea(
           child: Column(
             children: [
