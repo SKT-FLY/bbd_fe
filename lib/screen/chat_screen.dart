@@ -44,7 +44,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void didChangeDependencies() {
     print("화면전환 인식");
-    super.didChangeDependencies();
+
     _resetScreen(); // 화면이 전환될 때 초기화 작업 수행
   }
 
@@ -212,7 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_resultCode != null && _resultCode != 13) {
       await _audioPlayer.stop();
       print("전달"+url.toString());
-      context.push('/yesno', extra: {
+      context.go('/yesno', extra: {
           'message': str, // 검색 확인 문구
           'resultCode': _resultCode!, // 티맵 검색 코드
           'userId': userId,
