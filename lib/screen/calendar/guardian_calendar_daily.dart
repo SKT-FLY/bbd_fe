@@ -121,56 +121,66 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
   @override
   Widget build(BuildContext context) {
     int daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
-    double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
+    double boxWidth = MediaQuery
+        .of(context)
+        .size
+        .width / 5 - 8;
     double boxHeight = 100;
     double selectedBoxHeight = 120;
 
     return CupertinoPageScaffold(
-      child: Stack(
+      child: Column(
         children: [
-          SafeArea(
-            child: Column(
-              children: [
-                _buildMonthSelector(),
-                const SizedBox(height: 16),
-                _buildDaySelector(
-                    daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.0),
-                  child: Divider(
-                    thickness: 1,
-                    color: CupertinoColors.systemGrey,
+          Expanded(
+            flex: 12, // 스크롤 가능한 콘텐츠 영역의 비율
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildMonthSelector(),
+                  const SizedBox(height: 16),
+                  _buildDaySelector(
+                      daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.0),
+                    child: Divider(
+                      thickness: 1,
+                      color: CupertinoColors.systemGrey,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: FutureBuilder<List<dynamic>>(
-                    future: _scheduleDataFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CupertinoActivityIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                        return _buildScheduleList(snapshot.data!);
-                      } else {
-                        return const Center(
-                          child: Text(
-                            '일정이 없습니다.',
-                            style: TextStyle(
-                                fontSize: 20, color: CupertinoColors.systemGrey),
-                          ),
-                        );
-                      }
-                    },
+                  Expanded(
+                    child: FutureBuilder<List<dynamic>>(
+                      future: _scheduleDataFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CupertinoActivityIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text('Error: ${snapshot.error}'));
+                        } else
+                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                          return _buildScheduleList(snapshot.data!);
+                        } else {
+                          return const Center(
+                            child: Text(
+                              '일정이 없습니다.',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: CupertinoColors.systemGrey),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
+          Spacer(flex: 1), // 간격을 위한 Spacer
+          Expanded(
+            flex: 3, // 영역의 비율을 조금 더 크게 조정하여 버튼이 중앙에 오도록 합니다.
             child: Center(
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
@@ -208,12 +218,16 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
     );
   }
 
-  Widget _buildMonthSelector() {
+    Widget _buildMonthSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CupertinoButton(
-          child: const Icon(CupertinoIcons.left_chevron),
+          child: const Icon(
+            CupertinoIcons.left_chevron,
+            color: CupertinoColors.systemYellow,
+            size:30,// 아이콘 색상을 노란색으로 설정
+          ),
           onPressed: () {
             setState(() {
               if (_selectedMonth > 1) {
@@ -233,7 +247,11 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         CupertinoButton(
-          child: const Icon(CupertinoIcons.right_chevron),
+          child: const Icon(
+            CupertinoIcons.right_chevron,
+            color: CupertinoColors.systemYellow,
+            size:30,// 아이콘 색상을 노란색으로 설정
+          ),
           onPressed: () {
             setState(() {
               if (_selectedMonth < 12) {
@@ -339,7 +357,7 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFFFC600) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
+              color: (isSelected || hasEvent) ? CupertinoColors.systemYellow : CupertinoColors.systemGrey,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),
@@ -358,8 +376,8 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
                   ),
                 ],
                 border: Border.all(
-                  color: isSelected ? Colors.transparent : (hasEvent ? Colors.lightGreenAccent : Colors.transparent),
-                  width: isSelected ? 0.0 : 3.0,
+                  color: Colors.transparent, // 경계선이 투명하게 설정됨
+                  width: 0.0, // 경계선 두께를 0으로 설정
                 ),
               ),
               child: Column(
@@ -370,7 +388,7 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? CupertinoColors.activeOrange : CupertinoColors.black,
+                      color: isSelected ? CupertinoColors.systemYellow : CupertinoColors.black,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -379,7 +397,7 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? CupertinoColors.activeOrange : CupertinoColors.black,
+                      color: isSelected ? CupertinoColors.systemYellow : CupertinoColors.black,
                     ),
                   ),
                 ],
@@ -390,6 +408,7 @@ class _ScheduleDailyScreenState extends State<GuardianScheduleDailyScreen> {
       ),
     );
   }
+
 
   Widget _buildScheduleCard({
     required int userId,

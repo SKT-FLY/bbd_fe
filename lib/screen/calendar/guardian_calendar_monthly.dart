@@ -8,7 +8,6 @@ import 'package:bbd_project_fe/setting/api_service.dart';
 import '../../setting/user_provider.dart';
 
 class GuardianScheduleMonthlyScreen extends StatefulWidget {
-
   const GuardianScheduleMonthlyScreen({super.key});
 
   @override
@@ -23,8 +22,7 @@ class _GuardianScheduleMonthlyScreenState
   late Future<List<dynamic>> _scheduleDataFuture;
   Map<DateTime, List<dynamic>> _events = {};
   Map<int, Color> _userColors = {};
-  //late int guardianId;
-  final ApiService _apiService = ApiService(); // ApiService 인스턴스 생성
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -35,12 +33,9 @@ class _GuardianScheduleMonthlyScreenState
   void _fetchGuardianSchedules() {
     final guardianId = Provider.of<UserProvider>(context, listen: false).userId;
     setState(() {
-      print("가디언 페이지");
-      //_scheduleDataFuture = _apiService.fetchGuardianSchedules(guardianId);
       _scheduleDataFuture = _apiService.fetchGuardianSchedules(guardianId);
       _scheduleDataFuture.then((events) {
         setState(() {
-          //_events = events;
           _events = _groupEventsByDate(events);
           _assignColorsToUsers();
         });
@@ -62,6 +57,7 @@ class _GuardianScheduleMonthlyScreenState
     }
     return events;
   }
+
   void _assignColorsToUsers() {
     int colorIndex = 0;
     List<Color> colors = [
@@ -72,7 +68,7 @@ class _GuardianScheduleMonthlyScreenState
       Colors.purple,
       Colors.cyan,
       Colors.amber
-    ]; // 피보호자별 색상 지정
+    ];
 
     _events.forEach((date, schedules) {
       for (var schedule in schedules) {
@@ -105,32 +101,38 @@ class _GuardianScheduleMonthlyScreenState
     return CupertinoPageScaffold(
       navigationBar: null,
       child: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Flexible(
-              flex: 2,
-              child: _buildMonthSelector(),
+            Column(
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: _buildMonthSelector(),
+                ),
+                const SizedBox(height: 10),
+                Flexible(
+                  flex: 18,
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _scheduleDataFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CupertinoActivityIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (snapshot.hasData) {
+                        return _buildCalendar();
+                      } else {
+                        return const Center(child: Text('일정이 없습니다.'));
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Flexible(
-              flex: 16,
-              child: FutureBuilder<List<dynamic>>(
-                future: _scheduleDataFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CupertinoActivityIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (snapshot.hasData) {
-                    return _buildCalendar();
-                  } else {
-                    return const Center(child: Text('일정이 없습니다.'));
-                  }
-                },
-              ),
-            ),
-            Expanded(
-              flex: 3,
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
               child: Center(
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
@@ -161,6 +163,25 @@ class _GuardianScheduleMonthlyScreenState
                 ),
               ),
             ),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              child: FloatingActionButton(
+                onPressed: () {
+                  // 플로팅 버튼 눌렀을 때의 동작 정의
+                  context.go('/createschedule');
+                },
+                backgroundColor: CupertinoColors.systemYellow,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: const Icon(
+                  CupertinoIcons.add,
+                  size: 36,
+                  color: Colors.black,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -175,7 +196,7 @@ class _GuardianScheduleMonthlyScreenState
           child: const Icon(
             CupertinoIcons.left_chevron,
             color: CupertinoColors.systemYellow,
-            size:30,// 아이콘 색상을 노란색으로 설정
+            size: 30,
           ),
           onPressed: () {
             setState(() {
@@ -193,13 +214,13 @@ class _GuardianScheduleMonthlyScreenState
         ),
         Text(
           '${_focusedDay.year}년 ${_focusedDay.month}월',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         CupertinoButton(
           child: const Icon(
             CupertinoIcons.right_chevron,
             color: CupertinoColors.systemYellow,
-            size:30,// 아이콘 색상을 노란색으로 설정
+            size: 30,
           ),
           onPressed: () {
             setState(() {
@@ -218,6 +239,7 @@ class _GuardianScheduleMonthlyScreenState
       ],
     );
   }
+
   Widget _buildCalendar() {
     return TableCalendar<dynamic>(
       firstDay: DateTime.utc(2010, 1, 1),
@@ -302,7 +324,7 @@ class _GuardianScheduleMonthlyScreenState
         Align(
           alignment: Alignment.topCenter,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8.0), // 상단에서 8.0 여백을 줌
+            padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               '${day.day}',
               style: TextStyle(
@@ -318,35 +340,35 @@ class _GuardianScheduleMonthlyScreenState
         ),
         if (events.isNotEmpty)
           Positioned(
-            top: 36, // 숫자 아래로 여유를 둠
+            top: 35,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: List.generate(events.length, (index) {
                 int userId = events[index]['user_id'];
                 String scheduleName = events[index]['schedule_name'];
 
-                // 제목이 6글자를 넘을 경우 잘라서 표시
                 if (scheduleName.length > 6) {
                   scheduleName = scheduleName.substring(0, 6) + '...';
                 }
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1.0), // 네모 사이의 간격을 더 넓게
+                  padding: const EdgeInsets.symmetric(vertical: 1.0),
                   child: Container(
-                    width: 90, // 직사각형의 너비를 지정
-                    height: 15, // 직사각형의 높이를 지정
+                    width: 90,
+                    height: 15,
                     decoration: BoxDecoration(
-                      color: _userColors[userId]?.withOpacity(0.8) ?? Colors.black.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 적용
+                      color: _userColors[userId]?.withOpacity(0.8) ??
+                          Colors.black.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(20.0),
                     ),
                     child: Center(
                       child: Text(
                         scheduleName,
                         style: TextStyle(
-                          color: Colors.white, // 텍스트 색상
-                          fontSize: 10, // 작은 글씨 크기
+                          color: Colors.white,
+                          fontSize: 10,
                         ),
-                        maxLines: 1, // 한 줄로 표시
+                        maxLines: 1,
                       ),
                     ),
                   ),
@@ -357,13 +379,4 @@ class _GuardianScheduleMonthlyScreenState
       ],
     );
   }
-
-
-
-
-
-
-
-
-
 }

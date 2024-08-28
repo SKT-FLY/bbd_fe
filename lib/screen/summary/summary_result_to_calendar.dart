@@ -20,6 +20,8 @@ class SummaryResultToCalendar extends StatefulWidget {
 
 class _SummaryPage2State extends State<SummaryResultToCalendar> {
   DateTime? scheduleDateTime;
+  String? scheduleDate;
+  DateTime _selectedDay = DateTime.now();
 
   @override
   void initState() {
@@ -32,7 +34,7 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
       // 서버에서 받은 date를 DateTime 객체로 변환 (예: "2024-08-26 00:00")
       final String dateTimeString = widget.data['date'];
 
-      // DateTime.parse 사용 대신, DateFormat을 사용하여 보다 정확한 파싱
+      // DateFormat을 사용하여 보다 정확한 파싱
       final DateFormat format = DateFormat("yyyy-MM-dd HH:mm");
       scheduleDateTime = format.parse(dateTimeString);
     } catch (e) {
@@ -40,6 +42,24 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
       scheduleDateTime = null; // 에러 발생 시 null로 설정
     }
   }
+  void _parseDate() {
+    try {
+      // 서버에서 받은 date를 DateTime 객체로 변환 (예: "2024-08-26 00:00")
+      final String dateTimeString = widget.data['date'];
+
+      // DateFormat을 사용하여 DateTime으로 파싱
+      final DateFormat inputFormat = DateFormat("yyyy-MM-dd HH:mm");
+      final DateTime parsedDate = inputFormat.parse(dateTimeString);
+
+      // 파싱한 DateTime 객체를 "MM-dd" 형식의 String으로 변환하여 저장
+      final DateFormat outputFormat = DateFormat("MM월 dd일");
+      scheduleDate = outputFormat.format(parsedDate);
+    } catch (e) {
+      print('Error parsing date: $e');
+      scheduleDate = null; // 에러 발생 시 null로 설정
+    }
+  }
+
 
   Future<void> _registerSchedule() async {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
@@ -60,16 +80,44 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
       } else {
         // 성공 처리
         print('일정 등록 성공');
-        // 추가적으로 성공 알림을 보여주거나 다른 화면으로 이동하는 코드 작성 가능
+        await _navigateToSchedule(userId);
       }
     } else {
       print('Invalid schedule date time');
     }
   }
 
+  Future<void> _navigateToSchedule(int userId) async {
+    try {
+      List<dynamic> selectedEvents;
+
+      if (userId == 3) {
+        // userId가 3이면 보호자 데일리 캘린더로 이동
+        selectedEvents = await ApiService().fetchGuardianSchedules(userId);
+        context.go('/guardian-daily-schedule', extra: {
+          'selectedDate': scheduleDateTime,
+          'events': selectedEvents,
+          'userId': userId
+        });
+      } else {
+        // 그 외의 경우 기본 데일리 캘린더로 이동
+        selectedEvents = await ApiService().fetchScheduleData(userId);
+        context.go('/daily-schedule', extra: {
+          'selectedDate': scheduleDateTime,
+          'events': selectedEvents,
+          'userId': userId
+        });
+      }
+    } catch (e) {
+      print('Error fetching schedules: $e');
+      // 오류가 발생했을 때 추가적인 처리 로직을 여기에 작성할 수 있습니다.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    _parseDate();
 
     return CupertinoApp(
       debugShowCheckedModeBanner : false,
@@ -77,14 +125,14 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
         primaryColor: CupertinoColors.activeOrange,
       ),
       home: CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.systemGrey6,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
                 Spacer(flex: 2),
-
-                Expanded( // 이미지 공간
+                Expanded(
                   flex: 4,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -98,15 +146,15 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                   ),
                 ),
                 Spacer(flex: 1),
-                Expanded( // 텍스트 박스 공간
+                Expanded(
                   flex: 22,
                   child: Center(
                     child: Container(
                       width: screenWidth * 0.9,
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5EDED), // 연한 배경색
-                        borderRadius: BorderRadius.circular(8),
+                        color: CupertinoColors.white, // 연한 배경색
+                        borderRadius: BorderRadius.circular(20.0),
                         boxShadow: [
                           BoxShadow(
                             color: CupertinoColors.black.withOpacity(0.3),
@@ -117,9 +165,9 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                         ],
                       ),
                       child: Center(
-                        child: SingleChildScrollView( // 긴 텍스트를 위한 스크롤 추가
+                        child: SingleChildScrollView(
                           child: Text(
-                            widget.data['summary'], // 요약 텍스트만 표시
+                            widget.data['summary'] + '\n일시 : ' + scheduleDate,// 요약 텍스트만 표시
                             style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -132,10 +180,8 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                     ),
                   ),
                 ),
-
                 Spacer(flex: 1),
-
-                Expanded( // 일정 등록 버튼 공간
+                Expanded(
                   flex: 4,
                   child: GestureDetector(
                     onTap: _registerSchedule, // 일정 등록 함수 호출
@@ -143,8 +189,8 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                       width: screenWidth,
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFB9B0B0),
-                        borderRadius: BorderRadius.circular(8),
+                        color: CupertinoColors.systemYellow,
+                        borderRadius: BorderRadius.circular(20.0),
                         boxShadow: [
                           BoxShadow(
                             color: CupertinoColors.black.withOpacity(0.25),
@@ -157,7 +203,6 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                       child: const Center(
                         child: Text(
                           '일정등록',
-                          //textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -168,8 +213,7 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                   ),
                 ),
                 Spacer(flex: 1),
-
-                Expanded( // 홈 버튼 공간
+                Expanded(
                   flex: 6,
                   child: Center(
                     child: CupertinoButton(
@@ -201,7 +245,6 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                     ),
                   ),
                 ),
-
                 Spacer(flex: 1),
               ],
             ),

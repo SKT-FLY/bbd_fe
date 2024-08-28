@@ -123,53 +123,57 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
     double boxHeight = 100;
     double selectedBoxHeight = 120;
-
     return CupertinoPageScaffold(
-      child: Stack(
+      child: Column(
         children: [
-          SafeArea(
-            child: Column(
-              children: [
-                _buildMonthSelector(),
-                const SizedBox(height: 16),
-                _buildDaySelector(
-                    daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.0),
-                  child: Divider(
-                    thickness: 1,
-                    color: CupertinoColors.systemGrey,
+          Expanded(
+            flex: 12, // 상단 콘텐츠 영역의 비율
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildMonthSelector(),
+                  const SizedBox(height: 16),
+                  _buildDaySelector(
+                      daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.0),
+                    child: Divider(
+                      thickness: 1,
+                      color: CupertinoColors.systemGrey,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: FutureBuilder<List<dynamic>>(
-                    future: _scheduleDataFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CupertinoActivityIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                        return _buildScheduleList(snapshot.data!);
-                      } else {
-                        return const Center(
-                          child: Text(
-                            '일정이 없습니다.',
-                            style: TextStyle(
-                                fontSize: 20, color: CupertinoColors.systemGrey),
-                          ),
-                        );
-                      }
-                    },
+                  Expanded(
+                    child: FutureBuilder<List<dynamic>>(
+                      future: _scheduleDataFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(
+                              child: CupertinoActivityIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text('Error: ${snapshot.error}'));
+                        } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                          return _buildScheduleList(snapshot.data!);
+                        } else {
+                          return const Center(
+                            child: Text(
+                              '일정이 없습니다.',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: CupertinoColors.systemGrey),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
+          Spacer(flex: 1), // 간격을 위한 Spacer
+          Expanded(
+            flex: 3, // 하단 버튼 영역의 비율
             child: Center(
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
@@ -205,6 +209,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
         ],
       ),
     );
+
   }
 
   Widget _buildMonthSelector() {
@@ -212,7 +217,11 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CupertinoButton(
-          child: const Icon(CupertinoIcons.left_chevron),
+          child: const Icon(
+            CupertinoIcons.left_chevron,
+            color: CupertinoColors.systemYellow,
+            size:30,// 아이콘 색상을 노란색으로 설정
+          ),
           onPressed: () {
             setState(() {
               if (_selectedMonth > 1) {
@@ -232,7 +241,11 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         CupertinoButton(
-          child: const Icon(CupertinoIcons.right_chevron),
+          child: const Icon(
+            CupertinoIcons.right_chevron,
+            color: CupertinoColors.systemYellow,
+            size:30,// 아이콘 색상을 노란색으로 설정
+          ),
           onPressed: () {
             setState(() {
               if (_selectedMonth < 12) {
@@ -337,7 +350,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFFFC600) : (hasEvent ? Colors.lightGreenAccent : CupertinoColors.systemGrey),
+              color: (isSelected || hasEvent) ? CupertinoColors.systemYellow : CupertinoColors.systemGrey,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),
@@ -356,8 +369,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                   ),
                 ],
                 border: Border.all(
-                  color: isSelected ? Colors.transparent : (hasEvent ? Colors.lightGreenAccent : Colors.transparent),
-                  width: isSelected ? 0.0 : 3.0,
+                  color: isSelected ? CupertinoColors.systemYellow : Colors.transparent,
+                  width: isSelected ? 3.0 : 0.0,
                 ),
               ),
               child: Column(
@@ -368,7 +381,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? CupertinoColors.activeOrange : CupertinoColors.black,
+                      color: isSelected ? CupertinoColors.systemYellow : CupertinoColors.black,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -377,7 +390,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? CupertinoColors.activeOrange : CupertinoColors.black,
+                      color: isSelected ? CupertinoColors.systemYellow : CupertinoColors.black,
                     ),
                   ),
                 ],
@@ -388,6 +401,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       ),
     );
   }
+
 
   Widget _buildScheduleCard({
     required String time,

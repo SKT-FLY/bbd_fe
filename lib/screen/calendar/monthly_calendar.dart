@@ -100,35 +100,40 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
     return CupertinoPageScaffold(
       navigationBar: null,
       child: SafeArea(
-        child: Column(
+        child: Stack(  // Stack으로 변경하여 캘린더와 버튼을 겹치지 않게 설정
           children: [
-            // 상단 월 선택자 (높이 비율: 1/10)
-            Flexible(
-              flex: 2,
-              child: _buildMonthSelector(),
+            Column(
+              children: [
+                // 상단 월 선택자 (높이 비율: 2)
+                Flexible(
+                  flex: 2,
+                  child: _buildMonthSelector(),
+                ),
+                const SizedBox(height: 10),
+                // 캘린더 (높이 비율: 16)
+                Flexible(
+                  flex: 16,
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _scheduleDataFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CupertinoActivityIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (snapshot.hasData) {
+                        return _buildCalendar();
+                      } else {
+                        return const Center(child: Text('일정이 없습니다.'));
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            // 캘린더 (높이 비율: 8/10)
-            Flexible(
-              flex: 16,
-              child: FutureBuilder<List<dynamic>>(
-                future: _scheduleDataFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CupertinoActivityIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (snapshot.hasData) {
-                    return _buildCalendar();
-                  } else {
-                    return const Center(child: Text('일정이 없습니다.'));
-                  }
-                },
-              ),
-            ),
-            // 하단 홈 버튼 (높이 비율: 1/10)
-            Expanded( //홈화면 버튼
-              flex: 3,
+            Positioned(
+              bottom: 15,  // 버튼을 화면 하단에서 15px 위로 배치
+              left: 0,
+              right: 0,
               child: Center(
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
@@ -152,7 +157,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                     ),
                     child: const Icon(
                       CupertinoIcons.home,
-                      color: CupertinoColors.white,
+                      color: CupertinoColors.black,
                       size: 50,
                     ),
                   ),
@@ -170,7 +175,11 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CupertinoButton(
-          child: const Icon(CupertinoIcons.left_chevron, size: 30),
+          child: const Icon(
+            CupertinoIcons.left_chevron,
+            color: CupertinoColors.systemYellow,
+            size: 30,
+          ),
           onPressed: () {
             setState(() {
               _focusedDay = DateTime(
@@ -187,10 +196,14 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
         ),
         Text(
           '${_focusedDay.year}년 ${_focusedDay.month}월',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         CupertinoButton(
-          child: const Icon(CupertinoIcons.right_chevron, size: 30),
+          child: const Icon(
+            CupertinoIcons.right_chevron,
+            color: CupertinoColors.systemYellow,
+            size: 30,
+          ),
           onPressed: () {
             setState(() {
               _focusedDay = DateTime(
@@ -210,12 +223,14 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
   }
 
   Widget _buildCalendar() {
+    DateTime today = DateTime.now(); // 오늘 날짜를 받아옵니다.
+
     return TableCalendar<dynamic>(
       firstDay: DateTime.utc(2010, 1, 1),
       lastDay: DateTime.utc(2030, 12, 31),
       focusedDay: _focusedDay,
       selectedDayPredicate: (day) {
-        return isSameDay(_selectedDay, day);
+        return false; // 선택된 날짜에 대한 동그라미 비활성화
       },
       onDaySelected: _onDaySelected,
       calendarFormat: CalendarFormat.month,
@@ -231,15 +246,9 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
       calendarStyle: CalendarStyle(
         todayDecoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.black,
-            width: 2.0,
-          ),
+          color: Colors.black, // 검정색으로 가득 채운 원
         ),
-        selectedDecoration: const BoxDecoration(
-          color: CupertinoColors.black,
-          shape: BoxShape.circle,
-        ),
+        selectedDecoration: const BoxDecoration(),
         outsideDaysVisible: false,
         cellMargin: const EdgeInsets.all(6.0),
         defaultTextStyle: const TextStyle(fontSize: 24),
@@ -267,6 +276,7 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
         defaultBuilder: (context, day, focusedDay) {
           final dateOnly = DateTime(day.year, day.month, day.day);
           final hasEvents = _events[dateOnly]?.isNotEmpty ?? false;
+          final isToday = isSameDay(day, today);
 
           return Stack(
             alignment: Alignment.center,
@@ -287,11 +297,13 @@ class _ScheduleMonthlyScreenState extends State<ScheduleMonthlyScreen> {
                   '${day.day}',
                   style: TextStyle(
                     fontSize: 24,
-                    color: day.weekday == DateTime.sunday
+                    color: isToday ? Colors.white : // 오늘 날짜는 하얀색으로 표시
+                    (day.weekday == DateTime.sunday
                         ? Colors.red
                         : day.weekday == DateTime.saturday
                         ? Colors.blue
-                        : Colors.black,
+                        : Colors.black),
+                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal, // 오늘 날짜는 볼드체
                   ),
                 ),
               ),
