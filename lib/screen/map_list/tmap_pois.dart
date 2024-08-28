@@ -200,6 +200,7 @@ class _TmapScreenState extends State<TmapScreen> {
         primaryColor: TmapScreen.customOrange, // customOrange로 변경
       ),
       home: CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.systemGrey6,
         child: SafeArea(
           child: Column(
             children: [
@@ -211,7 +212,7 @@ class _TmapScreenState extends State<TmapScreen> {
                   child: Text(
                     '즐겨찾기 목록',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: CupertinoColors.black,
                     ),
@@ -349,7 +350,7 @@ class _TmapScreenState extends State<TmapScreen> {
               child: Text(
                 '방문 횟수: $visitsCount',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   color: CupertinoColors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -363,7 +364,7 @@ class _TmapScreenState extends State<TmapScreen> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: CupertinoColors.black,
                 ),
@@ -372,7 +373,7 @@ class _TmapScreenState extends State<TmapScreen> {
               Text(
                 department,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: TmapScreen.customOrange, // customOrange 사용
                 ),
@@ -381,7 +382,7 @@ class _TmapScreenState extends State<TmapScreen> {
               Text(
                 address,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   color: CupertinoColors.inactiveGray,
                 ),
               ),
@@ -433,7 +434,7 @@ class _TmapScreenState extends State<TmapScreen> {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               color: CupertinoColors.black,
             ),
@@ -442,7 +443,7 @@ class _TmapScreenState extends State<TmapScreen> {
           Text(
             department,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: TmapScreen.customOrange, // customOrange 사용
             ),
@@ -451,7 +452,7 @@ class _TmapScreenState extends State<TmapScreen> {
           Text(
             address,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               color: CupertinoColors.inactiveGray,
             ),
           ),

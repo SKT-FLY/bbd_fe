@@ -23,7 +23,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  String _text = "안녕하세요.\n필요한 것을 \n 말씀해주세요.";
+  String _text = "안녕하세요.\n필요하신 것을 \n 말씀해주세요.";
   String _userSpeechText = ""; // 사용자 발화 텍스트를 위한 변수 추가
   bool _showSpinner = false;
   bool _showCloudSpinner = false;
@@ -32,6 +32,9 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _resultCode;
   bool _isPlayingGif = false; // GIF 재생 상태를 관리할 변수
   bool _isPlayingSound = false; // 음성 재생 상태를 관리할 변수
+  bool _isOn = false; // 플로팅 버튼 on/off 상태를 관리할 변수
+  //late final int id;
+
 
   @override
   void initState() {
@@ -39,12 +42,14 @@ class _ChatScreenState extends State<ChatScreen> {
     _speech = stt.SpeechToText();
     _requestPermissions();
     _playInitialSound(); // 초기 사운드 재생 함수 호출
+    int userId = Provider.of<UserProvider>(context,listen:false).userId;
+    _isOn = (userId != 3);
+    //id = userId;
   }
 
   @override
   void didChangeDependencies() {
     print("화면전환 인식");
-
     _resetScreen(); // 화면이 전환될 때 초기화 작업 수행
   }
 
@@ -70,7 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _stopSpinnerWithDelay() async {
-    await Future.delayed(Duration(seconds: 5)); // 5초 딜레이
+    await Future.delayed(Duration(seconds: 3)); // 5초 딜레이
     setState(() {
       _showSpinner = false;
     });
@@ -189,11 +194,15 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (_resultCode == null || _resultCode == 13) {
-        await Future.delayed(Duration(seconds: 1)); // 2초 딜레이 후
-        setState(() {
+        setState(() async {
           _text = response['message'] != null && response['message'] != 'result message not found'
               ? response['message']
               : "다시 말씀해주세요."; // 응답 텍스트 업데이트 또는 기본 메시지
+          try {
+            await _audioPlayer.play(UrlSource("http://odaebum.iptime.org:4455/"+response['url']));
+          } catch (e) {
+            print('Error playing audio from URL: $e');
+          }
         });
       }
 
@@ -201,7 +210,6 @@ class _ChatScreenState extends State<ChatScreen> {
         var url = '$kimhome/${response['url']}';
         print("여기 링크" + url);
 
-        // URL 유효성 검사
         if (Uri.tryParse(url)?.hasAbsolutePath == true) {
           print('Valid URL: $url');
         } else {
@@ -210,9 +218,9 @@ class _ChatScreenState extends State<ChatScreen> {
         }
 
         _navigateToYesNoScreen(response['message'], url);
-        }
       }
     }
+  }
 
   Future<void> _navigateToYesNoScreen(String str,String url) async {
 
@@ -221,11 +229,11 @@ class _ChatScreenState extends State<ChatScreen> {
       await _audioPlayer.stop();
       print("전달"+url.toString());
       context.go('/yesno', extra: {
-          'message': str, // 검색 확인 문구
-          'resultCode': _resultCode!, // 티맵 검색 코드
-          'userId': userId,
-          'url':url,
-        },
+        'message': str, // 검색 확인 문구
+        'resultCode': _resultCode!, // 티맵 검색 코드
+        'userId': userId,
+        'url':url,
+      },
       );
     } else if (_resultCode == 13) {
       // 13번 코드일 경우 다른 동작을 추가로 넣고 싶으면 여기에 작성
@@ -346,14 +354,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                   height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
                                     color: CupertinoColors.systemYellow,
-                                    // gradient: LinearGradient(
-                                    //   colors: [
-                                    //     CupertinoColors.systemYellow,
-                                    //     activeOrange,
-                                    //   ],
-                                    //   begin: Alignment.topLeft,
-                                    //   end: Alignment.bottomRight,
-                                    // ),
                                     borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
@@ -396,7 +396,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                     ],
                                     border: Border.all(
                                       color: CupertinoColors.systemYellow,
-                                      //color: activeOrange,
                                       width: 2.0,
                                     ),
                                   ),
@@ -406,7 +405,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                           ? FontAwesomeIcons.microphoneAlt
                                           : FontAwesomeIcons.microphone,
                                       color: _isListening
-                                          //? activeOrange
                                           ? CupertinoColors.systemYellow
                                           : CupertinoColors.black,
                                       size: screenWidth * 0.18,
@@ -414,19 +412,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                               ),
-                              // GestureDetector(
-                              //   onTap: () {
-                              //     context.go('/monthly-calendar', extra: userId);
-                              //   },
                               GestureDetector(
                                 onTap: () async {
                                   await _audioPlayer.stop();
+                                  //userId = Provider.of<UserProvider>(context).userId;
                                   if (userId == 3) {
-                                    // userId가 3이면 보호자 월간 캘린더로 이동
-                                    //context.go('/guardian-monthly-schedule', extra: {'guardianId': userId});
                                     context.go('/guardian-monthly-schedule',extra:userId);
                                   } else {
-                                    // 그 외의 경우 기본 월간 캘린더로 이동
                                     context.go('/monthly-calendar',extra:userId);
                                   }
                                 },
@@ -435,14 +427,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                   height: screenWidth * 0.22,
                                   decoration: BoxDecoration(
                                     color: CupertinoColors.systemYellow,
-                                    // gradient: LinearGradient(
-                                    //   // colors: [
-                                    //   //   CupertinoColors.systemYellow,
-                                    //   //   activeOrange,
-                                    //   // ],
-                                    //   begin: Alignment.topLeft,
-                                    //   end: Alignment.bottomRight,
-                                    // ),
                                     borderRadius: BorderRadius.circular(16.0),
                                     boxShadow: [
                                       BoxShadow(
@@ -470,6 +454,50 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const Spacer(flex: 1),
               ],
+            ),
+            // 우측 상단 플로팅 on/off 버튼 추가
+            Positioned(
+              top: 16,
+              right: 16,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isOn = !_isOn;
+                    // if (!_isOn) {
+                    //   Provider.of<UserProvider>(context, listen: false).setUserId(3);
+                    // }
+                    if (_isOn) {
+                      //print("전환" + id.toString());
+                      Provider.of<UserProvider>(context, listen: false).setUserId(1);
+                    } else {
+                      //print("전환 3");
+                      Provider.of<UserProvider>(context, listen: false).setUserId(3);
+                    }
+                  });
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: _isOn ? CupertinoColors.systemYellow : CupertinoColors.systemGrey,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: CupertinoColors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: FaIcon(
+                      _isOn ? FontAwesomeIcons.solidLightbulb : FontAwesomeIcons.lightbulb,
+                      color: CupertinoColors.black,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

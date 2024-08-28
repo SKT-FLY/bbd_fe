@@ -341,10 +341,12 @@ class ApiService {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{'message': message}),
-      );
+      ) .timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        print(data);
+        print(data['message_type']);
         return data;
       } else {
         return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
@@ -353,4 +355,5 @@ class ApiService {
       return {'error': '서버와의 통신 오류가 있습니다.', 'exception': e.toString()};
     }
   }
+
 }

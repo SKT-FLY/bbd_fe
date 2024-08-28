@@ -51,7 +51,7 @@ class _AdotScreenState extends State<AdotScreen> with SingleTickerProviderStateM
           padding: EdgeInsets.zero,
           onPressed: () {
             // 버튼 클릭 시 실행할 기능 추가
-            _selectUser(context, 1);
+            _selectUser(context, 2);
             context.go('/chat');
           },
           child: CustomPaint(
@@ -163,7 +163,7 @@ class _AdotScreenState extends State<AdotScreen> with SingleTickerProviderStateM
                     ),
                     onPressed: () {
                       // 버튼 클릭 시 실행할 기능 추가
-                      _selectUser(context, 2);
+                      _selectUser(context, 1);
                       context.go('/chat');
                     },
                   ),

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../data/gpsScreen.dart';
 import '../screen/adot.dart';
+import '../screen/calendar/create_calendar.dart';
 import '../screen/calendar/guardian_calendar_daily.dart';
 import '../screen/calendar/guardian_calendar_monthly.dart';
 import '../screen/chat_screen.dart';
@@ -109,7 +110,10 @@ final GoRouter router = GoRouter(
         );
       },
     ),
-
+    GoRoute(
+      path: '/createschedule',
+      builder: (context, state) => ScheduleRegistrationPage(),
+    ),
     GoRoute(
       path: '/monthly-calendar',
       builder: (context, state) {

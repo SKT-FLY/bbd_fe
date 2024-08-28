@@ -14,8 +14,16 @@ class _MessageSummaryState extends State<SummaryScreen> {
   final ApiService apiService = ApiService();
 
   String parseText(String inputText) {
-    // 모든 줄바꿈 문자('\n' 및 '\r')를 공백으로 대체하여 줄바꿈을 제거합니다.
-    return inputText.replaceAll('\n', '').replaceAll('\r', '');
+    // 줄바꿈을 기준으로 텍스트를 나눈 후 배열로 변환
+    List<String> lines = inputText.split('\n');
+
+    // 첫 두 줄을 제거하고 나머지 텍스트를 다시 결합
+    if (lines.length > 2) {
+      lines = lines.sublist(2);
+    }
+
+    // 나머지 줄을 다시 합쳐서 반환
+    return lines.join('\n').replaceAll('\r', '');
   }
 
   Future<void> _summarizeText() async {
@@ -25,20 +33,18 @@ class _MessageSummaryState extends State<SummaryScreen> {
     // ApiService의 analyzeAndForwardMessage 함수 호출
     final data = await apiService.analyzeAndForwardMessage(parsedText);
     print(data);
-    print(data['date']);
-    // 날짜 값이 'none'이거나 비어 있는지 확인하여 적절한 라우팅 결정
+    print("date"+data['date']);
+    print("조건검사");
     if (!mounted) return; // 현재 State가 여전히 활성화된 상태인지 확인
-    // 조건: data['date']가 null이고, message_type이 "스미싱 문자"가 아닌 경우 캘린더 결과 화면으로 이동
-    if (data['date'] == null && data['message_type'] != '스미싱 문자') {
-      print("TO GO CAL"+data['message_type']);
+    if (data['date'] != "none" && (data['message_type'] != '스미싱 문자' && data['message_type'] != '광고 문자')) {
+      print("TO GO CAL" + data['message_type']);
       context.go('/summary-result-calendar', extra: data);
     } else {
-      print("Date NONE or 스미싱 문자");
+      print("normal요약가야함");
+      print(data);
       context.go('/summary-result-normal', extra: data);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +98,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                       child: Center( // 텍스트를 가운데 정렬
                         child: SingleChildScrollView(
                           child: Text(
-                            widget.text,
+                            parseText(widget.text), // 첫 두 줄을 제거한 텍스트를 표시
                             style: const TextStyle(
                               fontSize: 25,
                               height: 1.5,
@@ -169,7 +175,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
                         ),
                         child: const Icon(
                           CupertinoIcons.home,
-                          color: CupertinoColors.white,
+                          color: CupertinoColors.black,
                           size: 50,
                         ),
                       ),

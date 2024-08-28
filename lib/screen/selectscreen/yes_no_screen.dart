@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:audioplayers/audioplayers.dart'; // 추가
 
 import '../../setting/api_service.dart';
 import '../../setting/location_provider.dart';
@@ -9,12 +10,14 @@ class YesNoScreen extends StatefulWidget {
   final String message;
   final int resultCode;
   final int userId;
+  final String url; // URL 추가
 
   const YesNoScreen({
     super.key,
     required this.message,
     required this.resultCode,
     required this.userId,
+    required this.url, // URL 추가
   });
 
   factory YesNoScreen.fromGoRouter(GoRouterState state) {
@@ -23,6 +26,7 @@ class YesNoScreen extends StatefulWidget {
       message: extra?['message'] ?? '메시지가 없습니다.',
       resultCode: extra?['resultCode'] ?? 0,
       userId: extra?['userId'] ?? 0,
+      url: extra?['url'] ?? '', // URL 추가 및 빈 문자열로 대체
     );
   }
 
@@ -31,10 +35,32 @@ class YesNoScreen extends StatefulWidget {
 }
 
 class _YesNoScreenState extends State<YesNoScreen> {
+  late AudioPlayer _audioPlayer; // 오디오 플레이어 추가
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    print("YesNoScreen dependencies changed.");
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer(); // 오디오 플레이어 초기화
+
+    // URL이 비어 있지 않으면 오디오 재생
+    if (widget.url.isNotEmpty) {
+      _playAudioFromUrl(widget.url);
+    }
+  }
+
+  Future<void> _playAudioFromUrl(String url) async {
+    print("yes no가 받은" + url.toString());
+    try {
+      await _audioPlayer.play(UrlSource(url));
+    } catch (e) {
+      print('Error playing audio from URL: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose(); // 오디오 플레이어 해제
+    super.dispose();
   }
 
   @override
@@ -70,10 +96,8 @@ class _YesNoScreenState extends State<YesNoScreen> {
                     // 첫 번째 컨테이너: 텍스트
                     Container(
                       alignment: Alignment.center,
-                      // 텍스트 아래쪽으로 간격 추가
-                      //padding: const EdgeInsets.only(top: 10),
                       child: Text(
-                        "\n"+widget.message,
+                        "\n${widget.message}",
                         style: const TextStyle(
                           fontSize: 45.0,
                           color: CupertinoColors.black,
@@ -93,7 +117,7 @@ class _YesNoScreenState extends State<YesNoScreen> {
                               _handleYes(context);
                             },
                             color: CupertinoColors.activeGreen,
-                            padding: const EdgeInsets.symmetric(vertical: 22), // 1.1배로 키움
+                            padding: const EdgeInsets.symmetric(vertical: 22),
                             borderRadius: BorderRadius.circular(12.0),
                             child: const Text(
                               '예',
@@ -113,7 +137,7 @@ class _YesNoScreenState extends State<YesNoScreen> {
                               context.go('/chat');
                             },
                             color: CupertinoColors.destructiveRed,
-                            padding: const EdgeInsets.symmetric(vertical: 22), // 1.1배로 키움
+                            padding: const EdgeInsets.symmetric(vertical: 22),
                             borderRadius: BorderRadius.circular(12.0),
                             child: const Text(
                               '아니오',
@@ -138,7 +162,7 @@ class _YesNoScreenState extends State<YesNoScreen> {
             left: (screenWidth - 100) / 2, // 화면 가로축의 중앙에 배치
             child: GestureDetector(
               onTap: () {
-                context.go('/');
+                context.go('/chat');
               },
               child: Container(
                 width: 100,
@@ -168,7 +192,7 @@ class _YesNoScreenState extends State<YesNoScreen> {
   }
 
   Future<void> _handleYes(BuildContext context) async {
-    print("Handling YES : " + widget.resultCode.toString());
+    print("Handling YES : ${widget.resultCode}");
     switch (widget.resultCode) {
       case 1:
         navigateToTmap(context, "이비인후과", widget.userId);

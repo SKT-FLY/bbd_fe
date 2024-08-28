@@ -52,13 +52,32 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   // 유효한 한글, 영어, 숫자, 공백 및 특정 기호를 포함하는 텍스트만 추출하는 함수
   String extractValidText(String input) {
+    // "MMS with subject:" 태그가 맨 앞에 있을 경우 제거
+    if (input.startsWith("MMS with subject:")) {
+      input = input.substring(17).trim(); // "MMS with subject:"를 제거하고 공백 제거
+    }
+
+    // "Message:" 태그가 맨 앞에 있을 경우 제거
+    if (input.startsWith("Message:")) {
+      input = input.substring(8).trim(); // "Message:"를 제거하고 공백 제거
+    }
+
     final regex = RegExp(r'[가-힣a-zA-Z0-9~₩!@#$%^&*()_+\-={}|:.,?><\s]');
     Iterable<RegExpMatch> matches = regex.allMatches(input);
     return matches.map((match) => match.group(0)).join('');
   }
 
-  String formatMessage(String message) {
+  // 메시지의 처음 두 줄을 제거하고 나머지를 표시
+  String formatMessage(String message, {int linesToRemove = 2}) {
     List<String> lines = message.split('\n');
+
+    // 처음 linesToRemove 줄을 제거합니다.
+    if (lines.length > linesToRemove) {
+      lines = lines.sublist(linesToRemove);
+    } else {
+      lines = []; // 만약 삭제할 줄 수가 전체 줄 수를 초과하면 빈 리스트로 설정합니다.
+    }
+
     lines = lines.take(4).toList(); // 최대 4줄만 표시
     return lines.join('\n').trim();
   }
@@ -110,13 +129,13 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
           padding: EdgeInsets.zero,
           child: Icon(
             CupertinoIcons.back,
-            color: CupertinoColors.activeBlue,
+            color: CupertinoColors.systemYellow,
           ),
           onPressed: () {
             context.go('/chat'); // 이전 화면으로 이동
           },
         ),
-        middle: Text('최근 문자 메시지', style: TextStyle(fontSize: 22)),
+        middle: Text('최근 문자 메시지', style: TextStyle(fontSize: 28)),
       ),
       child: SafeArea(
         child: ListView.builder(
@@ -132,7 +151,7 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
 
   Widget _buildSmsCard(int index, String message, double screenHeight) {
     final filteredMessage = extractValidText(message); // 유효한 텍스트만 추출
-    final formattedMessage = formatMessage(filteredMessage); // 최대 4줄까지만 표시
+    final formattedMessage = formatMessage(filteredMessage); // 첫 두 줄을 제거하고 최대 4줄까지만 표시
     final indexText = getIndexText(index); // 인덱스 텍스트 생성
 
     // 텍스트의 높이를 계산하여 동적으로 메시지 박스의 높이를 설정
