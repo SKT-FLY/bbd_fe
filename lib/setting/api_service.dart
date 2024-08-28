@@ -47,6 +47,30 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> analysis_schedule(String message) async {
+    final String url = '$kimhome/api/v1/voice_schedule';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{'message': message}),
+      ).timeout(Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        print(data);
+        return data;
+      } else {
+        return {'error': '서버와의 통신 오류가 있습니다. 상태 코드: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {'error': '서버와의 통신 오류가 있습니다.', 'exception': e.toString()};
+    }
+  }
+
   // 일정 등록
   Future<Map<String, dynamic>> postSchedule(int userId, String scheduleName, DateTime scheduleStartTime, String scheduleDescription, int hospitalId) async {
     final String url = '$kimhome/api/v1/schedule?user_id=$userId';
@@ -328,7 +352,6 @@ class ApiService {
       return {'error': '서버와의 통신 오류가 있습니다.', 'exception': e.toString()};
     }
   }
-
 
   // 메세지 분석
   Future<Map<String, dynamic>> analyzeAndForwardMessage(String message) async {

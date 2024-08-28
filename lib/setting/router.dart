@@ -25,6 +25,8 @@ import '../screen/map_list/tmap_pois.dart';
 import '../screen/selectscreen/yes_no_screen.dart';
 //builder: (context, state) => const UserSelectionScreen(),
 
+
+
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: [
@@ -32,9 +34,19 @@ final GoRouter router = GoRouter(
       path: '/',
       builder: (context, state) => AdotScreen(),
     ),
+    // GoRoute(
+    //   path: '/chat',
+    //   builder: (context, state) => ChatScreen(),
+    // ),
     GoRoute(
       path: '/chat',
-      builder: (context, state) => ChatScreen(),
+      builder: (context, state) {
+        // state.extra에서 bool 값을 가져옵니다.
+        final bool isSchedule = state.extra as bool? ?? false; // 기본값을 false로 설정
+
+        // bool 값을 ChatScreen에 전달합니다.
+        return ChatScreen(isSchedule: isSchedule);
+      },
     ),
     GoRoute(
       path: '/calling-screen-pois',
@@ -73,15 +85,16 @@ final GoRouter router = GoRouter(
       },
     ),
 
-
     GoRoute(
       path: '/loading',
       builder: (context, state) => LoadingScreen(),
     ),
+
     GoRoute(
       path: '/smsListScreen',
       builder: (context, state) => SmsListScreen(),
     ),
+
     GoRoute(
       path: '/start-message-summary',
       builder: (context, state) {

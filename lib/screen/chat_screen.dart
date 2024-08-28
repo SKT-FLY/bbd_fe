@@ -14,8 +14,9 @@ import '../setting/config.dart';
 import '../widgets/cloud_spinner.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
-
+  // const ChatScreen({super.key});
+  final bool isSchedule;
+  const ChatScreen({super.key, this.isSchedule = false});
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -50,15 +51,23 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void didChangeDependencies() {
     print("화면전환 인식");
+    print("is schedule");
+    print(widget.isSchedule);
     _resetScreen(); // 화면이 전환될 때 초기화 작업 수행
   }
+
 
   Future<void> _resetScreen() async {
     print("화면전환 함수 진입");
     setState(() {
-      _text = "안녕하세요.\n필요한 것을 \n 말씀해주세요."; // 텍스트 초기화
+      _text = widget.isSchedule
+          ? "등록할 일정을 \n 말씀해주세요"
+          : "안녕하세요.\n필요하신 것을 \n 말씀해주세요."; // 텍스트 초기화
     });
-    await _playInitialSound(); // starting_voice.wav 재생
+
+    if (widget.isSchedule == false) {
+      await _playInitialSound(); // starting_voice.wav 재생
+    }
   }
 
   Future<void> _requestPermissions() async {
@@ -178,49 +187,135 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
   }
-
   Future<void> _sendToServer(String userText) async {
     int userId = Provider.of<UserProvider>(context, listen: false).userId;
-    final response = await _apiService.processCommandApi(userText, userId);
 
-    if (response.containsKey('error')) {
-      setState(() {
-        _text = response['error'];
-      });
-    } else {
-      setState(() {
-        _resultCode = int.tryParse(response['result'] ?? '');
-        _text = _userSpeechText; // 서버 응답이 오더라도 사용자 발화 텍스트 유지
-      });
+    if (widget.isSchedule) {
+      print("isschedule is true: processing schedule registration");
 
-      if (_resultCode == null || _resultCode == 13) {
-        setState(() async {
-          _text = response['message'] != null && response['message'] != 'result message not found'
-              ? response['message']
-              : "다시 말씀해주세요."; // 응답 텍스트 업데이트 또는 기본 메시지
-          try {
-            await _audioPlayer.play(UrlSource("http://odaebum.iptime.org:4455/"+response['url']));
-          } catch (e) {
-            print('Error playing audio from URL: $e');
-          }
+      // isschedule이 true인 경우, analyzeAndForwardMessage를 호출
+      final response = await _apiService.analysis_schedule(userText);
+      print("Response received from analyzeAndForwardMessage: $response");
+
+      if (response.containsKey('error')) {
+        print("Error in response: ${response['error']}");
+        setState(() {
+          _text = response['error'];
         });
-      }
+      } else {
+        // 일정 등록 신호가 true인 경우
+        if (response['is_schedule_registered'] == true) {
+          print("Schedule is successfully registered, navigating to summary-result-calendar");
 
-      if (response['url'] != null) {
-        var url = '$kimhome/${response['url']}';
-        print("여기 링크" + url);
-
-        if (Uri.tryParse(url)?.hasAbsolutePath == true) {
-          print('Valid URL: $url');
+          // 서버에서 받은 response를 라우터로 전달하여 화면 전환
+          context.go('/summary-result-calendar', extra: {
+            'schedule_name': response['schedule_name'],
+            'schedule_start_time': response['schedule_start_time'],
+            'schedule_description': response['schedule_description'],
+          });
         } else {
-          print('Invalid URL: $url');
-          url = ''; // URL이 유효하지 않다면 빈 문자열로 설정
+          print("Schedule is not registered, showing schedule details");
+          setState(() {
+            _text = "일정 등록 정보:\n"
+                "이름: ${response['schedule_name']}\n"
+                "시작 시간: ${response['schedule_start_time']}\n"
+                "설명: ${response['schedule_description']}";
+          });
+        }
+      }
+    }
+    else {
+      print("isschedule is false: processing general command");
+
+      // 기존 로직
+      final response = await _apiService.processCommandApi(userText, userId);
+      print("Response received from processCommandApi: $response");
+
+      if (response.containsKey('error')) {
+        print("Error in response: ${response['error']}");
+        setState(() {
+          _text = response['error'];
+        });
+      } else {
+        setState(() {
+          _resultCode = int.tryParse(response['result'] ?? '');
+          _text = _userSpeechText; // 서버 응답이 오더라도 사용자 발화 텍스트 유지
+        });
+
+        if (_resultCode == null || _resultCode == 13) {
+          print("ResultCode is null or 13, handling accordingly");
+          setState(() async {
+            _text = response['message'] != null && response['message'] != 'result message not found'
+                ? response['message']
+                : "다시 말씀해주세요."; // 응답 텍스트 업데이트 또는 기본 메시지
+            try {
+              await _audioPlayer.play(UrlSource("http://odaebum.iptime.org:4455/" + response['url']));
+            } catch (e) {
+              print('Error playing audio from URL: $e');
+            }
+          });
         }
 
-        _navigateToYesNoScreen(response['message'], url);
+        if (response['url'] != null) {
+          var url = '$kimhome/${response['url']}';
+          print("URL received: $url");
+
+          if (Uri.tryParse(url)?.hasAbsolutePath == true) {
+            print('Valid URL: $url');
+          } else {
+            print('Invalid URL: $url');
+            url = ''; // URL이 유효하지 않다면 빈 문자열로 설정
+          }
+
+          _navigateToYesNoScreen(response['message'], url);
+        }
       }
     }
   }
+
+
+  // Future<void> _sendToServer(String userText) async {
+  //   int userId = Provider.of<UserProvider>(context, listen: false).userId;
+  //   final response = await _apiService.processCommandApi(userText, userId);
+  //
+  //   if (response.containsKey('error')) {
+  //     setState(() {
+  //       _text = response['error'];
+  //     });
+  //   } else {
+  //     setState(() {
+  //       _resultCode = int.tryParse(response['result'] ?? '');
+  //       _text = _userSpeechText; // 서버 응답이 오더라도 사용자 발화 텍스트 유지
+  //     });
+  //
+  //     if (_resultCode == null || _resultCode == 13) {
+  //       setState(() async {
+  //         _text = response['message'] != null && response['message'] != 'result message not found'
+  //             ? response['message']
+  //             : "다시 말씀해주세요."; // 응답 텍스트 업데이트 또는 기본 메시지
+  //         try {
+  //           await _audioPlayer.play(UrlSource("http://odaebum.iptime.org:4455/"+response['url']));
+  //         } catch (e) {
+  //           print('Error playing audio from URL: $e');
+  //         }
+  //       });
+  //     }
+  //
+  //     if (response['url'] != null) {
+  //       var url = '$kimhome/${response['url']}';
+  //       print("여기 링크" + url);
+  //
+  //       if (Uri.tryParse(url)?.hasAbsolutePath == true) {
+  //         print('Valid URL: $url');
+  //       } else {
+  //         print('Invalid URL: $url');
+  //         url = ''; // URL이 유효하지 않다면 빈 문자열로 설정
+  //       }
+  //
+  //       _navigateToYesNoScreen(response['message'], url);
+  //     }
+  //   }
+  // }
 
   Future<void> _navigateToYesNoScreen(String str,String url) async {
 

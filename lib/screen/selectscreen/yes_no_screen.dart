@@ -243,7 +243,6 @@ class _YesNoScreenState extends State<YesNoScreen> {
         } catch (e) {
           print('Error during taxi API request: $e');
         }
-
         break;
       case 10:
         context.push('/SmsListScreen');
@@ -257,11 +256,16 @@ class _YesNoScreenState extends State<YesNoScreen> {
       case 13:
         context.push('/noAnswer');
         break;
+      case 14: // 새 case 추가
+        print("is schedule true");
+        context.push('/chat', extra: true); // 새로운 경로 또는 기능에 맞게 수정하세요.
+        break;
       default:
         print('Unknown result: ${widget.resultCode}');
         break;
     }
   }
+
 
   void navigateToTmap(BuildContext context, String search, int userId) {
     context.push('/tmap', extra: {
