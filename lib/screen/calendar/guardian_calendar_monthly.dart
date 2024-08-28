@@ -165,23 +165,47 @@ class _GuardianScheduleMonthlyScreenState
             ),
             Positioned(
               bottom: 20,
-              left: 20,
-              child: FloatingActionButton(
-                onPressed: () {
-                  // 플로팅 버튼 눌렀을 때의 동작 정의
-                  context.go('/createschedule');
-                },
-                backgroundColor: CupertinoColors.systemYellow,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: const Icon(
-                  CupertinoIcons.add,
-                  size: 36,
-                  color: Colors.black,
+              right: 20,
+              child: SizedBox(
+                width: 40,  // 너비를 50으로 설정
+                height: 40,  // 높이를 50으로 설정
+                child: FloatingActionButton(
+                  onPressed: () {
+                    // 플로팅 버튼 눌렀을 때의 동작 정의
+                    context.go('/createschedule');
+                  },
+                  backgroundColor: CupertinoColors.systemYellow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.add,
+                    size: 30,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
+
+            // Positioned(
+            //   bottom: 20,
+            //   right: 20,
+            //   child: FloatingActionButton(
+            //     onPressed: () {
+            //       // 플로팅 버튼 눌렀을 때의 동작 정의
+            //       context.go('/createschedule');
+            //     },
+            //     backgroundColor: CupertinoColors.systemYellow,
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(8.0),
+            //     ),
+            //     child: const Icon(
+            //       CupertinoIcons.add,
+            //       size: 30,
+            //       color: Colors.black,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
