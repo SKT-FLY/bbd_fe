@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart'; // TimeOfDay 사용을 위한 material import
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; // DateFormat 사용을 위한 intl import
 import 'package:bbd_project_fe/setting/api_service.dart'; // API 서비스 import
 import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -20,46 +19,17 @@ class SummaryResultToCalendar extends StatefulWidget {
 
 class _SummaryPage2State extends State<SummaryResultToCalendar> {
   DateTime? scheduleDateTime;
-  String? scheduleDate;
   DateTime _selectedDay = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _parseDateTime();
-  }
-
-  void _parseDateTime() {
-    try {
-      // 서버에서 받은 date를 DateTime 객체로 변환 (예: "2024-08-26 00:00")
-      final String dateTimeString = widget.data['date'];
-
-      // DateFormat을 사용하여 보다 정확한 파싱
-      final DateFormat format = DateFormat("yyyy-MM-dd HH:mm");
-      scheduleDateTime = format.parse(dateTimeString);
-    } catch (e) {
-      print('Error parsing date: $e');
-      scheduleDateTime = null; // 에러 발생 시 null로 설정
+    // 데이터를 초기화할 때, schedule_start_time을 DateTime으로 변환
+    final dateString = widget.data['schedule_start_time'];
+    if (dateString != null) {
+      scheduleDateTime = DateTime.tryParse(dateString);
     }
   }
-  void _parseDate() {
-    try {
-      // 서버에서 받은 date를 DateTime 객체로 변환 (예: "2024-08-26 00:00")
-      final String dateTimeString = widget.data['date'];
-
-      // DateFormat을 사용하여 DateTime으로 파싱
-      final DateFormat inputFormat = DateFormat("yyyy-MM-dd HH:mm");
-      final DateTime parsedDate = inputFormat.parse(dateTimeString);
-
-      // 파싱한 DateTime 객체를 "MM-dd" 형식의 String으로 변환하여 저장
-      final DateFormat outputFormat = DateFormat("MM월 dd일");
-      scheduleDate = outputFormat.format(parsedDate);
-    } catch (e) {
-      print('Error parsing date: $e');
-      scheduleDate = null; // 에러 발생 시 null로 설정
-    }
-  }
-
 
   Future<void> _registerSchedule() async {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
@@ -68,9 +38,9 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
       // API 호출을 통한 일정 등록
       final result = await ApiService().postSchedule(
         userId,
-        widget.data['source'], // 일정 이름을 data['source']로 설정
+        widget.data['schedule_name'], // 일정 이름을 data['schedule_name']으로 설정
         scheduleDateTime!,
-        widget.data['summary'],
+        widget.data['schedule_description'], // 일정 설명을 data['schedule_description']으로 설정
         1, // hospitalId 예시
       );
 
@@ -117,10 +87,9 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    _parseDate();
 
     return CupertinoApp(
-      debugShowCheckedModeBanner : false,
+      debugShowCheckedModeBanner: false,
       theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeOrange,
       ),
@@ -167,7 +136,9 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                       child: Center(
                         child: SingleChildScrollView(
                           child: Text(
-                            widget.data['summary'] + '\n일시 : ' + scheduleDate,// 요약 텍스트만 표시
+                            (widget.data['schedule_name'] ?? '요약 정보 없음') +
+                                '\n일시 : ' +
+                                (widget.data['schedule_start_time'] ?? '날짜 정보 없음'),
                             style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,

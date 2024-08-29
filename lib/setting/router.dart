@@ -157,28 +157,28 @@ final GoRouter router = GoRouter(
 
 
     ///// map 라우터
-    GoRoute(
-      path: '/daily-schedule',
-      builder: (context, state) {
-        final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
-        final DateTime selectedDate = extra['selectedDate'];
-        return ScheduleDailyScreen(
-          selectedDate: selectedDate,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/daily-schedule-TTS',
-      builder: (context, state) {
-        final DateTime selectedDate = (state.extra as Map<String, dynamic>?)?['selectedDate'] ?? DateTime.now();
-        final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['extraData'];
-
-        return ScheduleDailyScreen(
-          selectedDate: selectedDate,
-          extraData: extraData, // extraData를 전달
-        );
-      },
-    ),
+    // GoRoute(
+    //   path: '/daily-schedule',
+    //   builder: (context, state) {
+    //     final Map<String, dynamic> extra = state.extra as Map<String, dynamic>;
+    //     final DateTime selectedDate = extra['selectedDate'];
+    //     return ScheduleDailyScreen(
+    //       selectedDate: selectedDate,
+    //     );
+    //   },
+    // ),
+    // GoRoute(
+    //   path: '/daily-schedule-TTS',
+    //   builder: (context, state) {
+    //     final DateTime selectedDate = (state.extra as Map<String, dynamic>?)?['selectedDate'] ?? DateTime.now();
+    //     final Map<String, dynamic>? extraData = (state.extra as Map<String, dynamic>?)?['extraData'];
+    //
+    //     return ScheduleDailyScreen(
+    //       selectedDate: selectedDate,
+    //       extraData: extraData, // extraData를 전달
+    //     );
+    //   },
+    // ),
     GoRoute(
       path: '/daily-schedule',
       builder: (context, state) {

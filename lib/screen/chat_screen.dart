@@ -204,23 +204,28 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       } else {
         // 일정 등록 신호가 true인 경우
-        if (response['is_schedule_registered'] == true) {
+        if (widget.isSchedule) {
           print("Schedule is successfully registered, navigating to summary-result-calendar");
 
           // 서버에서 받은 response를 라우터로 전달하여 화면 전환
           context.go('/summary-result-calendar', extra: {
+            /*{
+                              "schedule_name": "string",
+                              "schedule_start_time": datetime,
+                              "schedule_description": "string",
+             }*/
             'schedule_name': response['schedule_name'],
             'schedule_start_time': response['schedule_start_time'],
             'schedule_description': response['schedule_description'],
           });
         } else {
           print("Schedule is not registered, showing schedule details");
-          setState(() {
+          /*setState(() {
             _text = "일정 등록 정보:\n"
                 "이름: ${response['schedule_name']}\n"
                 "시작 시간: ${response['schedule_start_time']}\n"
                 "설명: ${response['schedule_description']}";
-          });
+          });*/
         }
       }
     }
