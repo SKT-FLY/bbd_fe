@@ -147,7 +147,7 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
                 ),
                 Spacer(flex: 1),
                 Expanded(
-                  flex: 22,
+                  flex: 20,
                   child: Center(
                     child: Container(
                       width: screenWidth * 0.9,

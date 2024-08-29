@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 class TaxiSearchPage extends StatefulWidget {
   final Map<String, dynamic>? taxiData;
-  static const Color customOrange = Color(0xFFF6B32A); // #F6B32A 색상을 정의
+  static const Color customOrange = CupertinoColors.systemYellow; // #F6B32A 색상을 정의
 
   const TaxiSearchPage({Key? key, required this.taxiData}) : super(key: key);
 

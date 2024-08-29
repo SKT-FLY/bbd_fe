@@ -50,16 +50,13 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
     }
   }
 
-  // 유효한 한글, 영어, 숫자, 공백 및 특정 기호를 포함하는 텍스트만 추출하는 함수
   String extractValidText(String input) {
-    // "MMS with subject:" 태그가 맨 앞에 있을 경우 제거
     if (input.startsWith("MMS with subject:")) {
-      input = input.substring(17).trim(); // "MMS with subject:"를 제거하고 공백 제거
+      input = input.substring(17).trim();
     }
 
-    // "Message:" 태그가 맨 앞에 있을 경우 제거
     if (input.startsWith("Message:")) {
-      input = input.substring(8).trim(); // "Message:"를 제거하고 공백 제거
+      input = input.substring(8).trim();
     }
 
     final regex = RegExp(r'[가-힣a-zA-Z0-9~₩!@#$%^&*()_+\-={}|:.,?><\s]');
@@ -67,23 +64,20 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
     return matches.map((match) => match.group(0)).join('');
   }
 
-  // 메시지의 처음 두 줄을 제거하고 나머지를 표시
   String formatMessage(String message, {int linesToRemove = 2}) {
     List<String> lines = message.split('\n');
 
-    // 처음 linesToRemove 줄을 제거합니다.
     if (lines.length > linesToRemove) {
       lines = lines.sublist(linesToRemove);
     } else {
-      lines = []; // 만약 삭제할 줄 수가 전체 줄 수를 초과하면 빈 리스트로 설정합니다.
+      lines = [];
     }
 
-    lines = lines.take(4).toList(); // 최대 4줄만 표시
+    lines = lines.take(4).toList();
     return lines.join('\n').trim();
   }
 
   String getIndexText(int index) {
-    // 인덱스를 한글로 변환
     switch (index) {
       case 1:
         return "첫 번째 문자";
@@ -108,6 +102,11 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
       default:
         return "$index 번째 문자";
     }
+  }
+
+  bool _isSuspiciousMessage(String message) {
+    final lowerCaseMessage = message.toLowerCase();
+    return lowerCaseMessage.contains('스미싱') || lowerCaseMessage.contains('광고');
   }
 
   void _listenForNewSms() {
@@ -150,11 +149,11 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
   }
 
   Widget _buildSmsCard(int index, String message, double screenHeight) {
-    final filteredMessage = extractValidText(message); // 유효한 텍스트만 추출
-    final formattedMessage = formatMessage(filteredMessage); // 첫 두 줄을 제거하고 최대 4줄까지만 표시
-    final indexText = getIndexText(index); // 인덱스 텍스트 생성
+    final filteredMessage = extractValidText(message);
+    final formattedMessage = formatMessage(filteredMessage);
+    final indexText = getIndexText(index);
+    final isSuspicious = _isSuspiciousMessage(filteredMessage);
 
-    // 텍스트의 높이를 계산하여 동적으로 메시지 박스의 높이를 설정
     double messageHeight = _calculateTextHeight(formattedMessage, 25, FontWeight.w600, screenHeight);
 
     return GestureDetector(
@@ -176,11 +175,26 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (isSuspicious) // 스미싱 문자 또는 광고 문자일 경우에만 핑크색 바 표시
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemPink,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '주의: 스미싱/광고 문자',
+                  style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: CupertinoColors.white),
+                ),
+              ),
+            SizedBox(height: 8),
             Container(
-              width: double.infinity, // 부모의 너비를 가득 채우도록 설정
+              width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               decoration: BoxDecoration(
-                color: CupertinoColors.systemYellow, // 노란색 배경
+                color: CupertinoColors.systemYellow,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -196,11 +210,11 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
                 formattedMessage.isEmpty ? '[내용 없음]' : formattedMessage,
                 style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
                     fontSize: 25, fontWeight: FontWeight.w600),
-                maxLines: null, // 줄 수 제한 없음
-                overflow: TextOverflow.ellipsis, // 텍스트가 넘칠 경우 말줄임표 처리
+                maxLines: null,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            SizedBox(height: 8), // 간격을 줄임
+            SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -212,7 +226,7 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
                 FaIcon(
                   FontAwesomeIcons.arrowRight,
                   color: CupertinoColors.systemYellow,
-                  size: 28, // 아이콘 크기를 줄임
+                  size: 28,
                 ),
               ],
             ),
@@ -228,16 +242,14 @@ class _SmsListScreenState extends State<SmsListScreen> with WidgetsBindingObserv
         text: text,
         style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
       ),
-      maxLines: null, // 줄 수 제한 없음
+      maxLines: null,
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: double.infinity);
 
-    // 텍스트 높이가 주어진 최대 높이를 초과하지 않도록 설정
     return textPainter.size.height > maxHeight ? maxHeight : textPainter.size.height;
   }
 
   void _handleSmsTap(String message) {
-    // MessageSummaryScreen으로 이동하면서 파싱된 메시지를 전달
     context.push('/start-message-summary', extra: extractValidText(message));
   }
 }
