@@ -97,7 +97,20 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _isPlayingSound = true; // 재생 시작
     int userId = Provider.of<UserProvider>(context, listen: false).userId;
-    String audioFilePath = userId == 1 ? 'voice/start_shw.wav' : 'voice/starting_voice.wav';
+    late String audioFilePath;
+    late String scheduleaudioFilePath;
+    if (widget.isSchedule == false) {
+      audioFilePath = userId == 1 ? 'voice/start_shw.wav' : 'voice/starting_voice.wav';}
+    else{
+     scheduleaudioFilePath = userId == 1 ? 'voice/createschedule_shw.wav' : 'voice/createschedule.wav';
+      await _audioPlayer.play(AssetSource(scheduleaudioFilePath));
+      // if (userId == 1) {
+      //   print(userId);
+      //   print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+      //   await _audioPlayer.play(AssetSource("voice/createschedule_shw.wav"));
+      // } else { await _audioPlayer.play(AssetSource("voice/createschedule.wav"));
+      // }
+    }
 
     try {
       await Future.wait([
@@ -125,7 +138,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _listen() async {
     HapticFeedback.heavyImpact();
-
     if (_isListening) {
       _speech.stop();
       setState(() {
@@ -206,19 +218,24 @@ class _ChatScreenState extends State<ChatScreen> {
         // 일정 등록 신호가 true인 경우
         if (widget.isSchedule) {
           print("Schedule is successfully registered, navigating to summary-result-calendar");
-
-          // 서버에서 받은 response를 라우터로 전달하여 화면 전환
-          context.go('/summary-result-calendar', extra: {
-            /*{
+          // if (userId == 1) {
+          //   print(userId);
+          //   print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+          //   await _audioPlayer.play(AssetSource("voice/createschedule_shw.wav"));
+          // } else { await _audioPlayer.play(AssetSource("voice/createschedule.wav")); }
+            // 서버에서 받은 response를 라우터로 전달하여 화면 전환
+            context.go('/summary-result-calendar', extra: {
+              /*{
                               "schedule_name": "string",
                               "schedule_start_time": datetime,
                               "schedule_description": "string",
              }*/
-            'schedule_name': response['schedule_name'],
-            'schedule_start_time': response['schedule_start_time'],
-            'schedule_description': response['schedule_description'],
-          });
-        } else {
+              'schedule_name': response['schedule_name'],
+              'schedule_start_time': response['schedule_start_time'],
+              'schedule_description': response['schedule_description'],
+            });
+          }
+         else {
           print("Schedule is not registered, showing schedule details");
           /*setState(() {
             _text = "일정 등록 정보:\n"
