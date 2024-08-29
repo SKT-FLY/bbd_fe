@@ -1,12 +1,9 @@
-import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_project_fe/setting/api_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bbd_project_fe/setting/user_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:logger/logger.dart';
 
 import '../../setting/api_service.dart';
 import '../../setting/user_provider.dart';
@@ -32,8 +29,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   final ScrollController _scrollController = ScrollController();
   late Future<List<dynamic>> _scheduleDataFuture;
   final ApiService _apiService = ApiService();
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  final Logger _logger = Logger();
   List<dynamic> _schedules = [];
 
   @override
@@ -48,52 +43,29 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToSelectedDay();
     });
-
-    _fetchAndPlaySchedule();  // 음성 재생 기능 추가
   }
 
   @override
   void dispose() {
-    _audioPlayer.stop(); // 음성 재생 중지
-    _audioPlayer.dispose(); // AudioPlayer 자원 해제
+    _scrollController.dispose(); // ScrollController 자원 해제
     super.dispose();
-  }
-
-  Future<void> _fetchAndPlaySchedule() async {
-    final userId = Provider.of<UserProvider>(context, listen: false).userId;
-    final date = '${_selectedYear}-${_selectedMonth}-${_selectedDay}';
-
-    // 이전에 재생 중이던 음성을 정지
-    await _audioPlayer.stop();
-
-    final result = await _apiService.fetchSchedule(date, userId);
-
-    if (result['status'] == 'success') {
-      if (result.containsKey('data')) {
-        Uint8List audioBytes = Uint8List.fromList(result['data']);
-        await _audioPlayer.stop();
-        await _audioPlayer.play(BytesSource(audioBytes));
-        _logger.i('Audio is playing.');
-      } else if (result.containsKey('message')) {
-        String message = result['message'];
-        _logger.i('Received message: $message');
-        // 메시지를 화면에 표시하거나 다른 작업 수행
-      }
-    } else {
-      _logger.e('Error: ${result['message'] ?? result['exception']}');
-    }
   }
 
   Future<List<dynamic>> _fetchScheduleData() async {
     try {
       final userId = Provider.of<UserProvider>(context, listen: false).userId;
       final List<dynamic> schedules = await _apiService.fetchScheduleData(userId);
+
+      // 디버깅을 위한 print 출력
+      print("==== 일정정보 ====== ${schedules.toString()}");
+
       setState(() {
         _schedules = schedules;
       });
+
       return schedules;
     } catch (e) {
-      _logger.e('Error fetching schedules: $e');
+      print('Error fetching schedules: $e');
       return [];
     }
   }
@@ -123,6 +95,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
     double boxWidth = MediaQuery.of(context).size.width / 5 - 8;
     double boxHeight = 100;
     double selectedBoxHeight = 120;
+
     return CupertinoPageScaffold(
       child: Column(
         children: [
@@ -133,8 +106,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                 children: [
                   _buildMonthSelector(),
                   const SizedBox(height: 16),
-                  _buildDaySelector(
-                      daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
+                  _buildDaySelector(daysInMonth, boxWidth, boxHeight, selectedBoxHeight),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 4.0),
                     child: Divider(
@@ -148,10 +120,12 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Center(
-                              child: CupertinoActivityIndicator());
+                            child: CupertinoActivityIndicator(),
+                          );
                         } else if (snapshot.hasError) {
                           return Center(
-                              child: Text('Error: ${snapshot.error}'));
+                            child: Text('Error: ${snapshot.error}'),
+                          );
                         } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                           return _buildScheduleList(snapshot.data!);
                         } else {
@@ -178,7 +152,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               child: CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () async {
-                  await _audioPlayer.stop();
                   final userId = Provider.of<UserProvider>(context, listen: false).userId;
                   context.go('/monthly-calendar', extra: userId);
                 },
@@ -209,7 +182,6 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
         ],
       ),
     );
-
   }
 
   Widget _buildMonthSelector() {
@@ -220,7 +192,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           child: const Icon(
             CupertinoIcons.left_chevron,
             color: CupertinoColors.systemYellow,
-            size:30,// 아이콘 색상을 노란색으로 설정
+            size: 30,
           ),
           onPressed: () {
             setState(() {
@@ -233,7 +205,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               _selectedDay = 1;
             });
             _scrollToSelectedDay();
-            _fetchAndPlaySchedule();  // 날짜 변경 시 새로운 음성 재생
+            _fetchScheduleData();  // 날짜 변경 시 새로운 데이터를 가져옴
           },
         ),
         Text(
@@ -244,7 +216,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           child: const Icon(
             CupertinoIcons.right_chevron,
             color: CupertinoColors.systemYellow,
-            size:30,// 아이콘 색상을 노란색으로 설정
+            size: 30,
           ),
           onPressed: () {
             setState(() {
@@ -257,7 +229,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
               _selectedDay = 1;
             });
             _scrollToSelectedDay();
-            _fetchAndPlaySchedule();  // 날짜 변경 시 새로운 음성 재생
+            _fetchScheduleData();  // 날짜 변경 시 새로운 데이터를 가져옴
           },
         ),
       ],
@@ -277,13 +249,12 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
           bool isSelected = day == _selectedDay;
 
           return GestureDetector(
-            onTap: () async {
-              await _audioPlayer.stop();  // 기존 음성을 정지
+            onTap: () {
               setState(() {
                 _selectedDay = day;
               });
               _scrollToSelectedDay();
-              _fetchAndPlaySchedule();  // 새 날짜의 음성 재생
+              _fetchScheduleData();  // 새 날짜의 데이터 가져옴
             },
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -340,6 +311,24 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
   }
 
   Widget _buildCalendarDate(String day, String weekDay, bool hasEvent, bool isSelected, double width, double height) {
+    // 요일을 나타내는 인덱스 생성 (1: 월요일, ..., 7: 일요일)
+    DateTime currentDay = DateTime(_selectedYear, _selectedMonth, int.parse(day));
+    int weekDayIndex = currentDay.weekday; // 1(월) ~ 7(일)
+
+    // 기본 색상 설정
+    Color topColor = CupertinoColors.systemGrey; // 기본 회색
+
+    // 선택된 날짜인 경우 상단 티켓 색상 노란색으로 설정
+    if (isSelected) {
+      topColor = CupertinoColors.systemYellow;
+    } else if (weekDayIndex == DateTime.saturday) {
+      // 토요일은 파란색
+      topColor = CupertinoColors.systemBlue;
+    } else if (weekDayIndex == DateTime.sunday) {
+      // 일요일은 빨간색
+      topColor = CupertinoColors.systemRed;
+    }
+
     return Container(
       width: width,
       height: height,
@@ -350,7 +339,7 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
             width: width,
             height: 16,
             decoration: BoxDecoration(
-              color: (isSelected || hasEvent) ? CupertinoColors.systemYellow : CupertinoColors.systemGrey,
+              color: topColor,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
           ),
@@ -385,13 +374,29 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    day,
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? CupertinoColors.systemYellow : CupertinoColors.black,
-                    ),
+                  Stack(
+                    alignment: Alignment.center, // Stack의 중앙에 날짜 숫자와 동그라미를 겹치게 정렬
+                    children: [
+                      // 이벤트가 있는 경우 연두색 반투명 동그라미 추가 (날짜 숫자 뒤에 배치)
+                      if (hasEvent)
+                        Container(
+                          width: width / 2, // 동그라미 크기 조정
+                          height: width / 2,
+                          decoration: BoxDecoration(
+                            color: CupertinoColors.activeGreen.withOpacity(0.3), // 연두색 반투명
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      // 날짜 숫자 텍스트
+                      Text(
+                        day,
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? CupertinoColors.systemYellow : CupertinoColors.black,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -401,6 +406,8 @@ class _ScheduleDailyScreenState extends State<ScheduleDailyScreen> {
       ),
     );
   }
+
+
 
 
   Widget _buildScheduleCard({
