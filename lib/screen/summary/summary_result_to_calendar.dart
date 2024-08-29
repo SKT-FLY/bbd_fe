@@ -33,7 +33,6 @@ class _SummaryPage2State extends State<SummaryResultToCalendar> {
 
   Future<void> _registerSchedule() async {
     final userId = Provider.of<UserProvider>(context, listen: false).userId;
-    print("일정등록  :  ${scheduleDateTime}");
 
     if (scheduleDateTime != null) {
       // API 호출을 통한 일정 등록

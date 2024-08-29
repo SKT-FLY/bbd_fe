@@ -38,12 +38,7 @@ class _MessageSummaryState extends State<SummaryScreen> {
     if (!mounted) return; // 현재 State가 여전히 활성화된 상태인지 확인
     if (data['date'] != "none" && (data['message_type'] != '스미싱 문자' && data['message_type'] != '광고 문자')) {
       print("TO GO CAL" + data['message_type']);
-      final updatedData = {
-        'schedule_name': data['summary'],
-        'schedule_start_time': data['date'],
-        'schedule_description': data['source']
-      };
-      context.go('/summary-result-calendar', extra: updatedData);
+      context.go('/summary-result-calendar', extra: data);
     } else {
       print("normal요약가야함");
       print(data);
