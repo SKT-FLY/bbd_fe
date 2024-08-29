@@ -41,7 +41,8 @@ class _YesNoScreenState extends State<YesNoScreen> {
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer(); // 오디오 플레이어 초기화
-
+    print("~~~~~~~~~~~~~~~~url~~~~~~~~~~~~");
+    print(widget.url);
     // URL이 비어 있지 않으면 오디오 재생
     if (widget.url.isNotEmpty) {
       _playAudioFromUrl(widget.url);

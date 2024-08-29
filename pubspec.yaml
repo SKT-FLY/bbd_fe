@@ -89,6 +89,7 @@ flutter:
      - assets/images/calldown.png
      - assets/images/click_button.png
      - assets/voice/createschedule.wav
+     - assets/voice/createschedule_shw.wav
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
